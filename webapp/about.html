@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>О сервисе — Kwadrat PL</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="icons.js"></script>
+</head>
+<body>
+  <h1><span class="emi" data-icon="info"></span>О сервисе</h1>
+  <p class="sub">Kwadrat PL — поиск аренды жилья в Польше</p>
+
+  <div class="row-card">
+    <div class="ic-tile blue" data-icon="search"></div>
+    <div class="body">
+      <div class="t">Гибкий поиск</div>
+      <div class="d">Город, район, тип аренды, цена, комнаты, метраж — результат обновляется мгновенно.</div>
+    </div>
+  </div>
+
+  <div class="row-card">
+    <div class="ic-tile green" data-icon="bell"></div>
+    <div class="body">
+      <div class="t">Мгновенные уведомления</div>
+      <div class="d">Подпишитесь на поиск — новые подходящие объявления придут прямо в чат с ботом.</div>
+    </div>
+  </div>
+
+  <div class="row-card">
+    <div class="ic-tile red" data-icon="trending-down"></div>
+    <div class="body">
+      <div class="t">Отслеживание цен</div>
+      <div class="d">Сервис помнит историю цены каждого объявления и сообщает о снижениях.</div>
+    </div>
+  </div>
+
+  <div class="row-card">
+    <div class="ic-tile amber" data-icon="shield-check"></div>
+    <div class="body">
+      <div class="t">Без дублей</div>
+      <div class="d">Одно и то же объявление с разных площадок показывается один раз.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:var(--sp-4)">
+    <div class="h2">Статус: демо-версия</div>
+    <p class="muted" style="font-size:var(--fs-sm); margin:0">
+      Сейчас приложение работает на тестовых данных и демонстрирует интерфейс.
+      В боевой версии объявления собираются с OLX, Otodom и других площадок
+      в реальном времени, а уведомления отправляет бот.</p>
+  </div>
+
+  <a class="btn" href="index.html" style="margin-top:var(--sp-4)">На главную</a>
+
+  <p class="foot">Kwadrat PL · Mini App для Telegram</p>
+
+<script>
+"use strict";
+if (window.Icons) Icons.hydrate();
+</script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Подписки — Kwadrat PL</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  .saved-item{ display:flex; align-items:center; gap:var(--sp-3);
+    background:var(--card); border:1px solid var(--border); border-radius:var(--r-md);
+    padding:var(--sp-3) var(--sp-4); margin-bottom:var(--sp-2) }
+  .saved-item .info{ flex:1; min-width:0 }
+  .saved-item .name{ font-size:var(--fs-body); font-weight:700 }
+  .saved-item .desc{ font-size:var(--fs-xs); color:var(--hint); margin-top:2px }
+  .saved-item .del{ border:0; background:none; color:var(--hint); cursor:pointer;
+    padding:6px; display:flex }
+  .saved-item .del svg{ width:18px; height:18px }
+  .section-title{ font-size:var(--fs-sm); font-weight:700; color:var(--hint);
+    margin:var(--sp-4) 0 var(--sp-2); text-transform:uppercase; letter-spacing:.03em }
+</style>
+</head>
+<body>
+  <h1><span class="emi" data-icon="bell"></span>Подписки и избранное</h1>
+  <p class="sub">Уведомления приходят мгновенно при появлении подходящего объявления</p>
+
+  <div class="section-title">Сохранённые поиски</div>
+  <div id="savedList"></div>
+
+  <div class="section-title" id="fav">Избранное</div>
+  <div id="favList"></div>
+
+  <a class="btn" href="search.html" style="margin-top:var(--sp-4)">
+    <span class="emi" data-icon="search"></span> К поиску
+  </a>
+
+  <p class="foot">Подписки хранятся на устройстве.<br>
+    В боевой версии — на сервере, уведомления через бота.</p>
+
+  <!-- шторка деталей избранного -->
+  <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
+
+<script>
+"use strict";
+if (window.Icons) Icons.hydrate();
+
+function $(s) { return document.querySelector(s); }
+
+function renderSaved() {
+  var box = $("#savedList");
+  if (!App.saved.length) {
+    box.innerHTML = '<div class="state">Пока нет сохранённых поисков.<br>' +
+      "Настройте фильтры на странице поиска и нажмите «Подписаться».</div>";
+    return;
+  }
+  box.innerHTML = App.saved.map(function (s, i) {
+    return '<div class="saved-item">' +
+      '<div class="ic-tile ' + (s.notify ? "green" : "") + '">' + Icons.svg("bell") + "</div>" +
+      '<div class="info"><div class="name">' + App.esc(App.searchLabel(s)) + "</div>" +
+      '<div class="desc">' + (s.notify ? "Уведомления включены" : "Уведомления выключены") + "</div></div>" +
+      '<label class="switch"><input type="checkbox" data-i="' + i + '"' +
+      (s.notify ? " checked" : "") + '><span class="knob"></span></label>' +
+      '<button class="del" data-del="' + i + '">' + Icons.svg("trash") + "</button>" +
+      "</div>";
+  }).join("");
+  box.querySelectorAll("input[type=checkbox]").forEach(function (cb) {
+    cb.onchange = function () {
+      App.saved[+cb.dataset.i].notify = cb.checked;
+      App.persist(); haptic("select"); renderSaved();
+    };
+  });
+  box.querySelectorAll("[data-del]").forEach(function (b) {
+    b.onclick = function () {
+      App.saved.splice(+b.dataset.del, 1);
+      App.persist(); haptic("light"); renderSaved();
+    };
+  });
+}
+
+function renderFavs() {
+  var box = $("#favList");
+  if (!App.favs.length) {
+    box.innerHTML = '<div class="state">Избранное пусто.<br>' +
+      "Нажмите ♥ на карточке объявления, чтобы отложить его сюда.</div>";
+    return;
+  }
+  box.innerHTML = App.favs.map(function (l, i) {
+    return '<a class="row-card" href="#" data-fav-open="' + i + '">' +
+      '<div class="ic-tile red">' + Icons.svg("heart") + "</div>" +
+      '<div class="body"><div class="t">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) + "</div>" +
+      '<div class="d">' + l.rooms + " комн. · " + l.area + " m² · " +
+      App.esc(App.CITIES[l.city].name) + ", " + App.esc(l.district) + "</div></div>" +
+      '<button class="del" data-fav-del="' + i + '" style="border:0;background:none;color:var(--hint);cursor:pointer;display:flex;padding:6px">' +
+      Icons.svg("trash") + "</button>" +
+      "</a>";
+  }).join("");
+  box.querySelectorAll("[data-fav-open]").forEach(function (a) {
+    a.onclick = function (e) {
+      if (e.target.closest("[data-fav-del]")) return;
+      e.preventDefault();
+      openSheet(App.favs[+a.dataset.favOpen]);
+    };
+  });
+  box.querySelectorAll("[data-fav-del]").forEach(function (b) {
+    b.onclick = function (e) {
+      e.preventDefault(); e.stopPropagation();
+      App.favs.splice(+b.dataset.favDel, 1);
+      App.persist(); haptic("light"); renderFavs();
+    };
+  });
+}
+
+function openSheet(l) {
+  haptic("light");
+  $("#sheet").innerHTML =
+    '<div style="position:relative">' +
+    '<button class="close" id="btnClose">✕</button>' +
+    '<div class="photo" style="background:linear-gradient(135deg,' + l.grad[0] + "," + l.grad[1] + ')">' +
+    Icons.svg(l.icon) +
+    '<span class="lbadge type">' + (l.type === "long" ? "Долгосрочная" : "Краткосрочная") + "</span>" +
+    "</div></div>" +
+    '<div class="sbody">' +
+    '<div class="lprice" style="font-size:22px">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) + "</div>" +
+    '<div class="ltitle">' + App.esc(l.street) + " · " + App.esc(App.CITIES[l.city].name) + ", " + App.esc(l.district) + "</div>" +
+    '<div class="specs">' +
+    '<div class="spec"><div class="k">Комнаты</div><div class="v">' + l.rooms + "</div></div>" +
+    '<div class="spec"><div class="k">Площадь</div><div class="v">' + l.area + " m²</div></div>" +
+    '<div class="spec"><div class="k">Этаж</div><div class="v">' + l.floor + "</div></div>" +
+    '<div class="spec"><div class="k">Опубликовано</div><div class="v">' + App.timeAgo(l.ts) + "</div></div>" +
+    "</div>" +
+    '<button class="btn" id="btnContact"><span class="emi">' + Icons.svg("message-circle") + "</span> Написать</button>" +
+    "<div style='height:12px'></div></div>";
+  $("#overlay").classList.add("open");
+  $("#btnClose").onclick = closeSheet;
+  $("#btnContact").onclick = function () {
+    var tg = window.Telegram && window.Telegram.WebApp;
+    if (tg && tg.openTelegramLink) tg.openTelegramLink("https://t.me/KwadratPLBot");
+  };
+  window.__navBack = function () {
+    if ($("#overlay").classList.contains("open")) { closeSheet(); return true; }
+    return false;
+  };
+}
+function closeSheet() { $("#overlay").classList.remove("open"); }
+$("#overlay").onclick = function (e) { if (e.target === e.currentTarget) closeSheet(); };
+
+renderSaved();
+renderFavs();
+</script>
+</body>
+</html>

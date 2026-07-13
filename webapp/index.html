@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kwadrat PL</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js" data-home="true"></script>
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<style>
+  /* — дашборд: специфика главного экрана (паттерн ISSA home) — */
+  .hero{ display:flex; align-items:baseline; gap:var(--sp-2); margin-bottom:var(--sp-1) }
+  .hero .logo{ font-size:24px; color:var(--accent) }
+  .hero .logo svg{ width:24px; height:24px }
+
+  /* приоритетный блок «что дальше» */
+  .next{ background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg);
+    padding:var(--sp-4); margin-bottom:var(--sp-4); box-shadow:var(--shadow) }
+  .next .label{ font-size:var(--fs-xs); letter-spacing:.04em; text-transform:uppercase;
+    color:var(--hint); margin-bottom:var(--sp-2) }
+  .next .big{ font-size:var(--fs-h2); font-weight:700; margin-bottom:var(--sp-1) }
+  .next .hintline{ color:var(--hint); font-size:var(--fs-sm); margin-bottom:var(--sp-3) }
+  .next .actions{ display:flex; gap:var(--sp-2) }
+  .next .actions .btn{ width:auto; flex:1 }
+
+  /* мини-статистика (как pl-mini в ISSA) */
+  .mini{ display:flex; gap:10px; margin-bottom:var(--sp-4) }
+  .mini > div{ flex:1; text-align:center; padding:10px; border:1px solid var(--border);
+    border-radius:12px; background:var(--card) }
+  .mini .k{ font-size:11px; color:var(--hint) }
+  .mini .v{ font-weight:800; font-size:18px }
+
+  /* сетка разделов 2 колонки */
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-2) }
+  .cell{ display:flex; flex-direction:column; gap:var(--sp-1);
+    text-decoration:none; color:var(--text); background:var(--card);
+    border:1px solid var(--border); border-radius:var(--r-md);
+    padding:var(--sp-3) var(--sp-4); min-height:84px; transition:transform .12s }
+  .cell:active{ transform:scale(.98) }
+  .cell .t{ font-size:var(--fs-body); font-weight:700 }
+  .cell .d{ color:var(--hint); font-size:var(--fs-xs); line-height:1.35 }
+  .cell.wide{ grid-column:1 / -1; flex-direction:row; align-items:center; gap:var(--sp-3); min-height:0 }
+  .cell.wide .body{ flex:1 } .cell.wide .chev{ color:var(--hint) }
+
+  .section-title{ font-size:var(--fs-sm); font-weight:700; color:var(--hint);
+    margin:var(--sp-4) 0 var(--sp-2); text-transform:uppercase; letter-spacing:.03em }
+
+  /* плитки городов */
+  .city-cell{ min-height:0; flex-direction:row; align-items:center; gap:var(--sp-3) }
+  .city-cell .cnt{ margin-left:auto; font-size:var(--fs-xs); color:var(--hint) }
+</style>
+</head>
+<body>
+  <div class="hero"><span class="logo emi" data-icon="building"></span><h1>Kwadrat PL</h1></div>
+  <p class="sub">Аренда жилья в Польше — поиск и мгновенные уведомления</p>
+
+  <!-- ПРИОРИТЕТ: что делать прямо сейчас -->
+  <div class="next">
+    <div class="label" id="nextLabel">С чего начать</div>
+    <div class="big" id="nextTitle">Найти квартиру</div>
+    <div class="hintline" id="nextHint">6 городов · фильтры по цене и комнатам · снижения цен</div>
+    <div class="actions">
+      <a class="btn" id="nextBtn" href="search.html"><span class="emi" data-icon="search"></span> Искать</a>
+      <a class="btn ghost" href="saved.html"><span class="emi" data-icon="bell"></span> Подписки</a>
+    </div>
+  </div>
+
+  <!-- мини-статистика -->
+  <div class="mini">
+    <div><div class="k">Объявлений</div><div class="v" id="statTotal">0</div></div>
+    <div><div class="k">Подписки</div><div class="v" id="statSaved">0</div></div>
+    <div><div class="k">Избранное</div><div class="v" id="statFavs">0</div></div>
+  </div>
+
+  <!-- РАЗДЕЛЫ -->
+  <div class="section-title">Поиск</div>
+  <div class="grid">
+    <a class="cell" href="search.html?type=long">
+      <div class="ic-tile blue" data-icon="home"></div>
+      <div class="t">Долгосрочная</div>
+      <div class="d">Квартиры и комнаты от месяца</div>
+    </a>
+    <a class="cell" href="search.html?type=short">
+      <div class="ic-tile amber" data-icon="key"></div>
+      <div class="t">Краткосрочная</div>
+      <div class="d">Посуточно · на первое время</div>
+    </a>
+    <a class="cell" href="saved.html">
+      <div class="ic-tile green" data-icon="bell"></div>
+      <div class="t">Мои подписки</div>
+      <div class="d">Уведомления о новых объявлениях</div>
+    </a>
+    <a class="cell" href="saved.html#fav">
+      <div class="ic-tile red" data-icon="heart"></div>
+      <div class="t">Избранное</div>
+      <div class="d">Отложенные варианты</div>
+    </a>
+  </div>
+
+  <div class="section-title">Города</div>
+  <div class="grid" id="cityGrid"></div>
+
+  <a class="cell wide" href="about.html" style="margin-top:12px">
+    <div class="ic-tile" data-icon="info"></div>
+    <div class="body">
+      <div class="t">О сервисе</div>
+      <div class="d">Как работают уведомления и откуда данные</div>
+    </div>
+    <div class="chev">›</div>
+  </a>
+
+  <p class="foot">Kwadrat PL · демо-версия Mini App.<br>
+    Объявления — тестовые данные для демонстрации интерфейса.</p>
+
+<script>
+"use strict";
+if (window.Icons) Icons.hydrate();
+
+// плитки городов с количеством объявлений
+(function () {
+  var grid = document.getElementById("cityGrid");
+  var tones = ["blue", "green", "amber", "violet", "cyan", "gold"];
+  Object.keys(App.CITIES).forEach(function (key, i) {
+    var n = App.listings.filter(function (l) { return l.city === key; }).length;
+    var a = document.createElement("a");
+    a.className = "cell city-cell";
+    a.href = "search.html?city=" + key;
+    a.innerHTML = '<div class="ic-tile ' + tones[i % tones.length] + '" data-icon="map-pin"></div>' +
+      '<div class="t">' + App.esc(App.CITIES[key].name) + '</div>' +
+      '<div class="cnt">' + n + '</div>';
+    grid.appendChild(a);
+  });
+  Icons.hydrate(grid);
+})();
+
+// статистика + оживление блока «что дальше»
+(function () {
+  document.getElementById("statTotal").textContent = App.listings.length;
+  document.getElementById("statSaved").textContent = App.saved.length;
+  document.getElementById("statFavs").textContent = App.favs.length;
+
+  var active = App.saved.filter(function (s) { return s.notify; });
+  if (active.length) {
+    document.getElementById("nextLabel").textContent = "Подписки активны";
+    document.getElementById("nextTitle").textContent =
+      active.length + " " + (active.length === 1 ? "поиск отслеживается" : "поиска отслеживается");
+    document.getElementById("nextHint").textContent =
+      "Первый: " + App.searchLabel(active[0]);
+    var b = document.getElementById("nextBtn");
+    b.innerHTML = (window.Icons ? '<span class="emi">' + Icons.svg("search") + "</span>" : "") + " К поиску";
+  }
+})();
+</script>
+</body>
+</html>
