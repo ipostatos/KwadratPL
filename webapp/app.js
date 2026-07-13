@@ -7,13 +7,34 @@
 (function (global) {
   "use strict";
 
+  // Полные официальные списки районов (dzielnice):
+  // Варшава и Краков — по 18, Гданьск — 35, Вроцлав/Познань/Лодзь — по 5.
   var CITIES = {
-    warszawa: { name: "Варшава", districts: ["Śródmieście", "Mokotów", "Wola", "Praga-Południe", "Ursynów", "Bemowo"] },
-    krakow:   { name: "Краков",  districts: ["Stare Miasto", "Kazimierz", "Podgórze", "Krowodrza", "Nowa Huta"] },
-    wroclaw:  { name: "Вроцлав", districts: ["Stare Miasto", "Krzyki", "Fabryczna", "Psie Pole"] },
-    gdansk:   { name: "Гданьск", districts: ["Śródmieście", "Wrzeszcz", "Oliwa", "Przymorze"] },
-    poznan:   { name: "Познань", districts: ["Stare Miasto", "Jeżyce", "Wilda", "Grunwald"] },
-    lodz:     { name: "Лодзь",   districts: ["Śródmieście", "Bałuty", "Polesie", "Widzew"] }
+    warszawa: { name: "Варшава", districts: [
+      "Śródmieście", "Mokotów", "Wola", "Ochota", "Żoliborz",
+      "Praga-Północ", "Praga-Południe", "Targówek", "Bemowo", "Bielany",
+      "Białołęka", "Ursynów", "Ursus", "Włochy", "Wilanów",
+      "Wawer", "Wesoła", "Rembertów"] },
+    krakow:   { name: "Краков", districts: [
+      "Stare Miasto", "Grzegórzki", "Prądnik Czerwony", "Prądnik Biały", "Krowodrza",
+      "Bronowice", "Zwierzyniec", "Dębniki", "Łagiewniki-Borek Fałęcki", "Swoszowice",
+      "Podgórze Duchackie", "Bieżanów-Prokocim", "Podgórze", "Czyżyny", "Mistrzejowice",
+      "Bieńczyce", "Wzgórza Krzesławickie", "Nowa Huta"] },
+    wroclaw:  { name: "Вроцлав", districts: [
+      "Stare Miasto", "Śródmieście", "Krzyki", "Fabryczna", "Psie Pole"] },
+    gdansk:   { name: "Гданьск", districts: [
+      "Śródmieście", "Aniołki", "Brętowo", "Brzeźno", "Chełm",
+      "Jasień", "Kokoszki", "Krakowiec-Górki Zachodnie", "Letnica", "Matarnia",
+      "Młyniska", "Nowy Port", "Oliwa", "Olszynka", "Orunia Górna-Gdańsk Południe",
+      "Orunia-Św. Wojciech-Lipce", "Osowa", "Piecki-Migowo", "Przeróbka", "Przymorze Małe",
+      "Przymorze Wielkie", "Rudniki", "Siedlce", "Stogi", "Strzyża",
+      "Suchanino", "Ujeścisko-Łostowice", "VII Dwór", "Wrzeszcz Dolny", "Wrzeszcz Górny",
+      "Wyspa Sobieszewska", "Wzgórze Mickiewicza", "Zaspa-Młyniec", "Zaspa-Rozstaje",
+      "Żabianka-Wejhera-Jelitkowo-Tysiąclecia"] },
+    poznan:   { name: "Познань", districts: [
+      "Stare Miasto", "Nowe Miasto", "Wilda", "Grunwald", "Jeżyce"] },
+    lodz:     { name: "Лодзь", districts: [
+      "Śródmieście", "Bałuty", "Górna", "Polesie", "Widzew"] }
   };
 
   var STREETS = ["ul. Marszałkowska", "ul. Puławska", "ul. Grzybowska", "al. Jana Pawła II",
@@ -66,8 +87,10 @@
   var _rnd = mulberry32(20260713);
   var listings = [];
   Object.keys(CITIES).forEach(function (city) {
-    for (var i = 0; i < 7; i++) listings.push(makeListing(_rnd, { city: city, type: "long" }));
-    for (var j = 0; j < 3; j++) listings.push(makeListing(_rnd, { city: city, type: "short" }));
+    // объём пропорционален числу районов, чтобы фильтр по району реже был пустым
+    var n = Math.max(10, Math.ceil(CITIES[city].districts.length * 0.8));
+    for (var i = 0; i < n; i++) listings.push(makeListing(_rnd, { city: city, type: "long" }));
+    for (var j = 0; j < 4; j++) listings.push(makeListing(_rnd, { city: city, type: "short" }));
   });
 
   // ── хранилище ──

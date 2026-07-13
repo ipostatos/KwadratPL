@@ -8,6 +8,12 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="nav.js"></script>
 <script src="icons.js"></script>
+<style>
+  /* благодарность автору — кнопки в столбик (паттерн ISSA) */
+  .donate-row{ display:flex; flex-direction:column; gap:10px }
+  .donate-row .btn{ width:100% }
+  a{ text-decoration:none }
+</style>
 </head>
 <body>
   <h1><span class="emi" data-icon="info"></span>О сервисе</h1>
@@ -53,7 +59,31 @@
       в реальном времени, а уведомления отправляет бот.</p>
   </div>
 
-  <a class="btn" href="index.html" style="margin-top:var(--sp-4)">На главную</a>
+  <!-- Об авторе + благодарность (паттерн ISSA Trainer) -->
+  <div class="card" style="margin-top:var(--sp-4)">
+    <div class="h2">Об авторе</div>
+    <div class="muted" style="font-size:var(--fs-sm); line-height:1.6; margin-bottom:10px">
+      Kwadrat PL — независимый проект: удобный поиск аренды в Польше
+      прямо в Telegram. Собран и поддерживается одним человеком в свободное
+      время. Если сервис оказался полезным — можно поблагодарить автора.
+      Это не обязательно и ни на что не влияет 🙂
+    </div>
+    <div class="muted" style="font-size:var(--fs-sm); line-height:1.6; margin-bottom:12px">
+      Нашли ошибку или хотите такого же бота под свою задачу — пишите
+      <a href="https://t.me/ipostatos" target="_blank" rel="noopener"
+         style="color:var(--accent)"><span class="emi" data-icon="send"></span>@ipostatos</a>.
+    </div>
+    <div class="donate-row">
+      <a class="btn" href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener">
+        <span class="emi" data-icon="coffee"></span> Угостить кофе
+      </a>
+      <a class="btn ghost" href="https://t.me/ipostatos" target="_blank" rel="noopener">
+        <span class="emi" data-icon="star"></span> Просто сказать спасибо
+      </a>
+    </div>
+  </div>
+
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-4)">На главную</a>
 
   <p class="foot">Kwadrat PL · Mini App для Telegram</p>
 
