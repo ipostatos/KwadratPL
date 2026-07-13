@@ -54,6 +54,18 @@
     </div>
   </div>
 
+  <!-- Что умеет бот -->
+  <div class="card" style="margin-top:var(--sp-4)">
+    <div class="h2" id="funcsT"></div>
+    <ul id="funcsList" style="margin:0; padding-left:18px; font-size:var(--fs-sm); line-height:1.6"></ul>
+  </div>
+
+  <!-- Как пользоваться -->
+  <div class="card" style="margin-top:var(--sp-4)">
+    <div class="h2" id="howT"></div>
+    <ol id="howList" style="margin:0; padding-left:20px; font-size:var(--fs-sm); line-height:1.6"></ol>
+  </div>
+
   <div class="card" style="margin-top:var(--sp-4)">
     <div class="h2" data-i18n="statusT"></div>
     <p class="muted" style="font-size:var(--fs-sm); margin:0" data-i18n="statusD"></p>
@@ -86,6 +98,93 @@
 "use strict";
 if (window.Icons) Icons.hydrate();
 I18N.hydrate();
+
+// «Что умеет» и «Как пользоваться» — по языку (без раздувания словаря)
+var GUIDE = {
+  funcsT: { ru:"Что умеет бот", pl:"Co potrafi bot", ua:"Що вміє бот", en:"What the bot does" },
+  howT:   { ru:"Как пользоваться", pl:"Jak korzystać", ua:"Як користуватися", en:"How to use it" },
+  funcs: {
+    ru:[
+      "🏠 <b>Поиск</b> аренды в 6 городах: квартиры, комнаты и подселение, посуточно — живые объявления с OLX, Otodom и Morizon, дубли объединяются.",
+      "🔔 <b>Уведомления</b>: подпишитесь на поиск — новые подходящие объявления придут прямо в чат. Тихие часы и пауза командой /off.",
+      "🛡 <b>Справедливая цена и анти-скам</b>: бейдж «ниже/выше рынка района» и предупреждение о подозрительно дешёвых объявлениях.",
+      "✨ <b>AI-разбор</b>: перевод объявления на ваш язык, выжимка ключевого и оценка риска мошенничества — кнопкой в карточке.",
+      "💰 <b>Калькулятор заезда</b>: сколько денег нужно на старте (аренда + czynsz + media + кауция + комиссия).",
+      "👥 <b>Facebook-группы</b> аренды и подселения по вашему городу.",
+      "📚 <b>Гайды</b>: как вернуть кауцию (с готовым шаблоном претензии), разбор договора, чек-лист осмотра, готовые фразы владельцу по-польски.",
+      "🌍 Интерфейс на 4 языках: RU / PL / UA / EN."
+    ],
+    pl:[
+      "🏠 <b>Wyszukiwanie</b> najmu w 6 miastach: mieszkania, pokoje i współlokatorzy, na doby — ogłoszenia na żywo z OLX, Otodom i Morizon, duplikaty łączone.",
+      "🔔 <b>Powiadomienia</b>: subskrybuj wyszukiwanie — nowe pasujące ogłoszenia trafią prosto na czat. Cisza nocna i pauza komendą /off.",
+      "🛡 <b>Cena rynkowa i anti-scam</b>: znacznik „poniżej/powyżej rynku dzielnicy” i ostrzeżenie o podejrzanie tanich ogłoszeniach.",
+      "✨ <b>Analiza AI</b>: tłumaczenie ogłoszenia, streszczenie i ocena ryzyka oszustwa — przyciskiem w ogłoszeniu.",
+      "💰 <b>Kalkulator wprowadzki</b>: ile pieniędzy na start (najem + czynsz + media + kaucja + prowizja).",
+      "👥 <b>Grupy na Facebooku</b> dla najmu i współlokatorów w Twoim mieście.",
+      "📚 <b>Przewodniki</b>: jak odzyskać kaucję (z gotowym wzorem wezwania), analiza umowy, checklista oględzin, gotowe wiadomości do właściciela.",
+      "🌍 Interfejs w 4 językach: PL / RU / UA / EN."
+    ],
+    ua:[
+      "🏠 <b>Пошук</b> оренди в 6 містах: квартири, кімнати й підселення, подобово — живі оголошення з OLX, Otodom і Morizon, дублі об'єднуються.",
+      "🔔 <b>Сповіщення</b>: підпишіться на пошук — нові відповідні оголошення надійдуть просто в чат. Тихі години і пауза командою /off.",
+      "🛡 <b>Справедлива ціна й анти-скам</b>: бейдж «нижче/вище ринку району» та попередження про підозріло дешеві оголошення.",
+      "✨ <b>AI-розбір</b>: переклад оголошення вашою мовою, вижимка головного й оцінка ризику шахрайства — кнопкою в картці.",
+      "💰 <b>Калькулятор заїзду</b>: скільки грошей потрібно на старті (оренда + czynsz + media + кауція + комісія).",
+      "👥 <b>Facebook-групи</b> оренди й підселення у вашому місті.",
+      "📚 <b>Гайди</b>: як повернути кауцію (з готовим шаблоном претензії), розбір договору, чек-лист огляду, готові фрази власнику польською.",
+      "🌍 Інтерфейс 4 мовами: UA / PL / RU / EN."
+    ],
+    en:[
+      "🏠 <b>Search</b> rentals in 6 cities: flats, rooms & flat-shares, short stays — live listings from OLX, Otodom and Morizon, duplicates merged.",
+      "🔔 <b>Alerts</b>: subscribe to a search — new matching listings arrive right in the chat. Quiet hours and pause with /off.",
+      "🛡 <b>Fair price & anti-scam</b>: a “below/above district market” badge and a warning on suspiciously cheap listings.",
+      "✨ <b>AI breakdown</b>: translation of the listing, a summary and a scam-risk score — one button in the listing.",
+      "💰 <b>Move-in calculator</b>: how much cash you need upfront (rent + czynsz + utilities + deposit + agent fee).",
+      "👥 <b>Facebook groups</b> for rentals and flat-shares in your city.",
+      "📚 <b>Guides</b>: how to get your deposit back (with a ready demand letter), a contract breakdown, a viewing checklist, ready-made Polish messages to the owner.",
+      "🌍 Interface in 4 languages: EN / PL / RU / UA."
+    ]
+  },
+  how: {
+    ru:[
+      "Откройте «Поиск», выберите город и тип аренды, настройте фильтры — результат обновляется мгновенно.",
+      "Нажмите «Подписаться на поиск» — новые подходящие объявления будут приходить в чат.",
+      "В карточке смотрите бейдж цены; жмите «✨ AI-разбор» для перевода и проверки на мошенничество.",
+      "Перед сделкой загляните в «Полезное»: кауция, договор, чек-лист осмотра и калькулятор заезда.",
+      "Команды в чате: /off — пауза уведомлений, /on — включить снова."
+    ],
+    pl:[
+      "Otwórz „Szukaj”, wybierz miasto i typ najmu, ustaw filtry — wynik odświeża się natychmiast.",
+      "Kliknij „Subskrybuj wyszukiwanie” — nowe pasujące ogłoszenia będą trafiać na czat.",
+      "W ogłoszeniu sprawdź znacznik ceny; kliknij „✨ Analiza AI”, by przetłumaczyć i sprawdzić pod kątem oszustwa.",
+      "Przed transakcją zajrzyj do „Przydatne”: kaucja, umowa, checklista oględzin i kalkulator wprowadzki.",
+      "Komendy na czacie: /off — pauza powiadomień, /on — włącz ponownie."
+    ],
+    ua:[
+      "Відкрийте «Пошук», виберіть місто й тип оренди, налаштуйте фільтри — результат оновлюється миттєво.",
+      "Натисніть «Підписатися на пошук» — нові відповідні оголошення надходитимуть у чат.",
+      "У картці дивіться бейдж ціни; тисніть «✨ AI-розбір» для перекладу й перевірки на шахрайство.",
+      "Перед угодою загляньте в «Корисне»: кауція, договір, чек-лист огляду й калькулятор заїзду.",
+      "Команди в чаті: /off — пауза сповіщень, /on — увімкнути знову."
+    ],
+    en:[
+      "Open “Search”, pick a city and rental type, set filters — results update instantly.",
+      "Tap “Subscribe to this search” — new matching listings will arrive in the chat.",
+      "In a listing, check the price badge; tap “✨ AI breakdown” to translate and screen for scams.",
+      "Before a deal, open “Useful”: deposit, contract, viewing checklist and the move-in calculator.",
+      "Chat commands: /off — pause alerts, /on — turn them back on."
+    ]
+  }
+};
+(function renderGuide() {
+  var L = I18N.lang;
+  document.getElementById("funcsT").textContent = GUIDE.funcsT[L] || GUIDE.funcsT.ru;
+  document.getElementById("howT").textContent = GUIDE.howT[L] || GUIDE.howT.ru;
+  document.getElementById("funcsList").innerHTML =
+    (GUIDE.funcs[L] || GUIDE.funcs.ru).map(function (s) { return "<li>" + s + "</li>"; }).join("");
+  document.getElementById("howList").innerHTML =
+    (GUIDE.how[L] || GUIDE.how.ru).map(function (s) { return "<li>" + s + "</li>"; }).join("");
+})();
 </script>
 </body>
 </html>
