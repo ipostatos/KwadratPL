@@ -20,7 +20,7 @@ Telegram Mini App с живыми объявлениями OLX: квартиры
 | 🔎 **Мгновенные фильтры** | Город, район (фактические из данных), цена, метраж, комнаты, условия (🐾 животные, 🅿️ парковка, 🌿 балкон) |
 | 👥 **Группы Facebook** | Крупнейшие группы аренды и подселения по выбранному городу (кураторский список, PL/RU/UA) + живой поиск групп |
 | 🐾 **Можно с животными** | Отдельный раздел на главной: объявления с подтверждённым «pets OK» |
-| 🔔 **Подписки** | Сохранённые поиски с уведомлениями о новых подходящих объявлениях |
+| 🔔 **Реальные уведомления** | Подписки хранятся на сервере (авторизация по Telegram initData); новые подходящие объявления бот присылает прямо в чат |
 | 📉 **Снижения цен** | Бейдж с суммой скидки по данным OLX (`previous_value`) |
 | 🌍 **4 языка** | Единый словарь RU/PL/UA/EN, экран выбора языка при первом входе |
 | 📱 **Нативный стиль Telegram** | Тема из tg-theme-переменных, BackButton, haptic feedback |
@@ -28,17 +28,28 @@ Telegram Mini App с живыми объявлениями OLX: квартиры
 ## Архитектура
 
 ```
-Telegram ─▶ Mini App (webapp/, статика без сборки)
-                 │  fetch data/listings.json
-                 ▼
-VPS: Caddy ◀── cron (15 мин) ── tools/fetch-olx.py ── публичный API OLX.pl
+GitHub Actions (cron 30 мин)                Telegram
+  tools/fetch-olx.py ── OLX API                │ /start, уведомления
+        │ POST /api/listings                   │
+        ▼        (X-Ingest-Token)              ▼
+VPS: Caddy ──▶ /api/* ──▶ backend (FastAPI + aiogram, :4200)
+        │                    │ атомарно пишет listings.json,
+        │                    │ диффит, матчит подписки, шлёт пуши
+        └──▶ статика webapp/ ◀┘
+              ▲ fetch data/listings.json + /api/subs (initData)
+        Mini App (webapp/, статика без сборки)
 ```
+
+Почему фетчер снаружи: OLX API отдаёт **403 с IP датацентра VPS**,
+а с раннеров GitHub Actions доступен (проверено). Поэтому объявления
+собирает CI по крону и отдаёт бэкенду по секретному токену.
 
 | Каталог     | Роль |
 |-------------|------|
-| `webapp/`   | **Текущий прод.** Статика без сборки (HTML/CSS/JS), деплоится на VPS и Vercel. |
+| `webapp/`   | **Прод-фронтенд.** Статика без сборки (HTML/CSS/JS), деплоится на VPS и Vercel. |
+| `backend/`  | **Прод-бэкенд.** FastAPI + aiogram: приём данных, серверные подписки, уведомления, /start. |
 | `frontend/` | **Будущая основа** (Next.js). Пока шаблон, в прод не деплоится. |
-| `tools/`    | Серверные скрипты: сборщик объявлений с OLX. |
+| `tools/`    | Сборщик объявлений с OLX (запускается в CI). |
 
 Словарь переводов один на оба фронтенда: `webapp/i18n.dict.js` (UMD).
 `webapp` подключает его тегом `<script>`, `frontend` импортирует как модуль:
@@ -72,14 +83,13 @@ data/          listings.json — реальные объявления (гене
 - Поля объявления: id `olx-*`, city, district, type long|short|room, rooms, area,
   price, oldPrice (снижение цены с OLX `previous_value`), floor, pets, parking,
   balcony (эвристика по описанию), photo, url, title, descr, source, ts.
-- Обновление на VPS — cron раз в 15 минут:
-
-```cron
-*/15 * * * * python3 /opt/kwadratpl/tools/fetch-olx.py /opt/kwadratpl/webapp/data/listings.json >> /var/log/kwadratpl-fetch.log 2>&1
-```
-
+- Обновление: workflow `fetch-listings.yml` каждые 30 минут запускает
+  `tools/fetch-olx.py` на раннере GitHub и POST-ит результат на
+  `/api/listings` (заголовок `X-Ingest-Token`, секрет `INGEST_TOKEN`
+  в Actions = значению в `/opt/kwadratpl/.env`). Бэкенд пишет файл атомарно.
 - Зеркало Vercel отдаёт снапшот `listings.json` из репозитория (обновляется
-  при деплое). Свежие данные — только на VPS.
+  при деплое) и не имеет `/api`. Свежие данные и подписки — на VPS,
+  кнопка меню бота указывает туда.
 
 ## Facebook-группы: аренда и подселение
 
@@ -98,12 +108,17 @@ data/          listings.json — реальные объявления (гене
 
 ## Подписки и уведомления
 
-- Подписки и избранное хранятся в `localStorage` (`kw_saved`, `kw_favs`).
-  Подписка сохраняет все фильтры, включая условия (pets/parking/balcony).
-- Уведомления пока показываются внутри приложения (тосты); отправка
-  через бота — следующий этап (бэкенд).
-- Кнопка «Симуляция: новое объявление» генерирует объявление под первую
-  активную подписку и показывает, как будет выглядеть пуш.
+- Внутри Telegram подписки синхронизируются с бэкендом: `app.js` шлёт
+  `PUT /api/subs` с заголовком `Authorization: tma <initData>` (подпись
+  проверяется HMAC-ом с токеном бота, initData не старше суток).
+  При первом входе на новом устройстве список тянется с сервера.
+- На каждом инжесте бэкенд диффит объявления по таблице `seen`, матчит
+  новые против активных подписок (матчинг зеркалит `app.js matches()`)
+  и шлёт в чат до 5 карточек с кнопкой «Открыть на OLX» (+ «…и ещё N»).
+  Первый инжест после чистой БД — bootstrap, без уведомлений.
+- Вне Telegram (браузер, зеркало Vercel) — graceful fallback на
+  `localStorage` (`kw_saved`, `kw_favs`), как раньше.
+- Кнопка «Симуляция: новое объявление» осталась как демо внешнего вида пуша.
 
 ## Локальный запуск
 
@@ -120,7 +135,7 @@ python -m http.server 8080
 VPS (прод, кнопка меню бота смотрит сюда):
 
 ```bash
-./deploy-vps.sh   # scp webapp + tools → root@46.224.220.94:/opt/kwadratpl/
+./deploy-vps.sh   # webapp (без data/!) + tools + backend, рестарт сервиса
 ```
 
 Vercel (зеркало):
@@ -130,17 +145,25 @@ cd webapp
 npx vercel deploy --prod --yes
 ```
 
-Кнопка меню бота настроена через Bot API (`setChatMenuButton`).
-Будущий бэкенд — раскомментировать `handle /api/*` в блоке kwadratpl
-в `/etc/caddy/Caddyfile` на VPS (порт 4200, по образцу issa-bot).
+Бэкенд на VPS (однократная настройка уже выполнена):
+
+- `/opt/kwadratpl/.env` — `BOT_TOKEN`, `INGEST_TOKEN` (= секрет Actions),
+  `WEBAPP_URL`; права 600, владелец kwadratpl.
+- venv `/opt/kwadratpl/.venv`, сервис `kwadratpl-api` (systemd, hardening
+  по образцу issa-api), uvicorn на 127.0.0.1:4200.
+- Caddy: `handle /api/* → reverse_proxy 127.0.0.1:4200` в блоке kwadratpl.
+- SQLite `/opt/kwadratpl/backend/state.db` (users / subs / seen).
+
+Кнопка меню бота настроена через Bot API (`setChatMenuButton`) на VPS-URL.
 
 ## Дорожная карта
 
-- [x] Реальные объявления: скрапер OLX (публичный API) + listings.json + cron
+- [x] Реальные объявления: скрапер OLX (публичный API) + listings.json
 - [x] Комнаты и подселение: категория «stancje i pokoje» + FB-группы по городам
-- [ ] Бэкенд (FastAPI + aiogram или Grammy): /start, реальные подписки, отправка уведомлений
+- [x] Автообновление данных: GitHub Actions cron 30 мин → POST /api/listings
+- [x] Бэкенд (FastAPI + aiogram): /start, серверные подписки, уведомления в чат
+- [x] Валидация `initData` для авторизации пользователей Mini App
 - [ ] Otodom как второй источник + дедупликация между площадками + история цен на своей стороне
-- [ ] Валидация `initData` для авторизации пользователей Mini App
 - [ ] Перенос UI на `frontend/` (Next.js) с тем же словарём i18n.dict.js
 
 ## Лицензия
