@@ -2,7 +2,8 @@
 
 Telegram Mini App для поиска аренды жилья в Польше. Бот: [@KwadratPLBot](https://t.me/KwadratPLBot).
 
-Прод: https://kwadratpl.vercel.app
+Прод (кнопка меню бота): https://kwadratpl-46-224-220-94.sslip.io (VPS, Caddy)
+Зеркало: https://kwadratpl.vercel.app
 
 ## Структура
 
@@ -38,12 +39,22 @@ python -m http.server 8080
 
 ## Деплой
 
+VPS (прод, кнопка меню бота смотрит сюда):
+
+```bash
+./deploy-vps.sh   # scp webapp → root@46.224.220.94:/opt/kwadratpl/
+```
+
+Vercel (зеркало):
+
 ```bash
 cd webapp
 npx vercel deploy --prod --yes
 ```
 
-Кнопка меню бота настроена через Bot API (`setChatMenuButton`) на прод-URL.
+Кнопка меню бота настроена через Bot API (`setChatMenuButton`).
+Будущий бэкенд — раскомментировать `handle /api/*` в блоке kwadratpl
+в `/etc/caddy/Caddyfile` на VPS (порт 4200, по образцу issa-bot).
 
 ## Дорожная карта
 
