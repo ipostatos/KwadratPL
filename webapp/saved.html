@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="theme.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="nav.js"></script>
+<script src="i18n.js"></script>
 <script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
@@ -24,21 +25,33 @@
 </style>
 </head>
 <body>
-  <h1><span class="emi" data-icon="bell"></span>Подписки и избранное</h1>
-  <p class="sub">Уведомления приходят мгновенно при появлении подходящего объявления</p>
+  <h1><span class="emi" data-icon="bell"></span><span data-i18n="savedTitle"></span></h1>
+  <p class="sub" data-i18n="savedSub"></p>
 
-  <div class="section-title">Сохранённые поиски</div>
+  <div class="section-title" data-i18n="secSaved"></div>
   <div id="savedList"></div>
 
-  <div class="section-title" id="fav">Избранное</div>
+  <div class="section-title" id="fav" data-i18n="secFav"></div>
   <div id="favList"></div>
 
+  <div class="section-title" data-i18n="secSettings"></div>
+  <div class="saved-item">
+    <div class="ic-tile violet" data-icon="sliders"></div>
+    <div class="info">
+      <div class="name" data-i18n="fbT"></div>
+      <div class="desc" id="fbDesc"></div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="toggleFb">
+      <span class="knob"></span>
+    </label>
+  </div>
+
   <a class="btn" href="search.html" style="margin-top:var(--sp-4)">
-    <span class="emi" data-icon="search"></span> К поиску
+    <span class="emi" data-icon="search"></span> <span data-i18n="toSearch"></span>
   </a>
 
-  <p class="foot">Подписки хранятся на устройстве.<br>
-    В боевой версии — на сервере, уведомления через бота.</p>
+  <p class="foot" data-i18n="footSaved"></p>
 
   <!-- шторка деталей избранного -->
   <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
@@ -46,21 +59,21 @@
 <script>
 "use strict";
 if (window.Icons) Icons.hydrate();
+I18N.hydrate();
 
 function $(s) { return document.querySelector(s); }
 
 function renderSaved() {
   var box = $("#savedList");
   if (!App.saved.length) {
-    box.innerHTML = '<div class="state">Пока нет сохранённых поисков.<br>' +
-      "Настройте фильтры на странице поиска и нажмите «Подписаться».</div>";
+    box.innerHTML = '<div class="state">' + App.esc(I18N.t("emptySaved")).replace("\n", "<br>") + "</div>";
     return;
   }
   box.innerHTML = App.saved.map(function (s, i) {
     return '<div class="saved-item">' +
       '<div class="ic-tile ' + (s.notify ? "green" : "") + '">' + Icons.svg("bell") + "</div>" +
       '<div class="info"><div class="name">' + App.esc(App.searchLabel(s)) + "</div>" +
-      '<div class="desc">' + (s.notify ? "Уведомления включены" : "Уведомления выключены") + "</div></div>" +
+      '<div class="desc">' + App.esc(I18N.t(s.notify ? "notifyOn" : "notifyOff")) + "</div></div>" +
       '<label class="switch"><input type="checkbox" data-i="' + i + '"' +
       (s.notify ? " checked" : "") + '><span class="knob"></span></label>' +
       '<button class="del" data-del="' + i + '">' + Icons.svg("trash") + "</button>" +
@@ -83,16 +96,15 @@ function renderSaved() {
 function renderFavs() {
   var box = $("#favList");
   if (!App.favs.length) {
-    box.innerHTML = '<div class="state">Избранное пусто.<br>' +
-      "Нажмите ♥ на карточке объявления, чтобы отложить его сюда.</div>";
+    box.innerHTML = '<div class="state">' + App.esc(I18N.t("emptyFav")).replace("\n", "<br>") + "</div>";
     return;
   }
   box.innerHTML = App.favs.map(function (l, i) {
     return '<a class="row-card" href="#" data-fav-open="' + i + '">' +
       '<div class="ic-tile red">' + Icons.svg("heart") + "</div>" +
       '<div class="body"><div class="t">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) + "</div>" +
-      '<div class="d">' + l.rooms + " комн. · " + l.area + " m² · " +
-      App.esc(App.CITIES[l.city].name) + ", " + App.esc(l.district) + "</div></div>" +
+      '<div class="d">' + l.rooms + " " + I18N.t("roomsShort") + " · " + l.area + " m² · " +
+      App.esc(App.cityName(l.city)) + ", " + App.esc(l.district) + "</div></div>" +
       '<button class="del" data-fav-del="' + i + '" style="border:0;background:none;color:var(--hint);cursor:pointer;display:flex;padding:6px">' +
       Icons.svg("trash") + "</button>" +
       "</a>";
@@ -120,18 +132,18 @@ function openSheet(l) {
     '<button class="close" id="btnClose">✕</button>' +
     '<div class="photo" style="background:linear-gradient(135deg,' + l.grad[0] + "," + l.grad[1] + ')">' +
     Icons.svg(l.icon) +
-    '<span class="lbadge type">' + (l.type === "long" ? "Долгосрочная" : "Краткосрочная") + "</span>" +
+    '<span class="lbadge type">' + App.esc(I18N.t(l.type)) + "</span>" +
     "</div></div>" +
     '<div class="sbody">' +
     '<div class="lprice" style="font-size:22px">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) + "</div>" +
-    '<div class="ltitle">' + App.esc(l.street) + " · " + App.esc(App.CITIES[l.city].name) + ", " + App.esc(l.district) + "</div>" +
+    '<div class="ltitle">' + App.esc(l.street) + " · " + App.esc(App.cityName(l.city)) + ", " + App.esc(l.district) + "</div>" +
     '<div class="specs">' +
-    '<div class="spec"><div class="k">Комнаты</div><div class="v">' + l.rooms + "</div></div>" +
-    '<div class="spec"><div class="k">Площадь</div><div class="v">' + l.area + " m²</div></div>" +
-    '<div class="spec"><div class="k">Этаж</div><div class="v">' + l.floor + "</div></div>" +
-    '<div class="spec"><div class="k">Опубликовано</div><div class="v">' + App.timeAgo(l.ts) + "</div></div>" +
+    '<div class="spec"><div class="k">' + App.esc(I18N.t("roomsLabel")) + '</div><div class="v">' + l.rooms + "</div></div>" +
+    '<div class="spec"><div class="k">' + App.esc(I18N.t("area")) + '</div><div class="v">' + l.area + " m²</div></div>" +
+    '<div class="spec"><div class="k">' + App.esc(I18N.t("floor")) + '</div><div class="v">' + l.floor + "</div></div>" +
+    '<div class="spec"><div class="k">' + App.esc(I18N.t("published")) + '</div><div class="v">' + App.timeAgo(l.ts) + "</div></div>" +
     "</div>" +
-    '<button class="btn" id="btnContact"><span class="emi">' + Icons.svg("message-circle") + "</span> Написать</button>" +
+    '<button class="btn" id="btnContact"><span class="emi">' + Icons.svg("message-circle") + "</span> " + App.esc(I18N.t("write")) + "</button>" +
     "<div style='height:12px'></div></div>";
   $("#overlay").classList.add("open");
   $("#btnClose").onclick = closeSheet;
@@ -147,8 +159,24 @@ function openSheet(l) {
 function closeSheet() { $("#overlay").classList.remove("open"); }
 $("#overlay").onclick = function (e) { if (e.target === e.currentTarget) closeSheet(); };
 
+function renderSettings() {
+  var fbCb = $("#toggleFb");
+  var enabled = localStorage.getItem("kw_src_fb") === "1";
+  fbCb.checked = enabled;
+  $("#fbDesc").textContent = I18N.t("fbD") + " · " + I18N.t(enabled ? "srcOn" : "srcOff");
+  fbCb.onchange = function () {
+    localStorage.setItem("kw_src_fb", fbCb.checked ? "1" : "0");
+    if (typeof haptic === "function") haptic("select");
+    renderSettings();
+    setTimeout(function () {
+      location.reload();
+    }, 150);
+  };
+}
+
 renderSaved();
 renderFavs();
+renderSettings();
 </script>
 </body>
 </html>

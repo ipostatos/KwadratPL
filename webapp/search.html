@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="theme.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="nav.js"></script>
+<script src="i18n.js"></script>
 <script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
@@ -19,49 +20,49 @@
 </style>
 </head>
 <body>
-  <h1><span class="emi" data-icon="search"></span>Поиск жилья</h1>
-  <p class="sub">Фильтры применяются мгновенно</p>
+  <h1><span class="emi" data-icon="search"></span><span data-i18n="searchTitle"></span></h1>
+  <p class="sub" data-i18n="searchSub"></p>
 
   <!-- фильтры -->
   <div class="card" style="margin-bottom:var(--sp-2)">
     <div class="frow">
       <div class="fcol">
-        <label class="flabel">Город</label>
+        <label class="flabel" data-i18n="city"></label>
         <select id="fCity"></select>
       </div>
       <div class="fcol">
-        <label class="flabel">Район</label>
+        <label class="flabel" data-i18n="district"></label>
         <select id="fDistrict"></select>
       </div>
     </div>
     <div class="frow">
       <div class="fcol">
-        <label class="flabel">Тип аренды</label>
+        <label class="flabel" data-i18n="rentType"></label>
         <div class="seg" id="fType">
-          <button data-val="long">Долгосрочная</button>
-          <button data-val="short">Краткосрочная</button>
+          <button data-val="long" data-i18n="long"></button>
+          <button data-val="short" data-i18n="short"></button>
         </div>
       </div>
     </div>
     <div class="frow">
       <div class="fcol">
-        <label class="flabel">Цена от</label>
+        <label class="flabel" data-i18n="priceFrom"></label>
         <input type="number" id="fPriceMin" placeholder="0" min="0" step="100">
       </div>
       <div class="fcol">
-        <label class="flabel">Цена до</label>
+        <label class="flabel" data-i18n="priceTo"></label>
         <input type="number" id="fPriceMax" placeholder="10000" min="0" step="100">
       </div>
       <div class="fcol">
-        <label class="flabel">Метраж от</label>
+        <label class="flabel" data-i18n="areaFrom"></label>
         <input type="number" id="fAreaMin" placeholder="0" min="0" step="5">
       </div>
     </div>
-    <div class="frow" style="margin-bottom:0">
+    <div class="frow">
       <div class="fcol">
-        <label class="flabel">Комнаты</label>
+        <label class="flabel" data-i18n="roomsLabel"></label>
         <div class="seg" id="fRooms">
-          <button data-val="0">Любые</button>
+          <button data-val="0" data-i18n="anyRooms"></button>
           <button data-val="1">1</button>
           <button data-val="2">2</button>
           <button data-val="3">3</button>
@@ -69,28 +70,38 @@
         </div>
       </div>
     </div>
+    <div class="frow" style="margin-bottom:0">
+      <div class="fcol">
+        <label class="flabel" data-i18n="featuresLabel"></label>
+        <div class="seg" id="fFeat">
+          <button data-key="pets">🐾 <span data-i18n="fPets"></span></button>
+          <button data-key="parking">🅿️ <span data-i18n="fParking"></span></button>
+          <button data-key="balcony">🌿 <span data-i18n="fBalcony"></span></button>
+        </div>
+      </div>
+    </div>
     <div class="fabs">
-      <button class="btn" id="btnSave"><span class="emi" data-icon="bell"></span> Подписаться на поиск</button>
+      <button class="btn" id="btnSave"><span class="emi" data-icon="bell"></span> <span data-i18n="subscribe"></span></button>
     </div>
   </div>
 
   <div class="toolbar">
     <span class="count" id="count"></span>
     <select id="sort">
-      <option value="new">Сначала новые</option>
-      <option value="priceAsc">Дешевле</option>
-      <option value="priceDesc">Дороже</option>
-      <option value="areaDesc">По площади</option>
+      <option value="new" data-i18n="sortNew"></option>
+      <option value="priceAsc" data-i18n="sortPriceAsc"></option>
+      <option value="priceDesc" data-i18n="sortPriceDesc"></option>
+      <option value="areaDesc" data-i18n="sortArea"></option>
     </select>
   </div>
 
   <div id="list"></div>
 
   <button class="btn ghost" id="btnSim" style="margin-top:var(--sp-2)">
-    <span class="emi" data-icon="zap"></span> Симуляция: новое объявление
+    <span class="emi" data-icon="zap"></span> <span data-i18n="simulate"></span>
   </button>
 
-  <p class="foot">Демо-данные. В боевой версии объявления приходят<br>со скрапера OLX / Otodom в реальном времени.</p>
+  <p class="foot" data-i18n="footSearch"></p>
 
   <!-- шторка деталей -->
   <div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
@@ -98,6 +109,7 @@
 <script>
 "use strict";
 if (window.Icons) Icons.hydrate();
+I18N.hydrate();
 
 var qs = new URLSearchParams(location.search);
 var state = {
@@ -105,7 +117,7 @@ var state = {
   district: "",
   type: qs.get("type") === "short" ? "short" : "long",
   priceMin: null, priceMax: null, areaMin: null,
-  rooms: 0, sort: "new"
+  rooms: 0, pets: false, parking: false, balcony: false, sort: "new"
 };
 
 function $(s) { return document.querySelector(s); }
@@ -114,7 +126,7 @@ function $(s) { return document.querySelector(s); }
 function renderControls() {
   $("#fCity").innerHTML = Object.keys(App.CITIES).map(function (k) {
     return '<option value="' + k + '"' + (k === state.city ? " selected" : "") + ">" +
-      App.esc(App.CITIES[k].name) + "</option>";
+      App.esc(App.cityName(k)) + "</option>";
   }).join("");
   renderDistricts();
   document.querySelectorAll("#fType button").forEach(function (b) {
@@ -125,7 +137,7 @@ function renderControls() {
   });
 }
 function renderDistricts() {
-  $("#fDistrict").innerHTML = '<option value="">Все районы</option>' +
+  $("#fDistrict").innerHTML = '<option value="">' + App.esc(I18N.t("allDistricts")) + "</option>" +
     App.CITIES[state.city].districts.map(function (d) {
       return '<option value="' + App.esc(d) + '"' + (d === state.district ? " selected" : "") + ">" +
         App.esc(d) + "</option>";
@@ -153,7 +165,7 @@ function photoHtml(l, cls) {
     (isNew ? '<span class="lbadge new">NEW</span>' : "") +
     (l.oldPrice ? '<span class="lbadge drop">−' + (l.oldPrice - l.price) + " zł</span>" : "") +
     "</div>" +
-    '<span class="lbadge type">' + (l.type === "long" ? "Долгосрочная" : "Краткосрочная") + "</span>" +
+    '<span class="lbadge type">' + App.esc(I18N.t(l.type)) + "</span>" +
     (cls === "card" ? '<button class="fav-btn' + (App.isFav(l.id) ? " on" : "") +
       '" data-fav="' + l.id + '">' + Icons.svg("heart") + "</button>" : "") +
     "</div>";
@@ -161,10 +173,10 @@ function photoHtml(l, cls) {
 
 function renderList() {
   var res = filtered();
-  $("#count").textContent = "Найдено: " + res.length;
+  $("#count").textContent = I18N.t("found", { n: res.length });
   var list = $("#list");
   if (!res.length) {
-    list.innerHTML = '<div class="state">Ничего не найдено.<br>Попробуйте ослабить фильтры.</div>';
+    list.innerHTML = '<div class="state">' + App.esc(I18N.t("emptyList")).replace("\n", "<br>") + "</div>";
     return;
   }
   list.innerHTML = res.map(function (l) {
@@ -173,9 +185,9 @@ function renderList() {
       '<div class="lbody">' +
       '<div class="lprice">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) +
       (l.oldPrice ? '<span class="old">' + l.oldPrice.toLocaleString() + "</span>" : "") + "</div>" +
-      '<div class="ltitle">' + l.rooms + " комн. · " + l.area + " m² · " + App.esc(l.street) + "</div>" +
-      '<div class="lmeta"><span>📍 ' + App.esc(App.CITIES[l.city].name) + ", " + App.esc(l.district) +
-      "</span><span>🕐 " + App.timeAgo(l.ts) + "</span></div>" +
+      '<div class="ltitle">' + l.rooms + " " + I18N.t("roomsShort") + " · " + l.area + " m² · " + App.esc(l.street) + "</div>" +
+      '<div class="lmeta"><span>📍 ' + App.esc(App.cityName(l.city)) + ", " + App.esc(l.district) +
+      "</span><span>🕐 " + App.timeAgo(l.ts) + "</span><span>📎 " + App.esc(l.source) + "</span></div>" +
       "</div></div>";
   }).join("");
 }
@@ -191,17 +203,16 @@ function openSheet(id) {
     '<div class="sbody">' +
     '<div class="lprice" style="font-size:22px">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) +
     (l.oldPrice ? '<span class="old">' + l.oldPrice.toLocaleString() + "</span>" : "") + "</div>" +
-    '<div class="ltitle">' + App.esc(l.street) + " · " + App.esc(App.CITIES[l.city].name) + ", " + App.esc(l.district) + "</div>" +
+    '<div class="ltitle">' + App.esc(l.street) + " · " + App.esc(App.cityName(l.city)) + ", " + App.esc(l.district) + "</div>" +
     '<div class="specs">' +
-    '<div class="spec"><div class="k">Комнаты</div><div class="v">' + l.rooms + "</div></div>" +
-    '<div class="spec"><div class="k">Площадь</div><div class="v">' + l.area + " m²</div></div>" +
-    '<div class="spec"><div class="k">Этаж</div><div class="v">' + l.floor + "</div></div>" +
-    '<div class="spec"><div class="k">Опубликовано</div><div class="v">' + App.timeAgo(l.ts) + "</div></div>" +
+    '<div class="spec"><div class="k">' + App.esc(I18N.t("roomsLabel")) + '</div><div class="v">' + l.rooms + "</div></div>" +
+    '<div class="spec"><div class="k">' + App.esc(I18N.t("area")) + '</div><div class="v">' + l.area + " m²</div></div>" +
+    '<div class="spec"><div class="k">' + App.esc(I18N.t("floor")) + '</div><div class="v">' + l.floor + "</div></div>" +
+    '<div class="spec"><div class="k">' + App.esc(I18N.t("published")) + '</div><div class="v">' + App.timeAgo(l.ts) + "</div></div>" +
     "</div>" +
-    '<p class="muted" style="font-size:var(--fs-sm)">Светлая квартира после ремонта. Полностью меблирована, вся техника. ' +
-    "Рядом остановки и магазины. Залог — один месяц. Возможно с животными по договорённости.</p>" +
+    '<p class="muted" style="font-size:var(--fs-sm)">' + App.esc(I18N.t("descr")) + "</p>" +
     '<div style="display:flex; gap:8px; margin-top:12px">' +
-    '<button class="btn" id="btnContact"><span class="emi">' + Icons.svg("message-circle") + "</span> Написать</button>" +
+    '<button class="btn" id="btnContact"><span class="emi">' + Icons.svg("message-circle") + "</span> " + App.esc(I18N.t("write")) + "</button>" +
     '<button class="btn ghost" id="btnFavSheet" style="width:auto; flex:0 0 auto">' +
     Icons.svg("heart") + "</button>" +
     "</div><div style='height:12px'></div></div>";
@@ -218,8 +229,8 @@ function openSheet(id) {
     var added = App.toggleFav(l);
     haptic("select");
     syncFav(); renderList();
-    App.toast(added ? "❤️" : "💔", added ? "Добавлено в избранное" : "Убрано из избранного",
-      l.rooms + " комн. · " + l.price.toLocaleString() + " " + App.priceUnit(l.type));
+    App.toast(added ? "❤️" : "💔", I18N.t(added ? "favAdded" : "favRemoved"),
+      l.rooms + " " + I18N.t("roomsShort") + " · " + l.price.toLocaleString() + " " + App.priceUnit(l.type));
   };
   // системная «назад» закрывает шторку, а не уводит со страницы
   window.__navBack = function () {
@@ -253,6 +264,14 @@ document.querySelectorAll("#fRooms button").forEach(function (b) {
     renderList();
   };
 });
+document.querySelectorAll("#fFeat button").forEach(function (b) {
+  b.onclick = function () {
+    state[b.dataset.key] = !state[b.dataset.key];
+    b.classList.toggle("active", state[b.dataset.key]);
+    haptic("select");
+    renderList();
+  };
+});
 $("#fPriceMin").oninput = function (e) { state.priceMin = e.target.value === "" ? null : +e.target.value; renderList(); };
 $("#fPriceMax").oninput = function (e) { state.priceMax = e.target.value === "" ? null : +e.target.value; renderList(); };
 $("#fAreaMin").oninput = function (e) { state.areaMin = e.target.value === "" ? null : +e.target.value; renderList(); };
@@ -265,8 +284,8 @@ $("#btnSave").onclick = function () {
     areaMin: state.areaMin, rooms: state.rooms, notify: true
   });
   App.persist();
-  App.toast("🔖", "Подписка оформлена", App.searchLabel(App.saved[App.saved.length - 1]) +
-    " — новые объявления придут в чат");
+  App.toast("🔖", I18N.t("toastSubT"),
+    I18N.t("toastSubD", { s: App.searchLabel(App.saved[App.saved.length - 1]) }));
 };
 
 $("#btnSim").onclick = function () {
@@ -282,9 +301,9 @@ $("#btnSim").onclick = function () {
   if (s.priceMin != null) l.price = Math.max(l.price, s.priceMin);
   if (s.areaMin) l.area = Math.max(l.area, s.areaMin + 5);
   App.listings.unshift(l);
-  App.toast("🔔", "Новое объявление по вашему поиску",
-    l.rooms + " комн. · " + l.area + " m² · " + l.price.toLocaleString() + " " +
-    App.priceUnit(l.type) + " — " + App.CITIES[l.city].name + ", " + l.district);
+  App.toast("🔔", I18N.t("toastNewT"),
+    l.rooms + " " + I18N.t("roomsShort") + " · " + l.area + " m² · " + l.price.toLocaleString() + " " +
+    App.priceUnit(l.type) + " — " + App.cityName(l.city) + ", " + l.district);
   renderList();
 };
 
@@ -314,7 +333,7 @@ setTimeout(function () {
   var l = cand[0];
   l.oldPrice = l.price;
   l.price = Math.round(l.price * 0.93 / 10) * 10;
-  App.toast("📉", "Цена снижена", App.esc(l.street) + " · " +
+  App.toast("📉", I18N.t("toastDropT"), App.esc(l.street) + " · " +
     l.oldPrice.toLocaleString() + " → " + l.price.toLocaleString() + " " + App.priceUnit(l.type));
   renderList();
 }, 25000);

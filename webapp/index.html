@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="theme.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="nav.js" data-home="true"></script>
+<script src="i18n.js"></script>
 <script src="icons.js"></script>
 <script src="app.js"></script>
 <style>
@@ -53,70 +54,77 @@
 </style>
 </head>
 <body>
-  <div class="hero"><span class="logo emi" data-icon="building"></span><h1>Kwadrat PL</h1></div>
-  <p class="sub">Аренда жилья в Польше — поиск и мгновенные уведомления</p>
+  <div class="hero"><span class="logo emi" data-icon="building"></span><h1>Kwadrat PL</h1><button class="lang-chip" id="langChip"></button></div>
+  <p class="sub" data-i18n="homeSub"></p>
 
   <!-- ПРИОРИТЕТ: что делать прямо сейчас -->
   <div class="next">
-    <div class="label" id="nextLabel">С чего начать</div>
-    <div class="big" id="nextTitle">Найти квартиру</div>
-    <div class="hintline" id="nextHint">6 городов · фильтры по цене и комнатам · снижения цен</div>
+    <div class="label" id="nextLabel" data-i18n="nextLabel"></div>
+    <div class="big" id="nextTitle" data-i18n="nextTitle"></div>
+    <div class="hintline" id="nextHint" data-i18n="nextHint"></div>
     <div class="actions">
-      <a class="btn" id="nextBtn" href="search.html"><span class="emi" data-icon="search"></span> Искать</a>
-      <a class="btn ghost" href="saved.html"><span class="emi" data-icon="bell"></span> Подписки</a>
+      <a class="btn" id="nextBtn" href="search.html"><span class="emi" data-icon="search"></span> <span data-i18n="btnSearch"></span></a>
+      <a class="btn ghost" href="saved.html"><span class="emi" data-icon="bell"></span> <span data-i18n="btnSubs"></span></a>
     </div>
   </div>
 
   <!-- мини-статистика -->
   <div class="mini">
-    <div><div class="k">Объявлений</div><div class="v" id="statTotal">0</div></div>
-    <div><div class="k">Подписки</div><div class="v" id="statSaved">0</div></div>
-    <div><div class="k">Избранное</div><div class="v" id="statFavs">0</div></div>
+    <div><div class="k" data-i18n="statListings"></div><div class="v" id="statTotal">0</div></div>
+    <div><div class="k" data-i18n="statSubs"></div><div class="v" id="statSaved">0</div></div>
+    <div><div class="k" data-i18n="statFavs"></div><div class="v" id="statFavs">0</div></div>
   </div>
 
   <!-- РАЗДЕЛЫ -->
-  <div class="section-title">Поиск</div>
+  <div class="section-title" data-i18n="secSearch"></div>
   <div class="grid">
     <a class="cell" href="search.html?type=long">
       <div class="ic-tile blue" data-icon="home"></div>
-      <div class="t">Долгосрочная</div>
-      <div class="d">Квартиры и комнаты от месяца</div>
+      <div class="t" data-i18n="long"></div>
+      <div class="d" data-i18n="cellLongD"></div>
     </a>
     <a class="cell" href="search.html?type=short">
       <div class="ic-tile amber" data-icon="key"></div>
-      <div class="t">Краткосрочная</div>
-      <div class="d">Посуточно · на первое время</div>
+      <div class="t" data-i18n="short"></div>
+      <div class="d" data-i18n="cellShortD"></div>
     </a>
     <a class="cell" href="saved.html">
       <div class="ic-tile green" data-icon="bell"></div>
-      <div class="t">Мои подписки</div>
-      <div class="d">Уведомления о новых объявлениях</div>
+      <div class="t" data-i18n="cellSubsT"></div>
+      <div class="d" data-i18n="cellSubsD"></div>
     </a>
     <a class="cell" href="saved.html#fav">
       <div class="ic-tile red" data-icon="heart"></div>
-      <div class="t">Избранное</div>
-      <div class="d">Отложенные варианты</div>
+      <div class="t" data-i18n="cellFavT"></div>
+      <div class="d" data-i18n="cellFavD"></div>
     </a>
   </div>
 
-  <div class="section-title">Города</div>
+  <div class="section-title" data-i18n="secCities"></div>
   <div class="grid" id="cityGrid"></div>
 
   <a class="cell wide" href="about.html" style="margin-top:12px">
     <div class="ic-tile" data-icon="info"></div>
     <div class="body">
-      <div class="t">О сервисе</div>
-      <div class="d">Как работают уведомления и откуда данные</div>
+      <div class="t" data-i18n="aboutT"></div>
+      <div class="d" data-i18n="aboutD"></div>
     </div>
     <div class="chev">›</div>
   </a>
 
-  <p class="foot">Kwadrat PL · демо-версия Mini App.<br>
-    Объявления — тестовые данные для демонстрации интерфейса.</p>
+  <p class="foot" data-i18n="footHome"></p>
 
 <script>
 "use strict";
 if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+
+// кнопка смены языка в шапке
+(function () {
+  var chip = document.getElementById("langChip");
+  chip.textContent = I18N.lang.toUpperCase() + " · " + I18N.t("langBtn");
+  chip.onclick = function () { I18N.picker(true); };
+})();
 
 // плитки городов с количеством объявлений
 (function () {
@@ -128,7 +136,7 @@ if (window.Icons) Icons.hydrate();
     a.className = "cell city-cell";
     a.href = "search.html?city=" + key;
     a.innerHTML = '<div class="ic-tile ' + tones[i % tones.length] + '" data-icon="map-pin"></div>' +
-      '<div class="t">' + App.esc(App.CITIES[key].name) + '</div>' +
+      '<div class="t">' + App.esc(App.cityName(key)) + '</div>' +
       '<div class="cnt">' + n + '</div>';
     grid.appendChild(a);
   });
@@ -143,13 +151,13 @@ if (window.Icons) Icons.hydrate();
 
   var active = App.saved.filter(function (s) { return s.notify; });
   if (active.length) {
-    document.getElementById("nextLabel").textContent = "Подписки активны";
-    document.getElementById("nextTitle").textContent =
-      active.length + " " + (active.length === 1 ? "поиск отслеживается" : "поиска отслеживается");
+    document.getElementById("nextLabel").textContent = I18N.t("subsActive");
+    document.getElementById("nextTitle").textContent = I18N.t("trackedN", { n: active.length });
     document.getElementById("nextHint").textContent =
-      "Первый: " + App.searchLabel(active[0]);
+      I18N.t("firstIs", { s: App.searchLabel(active[0]) });
     var b = document.getElementById("nextBtn");
-    b.innerHTML = (window.Icons ? '<span class="emi">' + Icons.svg("search") + "</span>" : "") + " К поиску";
+    b.innerHTML = (window.Icons ? '<span class="emi">' + Icons.svg("search") + "</span>" : "") +
+      " " + App.esc(I18N.t("toSearch"));
   }
 })();
 </script>

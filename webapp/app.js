@@ -39,6 +39,8 @@
 
   var STREETS = ["ul. Marszałkowska", "ul. Puławska", "ul. Grzybowska", "al. Jana Pawła II",
     "ul. Długa", "ul. Karmelicka", "ul. Piotrkowska", "ul. Świdnicka", "ul. Głogowska", "ul. Grunwaldzka"];
+  // ведущие порталы-источники (взвешенно: Otodom и OLX — лидеры рынка)
+  var SOURCES = ["Otodom", "Otodom", "OLX", "OLX", "Gratka", "Nieruchomości-online"];
   var ICON_NAMES = ["building", "home", "key", "bed"];
   var GRADS = [
     ["#3a6186", "#89253e"], ["#134e5e", "#71b280"], ["#2c3e50", "#4ca1af"],
@@ -79,18 +81,27 @@
       street: STREETS[Math.floor(rnd() * STREETS.length)] + " " + (1 + Math.floor(rnd() * 120)),
       icon: ICON_NAMES[Math.floor(rnd() * ICON_NAMES.length)],
       grad: GRADS[Math.floor(rnd() * GRADS.length)],
+      source: over.source || SOURCES[Math.floor(rnd() * SOURCES.length)],
+      pets: rnd() < 0.4, parking: rnd() < 0.35, balcony: rnd() < 0.6,
       ts: Date.now() - Math.floor(rnd() * 5 * 24 * 3600 * 1000)
     };
   }
 
   // базовый инвентарь: в каждом городе гарантированно есть и долгосрок, и краткосрок
   var _rnd = mulberry32(20260713);
+  var fbEnabled = localStorage.getItem("kw_src_fb") === "1";
   var listings = [];
   Object.keys(CITIES).forEach(function (city) {
     // объём пропорционален числу районов, чтобы фильтр по району реже был пустым
     var n = Math.max(10, Math.ceil(CITIES[city].districts.length * 0.8));
     for (var i = 0; i < n; i++) listings.push(makeListing(_rnd, { city: city, type: "long" }));
     for (var j = 0; j < 4; j++) listings.push(makeListing(_rnd, { city: city, type: "short" }));
+    // Facebook-группы — доп. источник, выключен по умолчанию (включается в настройках);
+    // генерируем ВСЕГДА (сид общий), но включаем в выдачу только при включённой опции
+    for (var k = 0; k < 3; k++) {
+      var fb = makeListing(_rnd, { city: city, type: "long", source: "Facebook" });
+      if (fbEnabled) listings.push(fb);
+    }
   });
 
   // ── хранилище ──
@@ -112,15 +123,16 @@
       (s.priceMin == null || l.price >= s.priceMin) &&
       (s.priceMax == null || l.price <= s.priceMax) &&
       (s.areaMin == null || l.area >= s.areaMin) &&
-      (!s.rooms || (s.rooms === 4 ? l.rooms >= 4 : l.rooms === s.rooms));
+      (!s.rooms || (s.rooms === 4 ? l.rooms >= 4 : l.rooms === s.rooms)) &&
+      (!s.pets || l.pets) && (!s.parking || l.parking) && (!s.balcony || l.balcony);
   }
 
   function searchLabel(s) {
-    var parts = [CITIES[s.city].name];
+    var parts = [I18N.cityName(s.city)];
     if (s.district) parts.push(s.district);
-    parts.push(s.type === "long" ? "долгосрочная" : "краткосрочная");
-    if (s.rooms) parts.push((s.rooms === 4 ? "4+" : s.rooms) + " комн.");
-    if (s.priceMax) parts.push("до " + s.priceMax + " zł");
+    parts.push(I18N.t(s.type).toLowerCase());
+    if (s.rooms) parts.push((s.rooms === 4 ? "4+" : s.rooms) + " " + I18N.t("roomsShort"));
+    if (s.priceMax) parts.push(I18N.t("upTo") + " " + s.priceMax + " zł");
     return parts.join(" · ");
   }
 
@@ -145,10 +157,10 @@
 
   function timeAgo(ts) {
     var m = Math.floor((Date.now() - ts) / 60000);
-    if (m < 1) return "только что";
-    if (m < 60) return m + " мин назад";
-    if (m < 1440) return Math.floor(m / 60) + " ч назад";
-    return Math.floor(m / 1440) + " дн назад";
+    if (m < 1) return I18N.t("justNow");
+    if (m < 60) return I18N.t("minAgo", { n: m });
+    if (m < 1440) return I18N.t("hAgo", { n: Math.floor(m / 60) });
+    return I18N.t("dAgo", { n: Math.floor(m / 1440) });
   }
 
   function esc(s) {
@@ -164,7 +176,8 @@
     saved: saved, favs: favs, persist: persist,
     matches: matches, searchLabel: searchLabel,
     toast: toast, timeAgo: timeAgo, esc: esc,
-    priceUnit: function (type) { return type === "long" ? "zł/мес" : "zł/сутки"; },
+    priceUnit: function (type) { return I18N.t(type === "long" ? "perMonth" : "perDay"); },
+    cityName: function (key) { return I18N.cityName(key); },
     isFav: function (id) { return favs.some(function (f) { return f.id === id; }); },
     toggleFav: function (l) {
       var i = favs.findIndex(function (f) { return f.id === l.id; });

@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="theme.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="nav.js"></script>
+<script src="i18n.js"></script>
 <script src="icons.js"></script>
 <style>
   /* благодарность автору — кнопки в столбик (паттерн ISSA) */
@@ -16,80 +17,73 @@
 </style>
 </head>
 <body>
-  <h1><span class="emi" data-icon="info"></span>О сервисе</h1>
-  <p class="sub">Kwadrat PL — поиск аренды жилья в Польше</p>
+  <h1><span class="emi" data-icon="info"></span><span data-i18n="aboutT"></span></h1>
+  <p class="sub" data-i18n="aboutSub"></p>
 
   <div class="row-card">
     <div class="ic-tile blue" data-icon="search"></div>
     <div class="body">
-      <div class="t">Гибкий поиск</div>
-      <div class="d">Город, район, тип аренды, цена, комнаты, метраж — результат обновляется мгновенно.</div>
+      <div class="t" data-i18n="f1t"></div>
+      <div class="d" data-i18n="f1d"></div>
     </div>
   </div>
 
   <div class="row-card">
     <div class="ic-tile green" data-icon="bell"></div>
     <div class="body">
-      <div class="t">Мгновенные уведомления</div>
-      <div class="d">Подпишитесь на поиск — новые подходящие объявления придут прямо в чат с ботом.</div>
+      <div class="t" data-i18n="f2t"></div>
+      <div class="d" data-i18n="f2d"></div>
     </div>
   </div>
 
   <div class="row-card">
     <div class="ic-tile red" data-icon="trending-down"></div>
     <div class="body">
-      <div class="t">Отслеживание цен</div>
-      <div class="d">Сервис помнит историю цены каждого объявления и сообщает о снижениях.</div>
+      <div class="t" data-i18n="f3t"></div>
+      <div class="d" data-i18n="f3d"></div>
     </div>
   </div>
 
   <div class="row-card">
     <div class="ic-tile amber" data-icon="shield-check"></div>
     <div class="body">
-      <div class="t">Без дублей</div>
-      <div class="d">Одно и то же объявление с разных площадок показывается один раз.</div>
+      <div class="t" data-i18n="f4t"></div>
+      <div class="d" data-i18n="f4d"></div>
     </div>
   </div>
 
   <div class="card" style="margin-top:var(--sp-4)">
-    <div class="h2">Статус: демо-версия</div>
-    <p class="muted" style="font-size:var(--fs-sm); margin:0">
-      Сейчас приложение работает на тестовых данных и демонстрирует интерфейс.
-      В боевой версии объявления собираются с OLX, Otodom и других площадок
-      в реальном времени, а уведомления отправляет бот.</p>
+    <div class="h2" data-i18n="statusT"></div>
+    <p class="muted" style="font-size:var(--fs-sm); margin:0" data-i18n="statusD"></p>
   </div>
 
   <!-- Об авторе + благодарность (паттерн ISSA Trainer) -->
   <div class="card" style="margin-top:var(--sp-4)">
-    <div class="h2">Об авторе</div>
-    <div class="muted" style="font-size:var(--fs-sm); line-height:1.6; margin-bottom:10px">
-      Kwadrat PL — независимый проект: удобный поиск аренды в Польше
-      прямо в Telegram. Собран и поддерживается одним человеком в свободное
-      время. Если сервис оказался полезным — можно поблагодарить автора.
-      Это не обязательно и ни на что не влияет 🙂
-    </div>
+    <div class="h2" data-i18n="authorT"></div>
+    <div class="muted" style="font-size:var(--fs-sm); line-height:1.6; margin-bottom:10px" data-i18n="authorP1"></div>
     <div class="muted" style="font-size:var(--fs-sm); line-height:1.6; margin-bottom:12px">
-      Нашли ошибку или хотите такого же бота под свою задачу — пишите
+      <span data-i18n="authorP2"></span>
       <a href="https://t.me/ipostatos" target="_blank" rel="noopener"
          style="color:var(--accent)"><span class="emi" data-icon="send"></span>@ipostatos</a>.
     </div>
     <div class="donate-row">
       <a class="btn" href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener">
-        <span class="emi" data-icon="coffee"></span> Угостить кофе
+        <span class="emi" data-icon="coffee"></span> <span data-i18n="donateCoffee"></span>
       </a>
       <a class="btn ghost" href="https://t.me/ipostatos" target="_blank" rel="noopener">
-        <span class="emi" data-icon="star"></span> Просто сказать спасибо
+        <span class="emi" data-icon="star"></span> <span data-i18n="donateThanks"></span>
       </a>
     </div>
   </div>
 
-  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-4)">На главную</a>
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-4)" data-i18n="backHome"></a>
 
-  <p class="foot">Kwadrat PL · Mini App для Telegram</p>
+  <p class="foot" data-i18n="footAbout"></p>
 
 <script>
 "use strict";
 if (window.Icons) Icons.hydrate();
+I18N.hydrate();
 </script>
 </body>
 </html>
