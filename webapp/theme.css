@@ -261,3 +261,18 @@ select:focus, input:focus{ border-color:var(--accent) }
 .pv-line .deal{ color:#1a8a56 } .pv-line .above{ color:#a8730b } .pv-line .scam{ color:#c33 }
 /* all-in подсказка */
 .allin{ margin-top:12px; font-size:var(--fs-sm); color:var(--hint); line-height:1.5 }
+
+/* ── AI-разбор объявления ── */
+.ai-btn{ margin-top:12px }
+.ai-box{ margin-top:12px; background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:14px; font-size:var(--fs-sm); line-height:1.55 }
+.ai-box .ai-h{ font-weight:800; margin:0 0 6px }
+.ai-box .ai-tr{ font-style:italic; color:var(--hint); margin:0 0 10px }
+.ai-box ul{ margin:0 0 10px; padding-left:18px }
+.ai-box li{ margin-bottom:4px }
+.ai-scam{ border-radius:8px; padding:8px 10px; font-weight:700; margin-top:4px }
+.ai-scam.high{ background:color-mix(in srgb,#d1495b 16%,transparent); color:#c33 }
+.ai-scam.medium{ background:color-mix(in srgb,#c5850c 16%,transparent); color:#a8730b }
+.ai-scam.low{ background:color-mix(in srgb,#1f9d63 14%,transparent); color:#1a8a56 }
+.ai-scam .flags{ font-weight:400; font-size:var(--fs-xs); margin-top:4px; color:var(--text) }
+.ai-load{ color:var(--hint); font-size:var(--fs-sm); margin-top:10px }

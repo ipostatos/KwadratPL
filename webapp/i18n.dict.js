@@ -115,6 +115,15 @@
     /* ── полная стоимость въезда ── */
     allInNote: { ru: "Цена может не включать czynsz administracyjny и media. Уточните полную сумму у владельца.", pl: "Cena może nie zawierać czynszu administracyjnego i mediów. Dopytaj właściciela o pełną kwotę.", ua: "Ціна може не включати czynsz administracyjny і media. Уточніть повну суму у власника.", en: "The price may exclude the building fee (czynsz) and utilities. Ask the owner for the full amount." },
     allInBtn: { ru: "Прикинуть полную стоимость", pl: "Oblicz pełny koszt", ua: "Прикинути повну вартість", en: "Estimate full cost" },
+    /* ── AI-разбор объявления ── */
+    aiBtn:    { ru: "✨ AI-разбор объявления", pl: "✨ Analiza AI ogłoszenia", ua: "✨ AI-розбір оголошення", en: "✨ AI listing breakdown" },
+    aiLoading: { ru: "AI читает объявление…", pl: "AI czyta ogłoszenie…", ua: "AI читає оголошення…", en: "AI is reading the listing…" },
+    aiError:  { ru: "Не удалось разобрать. Попробуйте позже.", pl: "Nie udało się przeanalizować. Spróbuj później.", ua: "Не вдалося розібрати. Спробуйте пізніше.", en: "Analysis failed. Try again later." },
+    aiLimit:  { ru: "Лимит AI-разборов на сегодня исчерпан.", pl: "Dzienny limit analiz AI wyczerpany.", ua: "Ліміт AI-розборів на сьогодні вичерпано.", en: "Daily AI limit reached." },
+    aiSummary: { ru: "Кратко", pl: "W skrócie", ua: "Коротко", en: "Summary" },
+    aiScamHigh: { ru: "⚠️ Высокий риск мошенничества", pl: "⚠️ Wysokie ryzyko oszustwa", ua: "⚠️ Високий ризик шахрайства", en: "⚠️ High scam risk" },
+    aiScamMed:  { ru: "⚠️ Есть настораживающие признаки", pl: "⚠️ Są niepokojące sygnały", ua: "⚠️ Є насторожливі ознаки", en: "⚠️ Some warning signs" },
+    aiScamLow:  { ru: "✓ Явных признаков мошенничества нет", pl: "✓ Brak wyraźnych oznak oszustwa", ua: "✓ Явних ознак шахрайства немає", en: "✓ No obvious scam signals" },
     subscribe:  { ru: "Подписаться на поиск", pl: "Subskrybuj wyszukiwanie", ua: "Підписатися на пошук", en: "Subscribe to this search" },
     sortNew:    { ru: "Сначала новые", pl: "Najnowsze", ua: "Спочатку нові", en: "Newest first" },
     sortPriceAsc: { ru: "Дешевле", pl: "Najtańsze", ua: "Дешевші", en: "Cheapest" },

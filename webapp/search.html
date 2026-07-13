@@ -374,6 +374,7 @@ function openSheet(id) {
     Icons.svg("heart") + "</button>" +
     "</div><div style='height:12px'></div></div>";
   $("#overlay").classList.add("open");
+  App.mountAiButton($("#sheet").querySelector(".sbody"), l);
   $("#btnClose").onclick = closeSheet;
   $("#btnContact").onclick = function () {
     var tg = window.Telegram && window.Telegram.WebApp;

@@ -49,6 +49,11 @@ BASE = Path(__file__).resolve().parent
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 INGEST_TOKEN = os.environ["INGEST_TOKEN"]
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://kwadratpl-46-224-220-94.sslip.io")
+# AI-разбор объявления: включается автоматически при наличии ключа Anthropic.
+# Модель настраивается (по умолчанию Haiku — дёшево для перевода/скам-скоринга).
+AI_ENABLED = bool(os.environ.get("ANTHROPIC_API_KEY"))
+ANALYZE_MODEL = os.environ.get("ANALYZE_MODEL", "claude-haiku-4-5")
+AI_DAILY_LIMIT = int(os.environ.get("AI_DAILY_LIMIT", "40"))  # на пользователя, чтобы не жечь бюджет
 LISTINGS_PATH = Path(os.environ.get(
     "LISTINGS_PATH", str(BASE.parent / "webapp" / "data" / "listings.json")))
 DB_PATH = BASE / "state.db"
@@ -425,7 +430,108 @@ def health():
         meta = {"count": d.get("count"), "generated_at": d.get("generated_at")}
     except Exception:
         meta = {"count": 0, "generated_at": None}
-    return {"ok": True, **meta}
+    # ai: показывать ли кнопку «AI-разбор» в Mini App
+    return {"ok": True, "ai": AI_ENABLED, **meta}
+
+
+# ── AI-разбор объявления: перевод + выжимка + скам-скоринг одним вызовом ──────
+_ai_client = None            # ленивое создание клиента Anthropic
+_ai_cache = {}               # (listing_id, lang) -> результат (в памяти, TTL 1 день)
+_ai_usage = {}               # user_id -> (day, count) — суточный лимит на пользователя
+
+ANALYZE_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "title": {"type": "string"},
+        "summary": {"type": "array", "items": {"type": "string"}},
+        "scam_level": {"type": "string", "enum": ["low", "medium", "high"]},
+        "scam_flags": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["title", "summary", "scam_level", "scam_flags"],
+}
+
+AI_LANG_NAME = {"ru": "Russian", "pl": "Polish", "ua": "Ukrainian", "en": "English"}
+
+
+def _ai_get_client():
+    global _ai_client
+    if _ai_client is None:
+        from anthropic import AsyncAnthropic
+        _ai_client = AsyncAnthropic()   # читает ANTHROPIC_API_KEY из env
+    return _ai_client
+
+
+@app.post("/api/analyze")
+async def analyze(request: Request, authorization: str = Header("")):
+    if not AI_ENABLED:
+        raise HTTPException(503, "AI analysis is not configured")
+    user = _auth_user(authorization)
+    uid = user["id"]
+
+    # суточный лимит на пользователя — защита бюджета
+    today = datetime.now(TZ).strftime("%Y-%m-%d")
+    day, cnt = _ai_usage.get(uid, (today, 0))
+    if day != today:
+        day, cnt = today, 0
+
+    body = await request.json()
+    l = body.get("listing")
+    if not isinstance(l, dict):
+        raise HTTPException(422, "listing object required")
+    lang = body.get("lang") if body.get("lang") in AI_LANG_NAME else lang_of(user.get("language_code"))
+    lid = str(l.get("id") or "")
+
+    # кэш: одно и то же объявление на одном языке не переспрашиваем
+    ck = (lid, lang)
+    if lid and ck in _ai_cache:
+        val, ts = _ai_cache[ck]
+        if time.time() - ts < 86400:
+            return {"cached": True, **val}
+
+    if cnt >= AI_DAILY_LIMIT:
+        raise HTTPException(429, "daily AI limit reached")
+
+    # ценовой контекст для скам-скоринга не считаем на сервере — просто отдаём
+    # факты объявления модели; сильное занижение цены она увидит из price/area
+    fields = {k: l.get(k) for k in
+              ("title", "descr", "price", "area", "rooms", "type", "city",
+               "district", "pets", "parking", "balcony", "agency", "source", "url")}
+    system = (
+        "You help migrants rent flats in Poland. You receive one rental listing "
+        "(fields may be in Polish). Respond ONLY as JSON matching the schema.\n"
+        f"- title: a short natural title translated into {AI_LANG_NAME[lang]}.\n"
+        f"- summary: 3-6 short bullet points in {AI_LANG_NAME[lang]} with the key "
+        "facts a renter needs (price, deposit/czynsz hints if present, rooms, area, "
+        "availability, pets, who lists it). Be factual; do not invent details.\n"
+        "- scam_level: assess fraud risk (low/medium/high) from signals like a price "
+        "far below the area/size, urgency, requests to pay a deposit or 'reservation' "
+        "before viewing, owner claiming to be abroad, or contact pushed off-platform. "
+        "Most real listings are 'low'.\n"
+        f"- scam_flags: 0-4 short warning phrases in {AI_LANG_NAME[lang]} explaining the "
+        "risk, empty if none."
+    )
+    try:
+        client = _ai_get_client()
+        resp = await client.messages.create(
+            model=ANALYZE_MODEL,
+            max_tokens=1024,
+            system=system,
+            messages=[{"role": "user", "content": json.dumps(fields, ensure_ascii=False)}],
+            output_config={"format": {"type": "json_schema", "schema": ANALYZE_SCHEMA}},
+        )
+        text = next((b.text for b in resp.content if b.type == "text"), "")
+        data = json.loads(text)
+    except Exception as e:
+        log.warning("AI analyze failed for %s: %s", lid, e)
+        raise HTTPException(502, "AI analysis failed")
+
+    _ai_usage[uid] = (day, cnt + 1)
+    if lid:
+        _ai_cache[ck] = (data, time.time())
+        if len(_ai_cache) > 2000:            # грубая защита от роста памяти
+            _ai_cache.clear()
+    return {"cached": False, **data}
 
 
 _ingest_lock = asyncio.Lock()          # два параллельных инжеста = двойные пуши
