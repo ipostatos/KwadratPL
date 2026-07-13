@@ -178,7 +178,8 @@ def main():
                     listings.append(row)
                     got += 1
             print("%s %s: %d" % (city_slug, rent_type, got))
-            time.sleep(0.7)  # вежливая пауза между запросами
+            # вежливая пауза между запросами; в CI можно ужать через env
+            time.sleep(float(os.environ.get("OLX_PAUSE", "0.7")))
 
     if not listings:
         print("FATAL: 0 listings, keeping previous file")

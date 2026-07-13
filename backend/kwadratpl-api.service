@@ -1,0 +1,35 @@
+# /etc/systemd/system/kwadratpl-api.service
+# Бэкенд Kwadrat PL: FastAPI (uvicorn, 127.0.0.1:4200) + aiogram-поллинг.
+# Наружу /api/* отдаёт Caddy (блок kwadratpl в /etc/caddy/Caddyfile).
+[Unit]
+Description=Kwadrat PL API + Telegram bot (FastAPI/uvicorn + aiogram)
+After=network.target
+
+[Service]
+Type=simple
+User=kwadratpl
+Group=kwadratpl
+WorkingDirectory=/opt/kwadratpl/backend
+# .env: BOT_TOKEN, INGEST_TOKEN, WEBAPP_URL
+EnvironmentFile=/opt/kwadratpl/.env
+ExecStart=/opt/kwadratpl/.venv/bin/uvicorn app:app --host 127.0.0.1 --port 4200
+Restart=on-failure
+RestartSec=3
+
+# ── sandbox / hardening (по образцу issa-api) ──
+# Пишем только в backend/ (state.db + WAL) и webapp/data/ (listings.json).
+ProtectSystem=strict
+ReadWritePaths=/opt/kwadratpl/backend /opt/kwadratpl/webapp/data
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

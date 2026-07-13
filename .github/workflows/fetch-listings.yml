@@ -1,0 +1,41 @@
+# ===========================================================================
+# Автообновление объявлений: GitHub Actions = внешний фетчер.
+# OLX API блокирует IP датацентра VPS (403), а с раннеров GitHub доступен
+# (проверено olx-access-test). Раз в 30 минут собираем объявления и POST-им
+# на бэкенд VPS — он атомарно кладёт listings.json, диффит и шлёт уведомления.
+#
+# Secrets: INGEST_TOKEN — тот же, что в /opt/kwadratpl/.env на VPS.
+# ===========================================================================
+name: fetch-listings
+on:
+  schedule:
+    - cron: "7,37 * * * *"   # каждые 30 мин со сдвигом от «часа пик» GitHub
+  workflow_dispatch:
+
+concurrency:
+  group: fetch-listings
+  cancel-in-progress: false
+
+jobs:
+  fetch-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools
+
+      - name: Fetch listings from OLX
+        env:
+          OLX_PAUSE: "0.4"
+        run: python3 tools/fetch-olx.py /tmp/listings.json
+
+      - name: Push to VPS backend
+        run: |
+          code=$(curl -s -o /tmp/ingest.json -w "%{http_code}" \
+            -X POST "https://kwadratpl-46-224-220-94.sslip.io/api/listings" \
+            -H "Content-Type: application/json" \
+            -H "X-Ingest-Token: ${{ secrets.INGEST_TOKEN }}" \
+            --data-binary @/tmp/listings.json)
+          cat /tmp/ingest.json; echo
+          test "$code" = "200"

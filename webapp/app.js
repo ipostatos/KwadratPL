@@ -154,7 +154,45 @@
   function persist() {
     localStorage.setItem("kw_saved", JSON.stringify(saved));
     localStorage.setItem("kw_favs", JSON.stringify(favs));
+    syncSubs();
   }
+
+  // ── серверные подписки: синк с бэкендом (/api/subs, авторизация initData).
+  // Вне Telegram или на зеркале без /api — тихо остаёмся на localStorage. ──
+  function tgInitData() {
+    var tg = window.Telegram && window.Telegram.WebApp;
+    return tg && tg.initData ? tg.initData : null;
+  }
+  var _syncTimer = null;
+  function syncSubs() {
+    var init = tgInitData();
+    if (!init) return;
+    clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(function () {   // дебаунс: тумблеры щёлкают часто
+      fetch("/api/subs", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": "tma " + init },
+        body: JSON.stringify({
+          subs: saved,
+          lang: (global.I18N && global.I18N.lang) || "ru"
+        })
+      }).catch(function () {});
+    }, 400);
+  }
+  // первый вход на новом устройстве: если локально пусто — тянем с сервера
+  (function pullSubs() {
+    var init = tgInitData();
+    if (!init || saved.length) { if (init && saved.length) syncSubs(); return; }
+    fetch("/api/subs", { headers: { "Authorization": "tma " + init } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.subs && d.subs.length) {
+          Array.prototype.push.apply(saved, d.subs);
+          localStorage.setItem("kw_saved", JSON.stringify(saved));
+        }
+      })
+      .catch(function () {});
+  })();
 
   // ── матчинг объявления под сохранённый поиск ──
   // Для реальных данных pets/parking/balcony бывают null (неизвестно):
