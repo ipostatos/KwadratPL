@@ -178,22 +178,22 @@ T = {
     "unit_short": {"ru": "zł/сутки", "pl": "zł/dobę", "ua": "zł/доба", "en": "zł/day"},
     "start": {
         "ru": "👋 Привет! Я Kwadrat PL — новый опыт поиска жилья в Польше.\n\n"
-              "🏠 Квартиры, комнаты и посуточное жильё в 6 городах, живые объявления с OLX и Otodom.\n"
+              "🏠 Квартиры, комнаты и посуточное жильё в 6 городах, живые объявления с OLX, Otodom и Morizon.\n"
               "🔔 Подпишитесь на поиск в приложении — новые объявления придут прямо сюда.\n"
               "📚 Внутри — гайды: кауция, договор, готовые фразы по-польски.\n\n"
               "Пусть дом найдётся! 🏠",
         "pl": "👋 Cześć! Jestem Kwadrat PL — nowe doświadczenie szukania mieszkania w Polsce.\n\n"
-              "🏠 Mieszkania, pokoje i noclegi w 6 miastach, ogłoszenia na żywo z OLX i Otodom.\n"
+              "🏠 Mieszkania, pokoje i noclegi w 6 miastach, ogłoszenia na żywo z OLX, Otodom i Morizon.\n"
               "🔔 Subskrybuj wyszukiwanie w aplikacji — nowe ogłoszenia trafią prosto tutaj.\n"
               "📚 W środku przewodniki: kaucja, umowa, gotowe wiadomości.\n\n"
               "Niech dom się znajdzie! 🏠",
         "ua": "👋 Привіт! Я Kwadrat PL — новий досвід пошуку житла в Польщі.\n\n"
-              "🏠 Квартири, кімнати й подобове житло у 6 містах, живі оголошення з OLX і Otodom.\n"
+              "🏠 Квартири, кімнати й подобове житло у 6 містах, живі оголошення з OLX, Otodom і Morizon.\n"
               "🔔 Підпишіться на пошук у застосунку — нові оголошення надійдуть просто сюди.\n"
               "📚 Усередині — гайди: кауція, договір, готові фрази польською.\n\n"
               "Хай дім знайдеться! 🏠",
         "en": "👋 Hi! I'm Kwadrat PL — a new way to find a home in Poland.\n\n"
-              "🏠 Flats, rooms and short stays in 6 cities, live listings from OLX and Otodom.\n"
+              "🏠 Flats, rooms and short stays in 6 cities, live listings from OLX, Otodom and Morizon.\n"
               "🔔 Subscribe to a search in the app — new listings will arrive right here.\n"
               "📚 Inside: guides on deposits, contracts and ready-made Polish messages.\n\n"
               "May your home find you! 🏠",
@@ -250,7 +250,7 @@ def fmt_listing(l: dict, lang: str) -> str:
     return "\n".join(lines)
 
 
-_ALLOWED_HOSTS = ("olx.pl", "otodom.pl")
+_ALLOWED_HOSTS = ("olx.pl", "otodom.pl", "morizon.pl")
 
 
 def safe_listing_url(url) -> str | None:
