@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="theme.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="nav.js" data-home="true"></script>
+<script src="i18n.dict.js"></script>
 <script src="i18n.js"></script>
 <script src="icons.js"></script>
 <script src="app.js"></script>
@@ -126,8 +127,8 @@ I18N.hydrate();
   chip.onclick = function () { I18N.picker(true); };
 })();
 
-// плитки городов с количеством объявлений
-(function () {
+// плитки городов и статистика ждут инвентарь (реальный или демо-фолбэк)
+App.ready.then(function () {
   var grid = document.getElementById("cityGrid");
   var tones = ["blue", "green", "amber", "violet", "cyan", "gold"];
   Object.keys(App.CITIES).forEach(function (key, i) {
@@ -141,13 +142,14 @@ I18N.hydrate();
     grid.appendChild(a);
   });
   Icons.hydrate(grid);
-})();
 
-// статистика + оживление блока «что дальше»
-(function () {
   document.getElementById("statTotal").textContent = App.listings.length;
   document.getElementById("statSaved").textContent = App.saved.length;
   document.getElementById("statFavs").textContent = App.favs.length;
+
+  if (!App.live) {
+    document.querySelector('[data-i18n="footHome"]').textContent = I18N.t("footHomeDemo");
+  }
 
   var active = App.saved.filter(function (s) { return s.notify; });
   if (active.length) {
@@ -159,7 +161,7 @@ I18N.hydrate();
     b.innerHTML = (window.Icons ? '<span class="emi">' + Icons.svg("search") + "</span>" : "") +
       " " + App.esc(I18N.t("toSearch"));
   }
-})();
+});
 </script>
 </body>
 </html>

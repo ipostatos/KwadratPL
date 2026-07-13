@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="theme.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
 <script src="i18n.js"></script>
 <script src="icons.js"></script>
 <script src="app.js"></script>
@@ -138,7 +139,7 @@ function renderControls() {
 }
 function renderDistricts() {
   $("#fDistrict").innerHTML = '<option value="">' + App.esc(I18N.t("allDistricts")) + "</option>" +
-    App.CITIES[state.city].districts.map(function (d) {
+    App.districtsFor(state.city).map(function (d) {
       return '<option value="' + App.esc(d) + '"' + (d === state.district ? " selected" : "") + ">" +
         App.esc(d) + "</option>";
     }).join("");
@@ -157,10 +158,12 @@ function filtered() {
 }
 
 function photoHtml(l, cls) {
-  var isNew = Date.now() - l.ts < 3600000;
-  return '<div class="photo" style="background:linear-gradient(135deg,' +
-    l.grad[0] + "," + l.grad[1] + ')">' +
-    Icons.svg(l.icon) +
+  var isNew = Date.now() - l.ts < 3 * 3600000;
+  var bg = "linear-gradient(135deg," + l.grad[0] + "," + l.grad[1] + ")";
+  // у реальных объявлений фото поверх града (град виден, пока фото грузится)
+  if (l.photo) bg = "url('" + App.esc(l.photo) + "') center/cover no-repeat, " + bg;
+  return '<div class="photo" style="background:' + bg + '">' +
+    (l.photo ? "" : Icons.svg(l.icon)) +
     '<div class="lbadges">' +
     (isNew ? '<span class="lbadge new">NEW</span>' : "") +
     (l.oldPrice ? '<span class="lbadge drop">−' + (l.oldPrice - l.price) + " zł</span>" : "") +
@@ -185,11 +188,22 @@ function renderList() {
       '<div class="lbody">' +
       '<div class="lprice">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) +
       (l.oldPrice ? '<span class="old">' + l.oldPrice.toLocaleString() + "</span>" : "") + "</div>" +
-      '<div class="ltitle">' + l.rooms + " " + I18N.t("roomsShort") + " · " + l.area + " m² · " + App.esc(l.street) + "</div>" +
-      '<div class="lmeta"><span>📍 ' + App.esc(App.cityName(l.city)) + ", " + App.esc(l.district) +
+      '<div class="ltitle">' + listingTitle(l) + "</div>" +
+      '<div class="lmeta"><span>📍 ' + App.esc(App.cityName(l.city)) +
+      (l.district ? ", " + App.esc(l.district) : "") +
       "</span><span>🕐 " + App.timeAgo(l.ts) + "</span><span>📎 " + App.esc(l.source) + "</span></div>" +
       "</div></div>";
   }).join("");
+}
+
+// заголовок карточки: у реальных — заголовок оффера, у демо — сводка
+function listingTitle(l) {
+  if (l.title) return App.esc(l.title);
+  var parts = [];
+  if (l.rooms != null) parts.push(l.rooms + " " + I18N.t("roomsShort"));
+  if (l.area != null) parts.push(l.area + " m²");
+  if (l.street) parts.push(App.esc(l.street));
+  return parts.join(" · ");
 }
 
 /* ── шторка деталей ── */
@@ -197,22 +211,31 @@ function openSheet(id) {
   var l = App.listings.find(function (x) { return x.id === id; });
   if (!l) return;
   haptic("light");
+  var specs = [
+    [I18N.t("roomsLabel"), l.rooms],
+    [I18N.t("area"), l.area != null ? l.area + " m²" : null],
+    [I18N.t("floor"), l.floor],
+    [I18N.t("published"), App.timeAgo(l.ts)]
+  ].filter(function (s) { return s[1] != null; });
+  var descr = l.descr || (l.title ? "" : I18N.t("descr"));
   $("#sheet").innerHTML =
     '<div style="position:relative">' +
     '<button class="close" id="btnClose">✕</button>' + photoHtml(l) + "</div>" +
     '<div class="sbody">' +
     '<div class="lprice" style="font-size:22px">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) +
     (l.oldPrice ? '<span class="old">' + l.oldPrice.toLocaleString() + "</span>" : "") + "</div>" +
-    '<div class="ltitle">' + App.esc(l.street) + " · " + App.esc(App.cityName(l.city)) + ", " + App.esc(l.district) + "</div>" +
+    '<div class="ltitle">' + listingTitle(l) + " · " + App.esc(App.cityName(l.city)) +
+    (l.district ? ", " + App.esc(l.district) : "") + "</div>" +
     '<div class="specs">' +
-    '<div class="spec"><div class="k">' + App.esc(I18N.t("roomsLabel")) + '</div><div class="v">' + l.rooms + "</div></div>" +
-    '<div class="spec"><div class="k">' + App.esc(I18N.t("area")) + '</div><div class="v">' + l.area + " m²</div></div>" +
-    '<div class="spec"><div class="k">' + App.esc(I18N.t("floor")) + '</div><div class="v">' + l.floor + "</div></div>" +
-    '<div class="spec"><div class="k">' + App.esc(I18N.t("published")) + '</div><div class="v">' + App.timeAgo(l.ts) + "</div></div>" +
+    specs.map(function (s) {
+      return '<div class="spec"><div class="k">' + App.esc(s[0]) + '</div><div class="v">' + App.esc(s[1]) + "</div></div>";
+    }).join("") +
     "</div>" +
-    '<p class="muted" style="font-size:var(--fs-sm)">' + App.esc(I18N.t("descr")) + "</p>" +
+    (descr ? '<p class="muted" style="font-size:var(--fs-sm)">' + App.esc(descr) + "</p>" : "") +
     '<div style="display:flex; gap:8px; margin-top:12px">' +
-    '<button class="btn" id="btnContact"><span class="emi">' + Icons.svg("message-circle") + "</span> " + App.esc(I18N.t("write")) + "</button>" +
+    '<button class="btn" id="btnContact"><span class="emi">' +
+    Icons.svg(l.url ? "key" : "message-circle") + "</span> " +
+    App.esc(I18N.t(l.url ? "openSrc" : "write")) + "</button>" +
     '<button class="btn ghost" id="btnFavSheet" style="width:auto; flex:0 0 auto">' +
     Icons.svg("heart") + "</button>" +
     "</div><div style='height:12px'></div></div>";
@@ -220,7 +243,13 @@ function openSheet(id) {
   $("#btnClose").onclick = closeSheet;
   $("#btnContact").onclick = function () {
     var tg = window.Telegram && window.Telegram.WebApp;
-    if (tg && tg.openTelegramLink) tg.openTelegramLink("https://t.me/KwadratPLBot");
+    if (l.url) {
+      // реальное объявление: открываем на площадке-источнике
+      if (tg && tg.openLink) tg.openLink(l.url);
+      else window.open(l.url, "_blank", "noopener");
+    } else if (tg && tg.openTelegramLink) {
+      tg.openTelegramLink("https://t.me/KwadratPLBot");
+    }
   };
   var fb = $("#btnFavSheet");
   function syncFav() { fb.style.color = App.isFav(l.id) ? "#ff6b81" : ""; }
@@ -281,7 +310,9 @@ $("#btnSave").onclick = function () {
   App.saved.push({
     city: state.city, district: state.district, type: state.type,
     priceMin: state.priceMin, priceMax: state.priceMax,
-    areaMin: state.areaMin, rooms: state.rooms, notify: true
+    areaMin: state.areaMin, rooms: state.rooms,
+    pets: state.pets, parking: state.parking, balcony: state.balcony,
+    notify: true
   });
   App.persist();
   App.toast("🔖", I18N.t("toastSubT"),
@@ -295,6 +326,10 @@ $("#btnSim").onclick = function () {
   var over = { city: s.city, type: s.type };
   if (s.district) over.district = s.district;
   if (s.rooms) over.rooms = s.rooms === 4 ? 4 : s.rooms;
+  // amenity-фильтры подписки должны выполняться, иначе уведомление соврёт
+  if (s.pets) over.pets = true;
+  if (s.parking) over.parking = true;
+  if (s.balcony) over.balcony = true;
   var l = App.makeListing(over);
   l.ts = Date.now();
   if (s.priceMax) l.price = Math.min(l.price, s.priceMax - 50);
@@ -303,7 +338,7 @@ $("#btnSim").onclick = function () {
   App.listings.unshift(l);
   App.toast("🔔", I18N.t("toastNewT"),
     l.rooms + " " + I18N.t("roomsShort") + " · " + l.area + " m² · " + l.price.toLocaleString() + " " +
-    App.priceUnit(l.type) + " — " + App.cityName(l.city) + ", " + l.district);
+    App.priceUnit(l.type) + " — " + App.esc(App.cityName(l.city)) + ", " + App.esc(l.district));
   renderList();
 };
 
@@ -311,32 +346,37 @@ $("#list").onclick = function (e) {
   var favBtn = e.target.closest("[data-fav]");
   if (favBtn) {
     e.stopPropagation();
-    var lf = App.listings.find(function (x) { return x.id === +favBtn.dataset.fav; });
+    var lf = App.listings.find(function (x) { return x.id === favBtn.dataset.fav; });
     if (lf) { App.toggleFav(lf); haptic("select"); renderList(); }
     return;
   }
   var card = e.target.closest(".listing");
-  if (card) openSheet(+card.dataset.id);
+  if (card) openSheet(card.dataset.id);
 };
 $("#overlay").onclick = function (e) { if (e.target === e.currentTarget) closeSheet(); };
 
-/* ── init ── */
-renderControls();
-renderList();
-
-/* фоновая симуляция снижения цены — демонстрация отслеживания истории цен */
-setTimeout(function () {
-  var cand = App.listings.filter(function (l) {
-    return !l.oldPrice && l.city === state.city && l.type === state.type;
-  });
-  if (!cand.length) return;
-  var l = cand[0];
-  l.oldPrice = l.price;
-  l.price = Math.round(l.price * 0.93 / 10) * 10;
-  App.toast("📉", I18N.t("toastDropT"), App.esc(l.street) + " · " +
-    l.oldPrice.toLocaleString() + " → " + l.price.toLocaleString() + " " + App.priceUnit(l.type));
+/* ── init: ждём инвентарь (реальный или демо-фолбэк) ── */
+App.ready.then(function () {
+  renderControls();
   renderList();
-}, 25000);
+  if (!App.live) {
+    document.querySelector('[data-i18n="footSearch"]').textContent = I18N.t("footSearchDemo");
+    /* фоновая симуляция снижения цены — только в демо-режиме:
+       на реальных объявлениях цену подделывать нельзя */
+    setTimeout(function () {
+      var cand = App.listings.filter(function (l) {
+        return !l.oldPrice && l.city === state.city && l.type === state.type;
+      });
+      if (!cand.length) return;
+      var l = cand[0];
+      l.oldPrice = l.price;
+      l.price = Math.round(l.price * 0.93 / 10) * 10;
+      App.toast("📉", I18N.t("toastDropT"), App.esc(l.street) + " · " +
+        l.oldPrice.toLocaleString() + " → " + l.price.toLocaleString() + " " + App.priceUnit(l.type));
+      renderList();
+    }, 25000);
+  }
+});
 </script>
 </body>
 </html>

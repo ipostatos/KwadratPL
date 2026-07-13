@@ -1,28 +1,31 @@
 // ===========================================================================
-// APP — общие данные и логика Kwadrat PL: города, генератор объявлений (демо),
+// APP — общие данные и логика Kwadrat PL: города, инвентарь объявлений,
 // сохранённые поиски, избранное, матчинг для уведомлений, тосты.
-// Инвентарь детерминированный (seeded PRNG), чтобы избранное и ссылки на
-// объявления переживали перезагрузку страницы.
+//
+// Инвентарь: реальные объявления с OLX (data/listings.json, собирает
+// tools/fetch-olx.py на сервере). Если файл недоступен (file://, сбой сети) —
+// фолбэк на демо-генератор с фиксированным сидом. App.live говорит, какой
+// режим активен. Страницы ждут App.ready перед первым рендером.
 // ===========================================================================
 (function (global) {
   "use strict";
 
-  // Полные официальные списки районов (dzielnice):
-  // Варшава и Краков — по 18, Гданьск — 35, Вроцлав/Познань/Лодзь — по 5.
+  // Полные официальные списки районов (dzielnice) — фолбэк для демо-режима;
+  // в живом режиме список районов строится из фактических данных (districtsFor).
   var CITIES = {
-    warszawa: { name: "Варшава", districts: [
+    warszawa: { districts: [
       "Śródmieście", "Mokotów", "Wola", "Ochota", "Żoliborz",
       "Praga-Północ", "Praga-Południe", "Targówek", "Bemowo", "Bielany",
       "Białołęka", "Ursynów", "Ursus", "Włochy", "Wilanów",
       "Wawer", "Wesoła", "Rembertów"] },
-    krakow:   { name: "Краков", districts: [
+    krakow:   { districts: [
       "Stare Miasto", "Grzegórzki", "Prądnik Czerwony", "Prądnik Biały", "Krowodrza",
       "Bronowice", "Zwierzyniec", "Dębniki", "Łagiewniki-Borek Fałęcki", "Swoszowice",
       "Podgórze Duchackie", "Bieżanów-Prokocim", "Podgórze", "Czyżyny", "Mistrzejowice",
       "Bieńczyce", "Wzgórza Krzesławickie", "Nowa Huta"] },
-    wroclaw:  { name: "Вроцлав", districts: [
+    wroclaw:  { districts: [
       "Stare Miasto", "Śródmieście", "Krzyki", "Fabryczna", "Psie Pole"] },
-    gdansk:   { name: "Гданьск", districts: [
+    gdansk:   { districts: [
       "Śródmieście", "Aniołki", "Brętowo", "Brzeźno", "Chełm",
       "Jasień", "Kokoszki", "Krakowiec-Górki Zachodnie", "Letnica", "Matarnia",
       "Młyniska", "Nowy Port", "Oliwa", "Olszynka", "Orunia Górna-Gdańsk Południe",
@@ -31,9 +34,9 @@
       "Suchanino", "Ujeścisko-Łostowice", "VII Dwór", "Wrzeszcz Dolny", "Wrzeszcz Górny",
       "Wyspa Sobieszewska", "Wzgórze Mickiewicza", "Zaspa-Młyniec", "Zaspa-Rozstaje",
       "Żabianka-Wejhera-Jelitkowo-Tysiąclecia"] },
-    poznan:   { name: "Познань", districts: [
+    poznan:   { districts: [
       "Stare Miasto", "Nowe Miasto", "Wilda", "Grunwald", "Jeżyce"] },
-    lodz:     { name: "Лодзь", districts: [
+    lodz:     { districts: [
       "Śródmieście", "Bałuty", "Górna", "Polesie", "Widzew"] }
   };
 
@@ -48,7 +51,7 @@
     ["#5f2c82", "#49a09d"], ["#1e3c72", "#2a5298"]
   ];
 
-  // mulberry32 — фиксированный сид даёт одинаковый инвентарь при каждой загрузке
+  // mulberry32 — фиксированный сид даёт одинаковый демо-инвентарь при каждой загрузке
   function mulberry32(seed) {
     return function () {
       seed |= 0; seed = seed + 0x6D2B79F5 | 0;
@@ -58,8 +61,11 @@
     };
   }
 
+  // id с префиксом: демо "d…", runtime-симуляция "r…" — не пересекаются
+  // ни между собой, ни с реальными "olx-…" (иначе избранное из прошлой
+  // сессии могло пометить чужую карточку)
   var _seq = 1;
-  function makeListing(rnd, over) {
+  function makeListing(rnd, over, idPrefix) {
     over = over || {};
     var cityKeys = Object.keys(CITIES);
     var city = over.city || cityKeys[Math.floor(rnd() * cityKeys.length)];
@@ -72,7 +78,7 @@
       : 120 + rooms * 80 + Math.floor(rnd() * 150);
     var drop = rnd() < 0.18 ? Math.round(base * 0.08 / 50) * 50 : 0;
     return {
-      id: _seq++,
+      id: (idPrefix || "d") + _seq++,
       city: city,
       district: over.district || ds[Math.floor(rnd() * ds.length)],
       type: type, rooms: rooms, area: area,
@@ -82,34 +88,63 @@
       icon: ICON_NAMES[Math.floor(rnd() * ICON_NAMES.length)],
       grad: GRADS[Math.floor(rnd() * GRADS.length)],
       source: over.source || SOURCES[Math.floor(rnd() * SOURCES.length)],
-      pets: rnd() < 0.4, parking: rnd() < 0.35, balcony: rnd() < 0.6,
+      pets: over.pets != null ? over.pets : rnd() < 0.4,
+      parking: over.parking != null ? over.parking : rnd() < 0.35,
+      balcony: over.balcony != null ? over.balcony : rnd() < 0.6,
       ts: Date.now() - Math.floor(rnd() * 5 * 24 * 3600 * 1000)
     };
   }
 
-  // базовый инвентарь: в каждом городе гарантированно есть и долгосрок, и краткосрок
-  var _rnd = mulberry32(20260713);
-  var fbEnabled = localStorage.getItem("kw_src_fb") === "1";
+  // демо-инвентарь: в каждом городе гарантированно есть и долгосрок, и краткосрок
+  function buildDemo() {
+    var rnd = mulberry32(20260713);
+    var fbEnabled = localStorage.getItem("kw_src_fb") === "1";
+    var arr = [];
+    Object.keys(CITIES).forEach(function (city) {
+      // объём пропорционален числу районов, чтобы фильтр по району реже был пустым
+      var n = Math.max(10, Math.ceil(CITIES[city].districts.length * 0.8));
+      for (var i = 0; i < n; i++) arr.push(makeListing(rnd, { city: city, type: "long" }));
+      for (var j = 0; j < 4; j++) arr.push(makeListing(rnd, { city: city, type: "short" }));
+      // Facebook-группы — демо-источник, выключен по умолчанию (настройки);
+      // генерируем ВСЕГДА (сид общий), но включаем в выдачу только по флагу
+      for (var k = 0; k < 3; k++) {
+        var fb = makeListing(rnd, { city: city, type: "long", source: "Facebook" });
+        if (fbEnabled) arr.push(fb);
+      }
+    });
+    return arr;
+  }
+
+  // ── инвентарь: реальные данные с фолбэком на демо ──
   var listings = [];
-  Object.keys(CITIES).forEach(function (city) {
-    // объём пропорционален числу районов, чтобы фильтр по району реже был пустым
-    var n = Math.max(10, Math.ceil(CITIES[city].districts.length * 0.8));
-    for (var i = 0; i < n; i++) listings.push(makeListing(_rnd, { city: city, type: "long" }));
-    for (var j = 0; j < 4; j++) listings.push(makeListing(_rnd, { city: city, type: "short" }));
-    // Facebook-группы — доп. источник, выключен по умолчанию (включается в настройках);
-    // генерируем ВСЕГДА (сид общий), но включаем в выдачу только при включённой опции
-    for (var k = 0; k < 3; k++) {
-      var fb = makeListing(_rnd, { city: city, type: "long", source: "Facebook" });
-      if (fbEnabled) listings.push(fb);
-    }
-  });
+  var ready = fetch("data/listings.json", { cache: "no-cache" })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (d) {
+      if (!d || !d.listings || !d.listings.length) throw new Error("empty");
+      // грады/иконки нужны и реальным карточкам: фон под фото и фолбэк без фото
+      var rnd = mulberry32(7);
+      d.listings.forEach(function (l) {
+        l.icon = ICON_NAMES[Math.floor(rnd() * ICON_NAMES.length)];
+        l.grad = GRADS[Math.floor(rnd() * GRADS.length)];
+      });
+      Array.prototype.push.apply(listings, d.listings);
+      App.live = true;
+      App.generatedAt = d.generated_at || null;
+    })
+    .catch(function () {
+      Array.prototype.push.apply(listings, buildDemo());
+      App.live = false;
+    });
 
   // ── хранилище ──
   function load(key, fallback) {
     try { return JSON.parse(localStorage.getItem(key)) || fallback; }
     catch (e) { return fallback; }
   }
-  var saved = load("kw_saved", []);   // сохранённые поиски [{city,district,type,priceMin,priceMax,areaMin,rooms,notify}]
+  var saved = load("kw_saved", []);   // сохранённые поиски [{city,district,type,priceMin,priceMax,areaMin,rooms,pets,parking,balcony,notify}]
   var favs = load("kw_favs", []);     // избранное — полные объекты объявлений
   function persist() {
     localStorage.setItem("kw_saved", JSON.stringify(saved));
@@ -117,14 +152,18 @@
   }
 
   // ── матчинг объявления под сохранённый поиск ──
+  // Для реальных данных pets/parking/balcony бывают null (неизвестно):
+  // включённый фильтр пропускает только подтверждённые объявления.
   function matches(l, s) {
     return l.city === s.city && l.type === s.type &&
       (!s.district || l.district === s.district) &&
       (s.priceMin == null || l.price >= s.priceMin) &&
       (s.priceMax == null || l.price <= s.priceMax) &&
-      (s.areaMin == null || l.area >= s.areaMin) &&
-      (!s.rooms || (s.rooms === 4 ? l.rooms >= 4 : l.rooms === s.rooms)) &&
-      (!s.pets || l.pets) && (!s.parking || l.parking) && (!s.balcony || l.balcony);
+      (s.areaMin == null || (l.area != null && l.area >= s.areaMin)) &&
+      (!s.rooms || (l.rooms != null && (s.rooms === 4 ? l.rooms >= 4 : l.rooms === s.rooms))) &&
+      (!s.pets || l.pets === true) &&
+      (!s.parking || l.parking === true) &&
+      (!s.balcony || l.balcony === true);
   }
 
   function searchLabel(s) {
@@ -133,7 +172,24 @@
     parts.push(I18N.t(s.type).toLowerCase());
     if (s.rooms) parts.push((s.rooms === 4 ? "4+" : s.rooms) + " " + I18N.t("roomsShort"));
     if (s.priceMax) parts.push(I18N.t("upTo") + " " + s.priceMax + " zł");
+    var feat = [];
+    if (s.pets) feat.push("🐾");
+    if (s.parking) feat.push("🅿️");
+    if (s.balcony) feat.push("🌿");
+    if (feat.length) parts.push(feat.join(""));
     return parts.join(" · ");
+  }
+
+  // районы для дропдауна: в живом режиме — фактические из данных города,
+  // в демо — официальный список
+  function districtsFor(city) {
+    if (!App.live) return CITIES[city].districts;
+    var seen = {};
+    listings.forEach(function (l) {
+      if (l.city === city && l.district) seen[l.district] = 1;
+    });
+    var ds = Object.keys(seen).sort();
+    return ds.length ? ds : CITIES[city].districts;
   }
 
   // ── тост-уведомление (стиль badge-toast из ISSA) ──
@@ -169,12 +225,15 @@
     });
   }
 
-  global.App = {
+  var App = {
     CITIES: CITIES,
     listings: listings,
-    makeListing: function (over) { return makeListing(Math.random, over); },
+    ready: ready,
+    live: false,          // true после успешной загрузки data/listings.json
+    generatedAt: null,
+    makeListing: function (over) { return makeListing(Math.random, over, "r"); },
     saved: saved, favs: favs, persist: persist,
-    matches: matches, searchLabel: searchLabel,
+    matches: matches, searchLabel: searchLabel, districtsFor: districtsFor,
     toast: toast, timeAgo: timeAgo, esc: esc,
     priceUnit: function (type) { return I18N.t(type === "long" ? "perMonth" : "perDay"); },
     cityName: function (key) { return I18N.cityName(key); },
@@ -186,4 +245,5 @@
       return i < 0;
     }
   };
+  global.App = App;
 })(window);
