@@ -87,13 +87,14 @@
     </div>
   </div>
 
-  <!-- Facebook-группы подселения — виден при типе «Комната» -->
-  <div class="card" id="fbCard" style="display:none; margin-bottom:var(--sp-2)">
+  <!-- Крупнейшие Facebook-группы аренды/подселения по выбранному городу -->
+  <div class="card" id="fbCard" style="margin-bottom:var(--sp-2)">
     <div class="h2" style="display:flex; align-items:center; gap:8px">
       <span class="emi" data-icon="users"></span><span data-i18n="fbGroupsT"></span>
     </div>
     <p class="muted" id="fbGroupsDesc" style="font-size:var(--fs-sm)"></p>
     <div id="fbLinks" style="display:flex; flex-direction:column; gap:8px"></div>
+    <p class="muted" id="fbMore" style="font-size:var(--fs-sm); margin:10px 0 0"></p>
   </div>
 
   <div class="toolbar">
@@ -128,7 +129,10 @@ var state = {
   district: "",
   type: ["short", "room"].indexOf(qs.get("type")) >= 0 ? qs.get("type") : "long",
   priceMin: null, priceMax: null, areaMin: null,
-  rooms: 0, pets: false, parking: false, balcony: false, sort: "new"
+  rooms: 0, sort: "new",
+  pets: qs.get("pets") === "1",
+  parking: qs.get("parking") === "1",
+  balcony: qs.get("balcony") === "1"
 };
 
 function $(s) { return document.querySelector(s); }
@@ -145,6 +149,9 @@ function renderControls() {
   });
   document.querySelectorAll("#fRooms button").forEach(function (b) {
     b.classList.toggle("active", +b.dataset.val === state.rooms);
+  });
+  document.querySelectorAll("#fFeat button").forEach(function (b) {
+    b.classList.toggle("active", !!state[b.dataset.key]);
   });
   syncTypeUI();
 }
@@ -163,33 +170,84 @@ function syncTypeUI() {
   renderFbCard();
 }
 
-/* ── Facebook-группы подселения: живые ссылки на поиск групп по городу ── */
+/* ── Facebook: крупнейшие группы аренды/подселения по городам (кураторский
+   список, проверен 2026-07: URL живые, группы индексируются поиском) +
+   живой поиск групп по языкам ── */
+var FB_GROUPS = {
+  warszawa: [
+    { name: "Warszawa – pokoje / mieszkania wynajem", url: "https://www.facebook.com/groups/warszawa.pokoje.mieszkania.wynajem/", members: "183k", lang: "pl" },
+    { name: "Warszawa wynajmę mieszkanie/pokój, szukam współlokatora", url: "https://www.facebook.com/groups/wynajemwarszawa/", members: "120k", lang: "pl" },
+    { name: "Варшава. Комната, квартира, дом в аренду", url: "https://www.facebook.com/groups/1829896053907314/", members: null, lang: "ru" },
+    { name: "В нашій хаті — оренда кімнат у Варшаві", url: "https://www.facebook.com/groups/orenda.kwartyr.Warszawa/", members: null, lang: "ua" }
+  ],
+  krakow: [
+    { name: "Mieszkania i pokoje do wynajęcia - Kraków", url: "https://www.facebook.com/groups/wynajemkrakow/", members: null, lang: "pl" },
+    { name: "Stacja stancja Kraków - pokoje i mieszkania", url: "https://www.facebook.com/groups/stacjastancjakrakow/", members: null, lang: "pl" },
+    { name: "Краков. Комната, квартира, дом в аренду", url: "https://www.facebook.com/groups/420964518330884/", members: null, lang: "ru" },
+    { name: "Житло Краків. Оренда / купівля", url: "https://www.facebook.com/groups/estateinkrakow/", members: null, lang: "ua" }
+  ],
+  wroclaw: [
+    { name: "Wrocław na wynajem - mieszkania, pokoje", url: "https://www.facebook.com/groups/livehereWROCLOVE/", members: null, lang: "pl" },
+    { name: "Stacja stancja Wrocław - pokoje i mieszkania", url: "https://www.facebook.com/groups/stacjastancjawroclaw/", members: null, lang: "pl" },
+    { name: "Вроцлав. Комната, квартира, дом в аренду", url: "https://www.facebook.com/groups/244457332777718/", members: null, lang: "ru" },
+    { name: "Оренда житла у Вроцлаві", url: "https://www.facebook.com/groups/622402819249571/", members: null, lang: "ua" }
+  ],
+  gdansk: [
+    { name: "Stancje w Trójmieście. Mieszkania - Gdańsk", url: "https://www.facebook.com/groups/stancje.trojmiasto/", members: null, lang: "pl" },
+    { name: "Mieszkania do wynajęcia - Gdańsk, Sopot, Gdynia", url: "https://www.facebook.com/groups/wynajem.3miasto/", members: null, lang: "pl" },
+    { name: "Гданьск, Гдыня, Сопот. Аренда жилья", url: "https://www.facebook.com/groups/500493130352769/", members: null, lang: "ru" },
+    { name: "Житло Trójmiasto Гданськ — оренда, купівля", url: "https://www.facebook.com/groups/931147294272377/", members: null, lang: "ua" }
+  ],
+  poznan: [
+    { name: "Mieszkania i pokoje do wynajęcia - Poznań", url: "https://www.facebook.com/groups/poznanwynajem/", members: null, lang: "pl" },
+    { name: "Poznań Wynajmę Pokoje Mieszkania", url: "https://www.facebook.com/groups/wynajem/", members: null, lang: "pl" },
+    { name: "Аренда комнат, квартир в Познани", url: "https://www.facebook.com/groups/354430122916166/", members: null, lang: "ru" },
+    { name: "Житло у Познані | Польша", url: "https://www.facebook.com/groups/353348179107454/", members: null, lang: "ua" }
+  ],
+  lodz: [
+    { name: "Wynajem: pokoje, mieszkania, stancje Łódź", url: "https://www.facebook.com/groups/1142712565753245/", members: null, lang: "pl" },
+    { name: "Stacja stancja Łódź - pokoje i mieszkania", url: "https://www.facebook.com/groups/stacjastancjalodz/", members: null, lang: "pl" },
+    { name: "Жилье в Лодзи", url: "https://www.facebook.com/groups/306480459949658/", members: null, lang: "ru" },
+    { name: "Łódź — оренда кімнат, ночліги", url: "https://www.facebook.com/groups/360794365706607/", members: null, lang: "ua" }
+  ]
+};
+var FB_FLAGS = { pl: "🇵🇱", ru: "🇷🇺", ua: "🇺🇦" };
 function fbSearchUrl(q) {
   return "https://www.facebook.com/search/groups/?q=" + encodeURIComponent(q);
 }
+function openExternal(url) {
+  haptic("light");
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg && tg.openLink) tg.openLink(url);
+  else window.open(url, "_blank", "noopener");
+}
 function renderFbCard() {
-  var card = $("#fbCard");
-  if (state.type !== "room") { card.style.display = "none"; return; }
-  card.style.display = "";
   var names = KW_I18N.CITY_NAMES[state.city];
   $("#fbGroupsDesc").textContent = I18N.t("fbGroupsD", { city: I18N.cityName(state.city) });
-  var links = [
-    { t: I18N.t("fbGroupsPL"), url: fbSearchUrl("pokój do wynajęcia " + names.pl) },
-    { t: I18N.t("fbGroupsRU"), url: fbSearchUrl("подселение аренда " + names.ru) },
-    { t: I18N.t("fbGroupsUA"), url: fbSearchUrl("підселення оренда " + names.ua) }
-  ];
-  $("#fbLinks").innerHTML = links.map(function (x, i) {
-    return '<button class="btn ghost" data-fb="' + i + '">' +
-      '<span class="emi">' + Icons.svg("facebook") + "</span> " + App.esc(x.t) + "</button>";
+  var groups = FB_GROUPS[state.city] || [];
+  $("#fbLinks").innerHTML = groups.map(function (g, i) {
+    return '<button class="btn ghost sm" data-fbg="' + i + '" style="justify-content:flex-start; text-align:left">' +
+      '<span class="emi">' + Icons.svg("facebook") + "</span> " +
+      (FB_FLAGS[g.lang] || "") + " " + App.esc(g.name) +
+      (g.members ? ' <span class="muted" style="font-weight:400">· ' + App.esc(g.members) + "</span>" : "") +
+      "</button>";
   }).join("");
-  document.querySelectorAll("#fbLinks [data-fb]").forEach(function (b) {
-    b.onclick = function () {
-      haptic("light");
-      var url = links[+b.dataset.fb].url;
-      var tg = window.Telegram && window.Telegram.WebApp;
-      if (tg && tg.openLink) tg.openLink(url);
-      else window.open(url, "_blank", "noopener");
-    };
+  document.querySelectorAll("#fbLinks [data-fbg]").forEach(function (b) {
+    b.onclick = function () { openExternal(groups[+b.dataset.fbg].url); };
+  });
+  // строка «найти ещё»: живой поиск групп FB с готовым запросом по городу
+  var roomQ = state.type === "room";
+  var more = [
+    { t: I18N.t("fbGroupsPL"), url: fbSearchUrl((roomQ ? "pokój do wynajęcia " : "mieszkanie do wynajęcia ") + names.pl) },
+    { t: I18N.t("fbGroupsRU"), url: fbSearchUrl((roomQ ? "подселение " : "аренда жилья ") + names.ru) },
+    { t: I18N.t("fbGroupsUA"), url: fbSearchUrl((roomQ ? "підселення " : "оренда житла ") + names.ua) }
+  ];
+  $("#fbMore").innerHTML = App.esc(I18N.t("fbGroupsMore")) + " " +
+    more.map(function (x, i) {
+      return '<a href="#" data-fbm="' + i + '" style="color:var(--accent)">' + App.esc(x.t) + "</a>";
+    }).join(" · ");
+  document.querySelectorAll("#fbMore [data-fbm]").forEach(function (a) {
+    a.onclick = function (e) { e.preventDefault(); openExternal(more[+a.dataset.fbm].url); };
   });
 }
 function renderDistricts() {
