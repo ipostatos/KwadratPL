@@ -36,6 +36,30 @@
   <div id="favList"></div>
 
   <div class="section-title" data-i18n="secSettings"></div>
+
+  <!-- тихие часы: ночью буфер, утром сводка (хранится на сервере) -->
+  <div class="saved-item" style="flex-wrap:wrap">
+    <div class="ic-tile gold" data-icon="moon"></div>
+    <div class="info">
+      <div class="name" data-i18n="quietT"></div>
+      <div class="desc" data-i18n="quietD"></div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="toggleQuiet">
+      <span class="knob"></span>
+    </label>
+    <div id="quietHours" style="display:none; flex-basis:100%; margin-top:10px; gap:10px">
+      <div style="flex:1">
+        <label class="flabel" data-i18n="quietFrom"></label>
+        <select id="quietFrom"></select>
+      </div>
+      <div style="flex:1">
+        <label class="flabel" data-i18n="quietTo"></label>
+        <select id="quietTo"></select>
+      </div>
+    </div>
+  </div>
+
   <div class="saved-item">
     <div class="ic-tile violet" data-icon="sliders"></div>
     <div class="info">
@@ -182,6 +206,34 @@ function closeSheet() { $("#overlay").classList.remove("open"); }
 $("#overlay").onclick = function (e) { if (e.target === e.currentTarget) closeSheet(); };
 
 function renderSettings() {
+  // ── тихие часы ──
+  var qCb = $("#toggleQuiet"), qBox = $("#quietHours");
+  var qFrom = $("#quietFrom"), qTo = $("#quietTo");
+  function hourOpts(sel, val) {
+    sel.innerHTML = "";
+    for (var h = 0; h < 24; h++) {
+      sel.innerHTML += '<option value="' + h + '"' + (h === val ? " selected" : "") + ">" +
+        (h < 10 ? "0" : "") + h + ":00</option>";
+    }
+  }
+  function syncQuietUI() {
+    var q = App.getQuiet();
+    qCb.checked = !!q;
+    qBox.style.display = q ? "flex" : "none";
+    hourOpts(qFrom, q ? q.from : 22);
+    hourOpts(qTo, q ? q.to : 8);
+  }
+  function saveQuiet() {
+    App.setQuiet(qCb.checked ? { from: +qFrom.value, to: +qTo.value } : null);
+    if (typeof haptic === "function") haptic("select");
+    syncQuietUI();
+  }
+  qCb.onchange = saveQuiet;
+  qFrom.onchange = saveQuiet;
+  qTo.onchange = saveQuiet;
+  syncQuietUI();
+
+  // ── источник Facebook (демо) ──
   var fbCb = $("#toggleFb");
   var enabled = localStorage.getItem("kw_src_fb") === "1";
   fbCb.checked = enabled;

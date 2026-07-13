@@ -175,10 +175,17 @@
         headers: { "Content-Type": "application/json", "Authorization": "tma " + init },
         body: JSON.stringify({
           subs: saved,
-          lang: (global.I18N && global.I18N.lang) || "ru"
+          lang: (global.I18N && global.I18N.lang) || "ru",
+          quiet: load("kw_quiet", null)
         })
       }).catch(function () {});
     }, 400);
+  }
+  function getQuiet() { return load("kw_quiet", null); }
+  function setQuiet(q) {          // {from,to} либо null = выключить
+    if (q) localStorage.setItem("kw_quiet", JSON.stringify(q));
+    else localStorage.removeItem("kw_quiet");
+    syncSubs();
   }
   // первый вход на новом устройстве: если локально пусто — тянем с сервера
   (function pullSubs() {
@@ -190,6 +197,9 @@
         if (d && d.subs && d.subs.length) {
           Array.prototype.push.apply(saved, d.subs);
           localStorage.setItem("kw_saved", JSON.stringify(saved));
+        }
+        if (d && d.quiet && !localStorage.getItem("kw_quiet")) {
+          localStorage.setItem("kw_quiet", JSON.stringify(d.quiet));
         }
       })
       .catch(function () {});
@@ -279,6 +289,7 @@
     generatedAt: null,
     makeListing: function (over) { return makeListing(Math.random, over, "r"); },
     saved: saved, favs: favs, persist: persist,
+    getQuiet: getQuiet, setQuiet: setQuiet,
     matches: matches, searchLabel: searchLabel, districtsFor: districtsFor,
     toast: toast, timeAgo: timeAgo, esc: esc,
     priceUnit: function (type) { return I18N.t(type === "short" ? "perDay" : "perMonth"); },

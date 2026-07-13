@@ -60,7 +60,7 @@
     },
 
     /* ── главная ── */
-    homeSub:    { ru: "Аренда жилья в Польше — поиск и мгновенные уведомления", pl: "Wynajem mieszkań w Polsce — wyszukiwanie i natychmiastowe powiadomienia", ua: "Оренда житла в Польщі — пошук і миттєві сповіщення", en: "Rentals in Poland — search and instant alerts" },
+    homeSub:    { ru: "Новый опыт поиска жилья в Польше — живые объявления и мгновенные уведомления", pl: "Nowe doświadczenie szukania mieszkania w Polsce — ogłoszenia na żywo i natychmiastowe powiadomienia", ua: "Новий досвід пошуку житла в Польщі — живі оголошення та миттєві сповіщення", en: "A new way to find a home in Poland — live listings and instant alerts" },
     nextLabel:  { ru: "С чего начать", pl: "Od czego zacząć", ua: "З чого почати", en: "Where to start" },
     nextTitle:  { ru: "Найти квартиру", pl: "Znajdź mieszkanie", ua: "Знайти квартиру", en: "Find a flat" },
     nextHint:   { ru: "6 городов · квартиры, комнаты, посуточно · снижения цен", pl: "6 miast · mieszkania, pokoje, na doby · obniżki cen", ua: "6 міст · квартири, кімнати, подобово · зниження цін", en: "6 cities · flats, rooms, daily · price drops" },
@@ -83,7 +83,7 @@
     cellFavD:   { ru: "Отложенные варианты", pl: "Zapisane oferty", ua: "Відкладені варіанти", en: "Saved options" },
     aboutT:     { ru: "О сервисе", pl: "O serwisie", ua: "Про сервіс", en: "About" },
     aboutD:     { ru: "Как работают уведомления и откуда данные", pl: "Jak działają powiadomienia i skąd dane", ua: "Як працюють сповіщення і звідки дані", en: "How alerts work and where data comes from" },
-    footHome:   { ru: "Kwadrat PL — поиск аренды в Польше.\nОбъявления загружаются с OLX и обновляются на сервере.", pl: "Kwadrat PL — wyszukiwarka najmu w Polsce.\nOgłoszenia pochodzą z OLX i są odświeżane na serwerze.", ua: "Kwadrat PL — пошук оренди в Польщі.\nОголошення завантажуються з OLX і оновлюються на сервері.", en: "Kwadrat PL — rental search in Poland.\nListings come from OLX and refresh on the server." },
+    footHome:   { ru: "Kwadrat PL · Пусть всё найдётся 🏠\nОбъявления загружаются с OLX и обновляются каждые несколько минут.", pl: "Kwadrat PL · Niech się znajdzie 🏠\nOgłoszenia pochodzą z OLX i są odświeżane co kilka minut.", ua: "Kwadrat PL · Хай усе знайдеться 🏠\nОголошення завантажуються з OLX і оновлюються кожні кілька хвилин.", en: "Kwadrat PL · Let the right place find you 🏠\nListings come from OLX and refresh every few minutes." },
     footHomeDemo: { ru: "Kwadrat PL · демо-режим.\nСервер данных недоступен, показаны тестовые объявления.", pl: "Kwadrat PL · tryb demo.\nSerwer danych niedostępny, pokazano ogłoszenia testowe.", ua: "Kwadrat PL · демо-режим.\nСервер даних недоступний, показано тестові оголошення.", en: "Kwadrat PL · demo mode.\nData server unavailable, showing test listings." },
     subsActive: { ru: "Подписки активны", pl: "Subskrypcje aktywne", ua: "Підписки активні", en: "Alerts active" },
     trackedN:   { ru: "Отслеживается поисков: {n}", pl: "Śledzone wyszukiwania: {n}", ua: "Відстежується пошуків: {n}", en: "Tracked searches: {n}" },
@@ -165,10 +165,14 @@
     fbGroupsPL: { ru: "по-польски", pl: "po polsku", ua: "польською", en: "in Polish" },
     fbGroupsRU: { ru: "по-русски", pl: "po rosyjsku", ua: "російською", en: "in Russian" },
     fbGroupsUA: { ru: "по-украински", pl: "po ukraińsku", ua: "українською", en: "in Ukrainian" },
+    quietT: { ru: "Тихие часы", pl: "Cisza nocna", ua: "Тихі години", en: "Quiet hours" },
+    quietD: { ru: "Ночью бот молчит, утром пришлёт одну сводку за всё время паузы.", pl: "W nocy bot milczy, rano wyśle jedno podsumowanie.", ua: "Уночі бот мовчить, вранці надішле одне зведення за час паузи.", en: "The bot stays silent at night and sends one morning digest." },
+    quietFrom: { ru: "С", pl: "Od", ua: "З", en: "From" },
+    quietTo:   { ru: "До", pl: "Do", ua: "До", en: "To" },
     srcOn:  { ru: "Источник включён", pl: "Źródło włączone", ua: "Джерело увімкнено", en: "Source enabled" },
     srcOff: { ru: "Источник выключен", pl: "Źródło wyłączone", ua: "Джерело вимкнено", en: "Source disabled" },
     sourceLabel: { ru: "Источник", pl: "Źródło", ua: "Джерело", en: "Source" },
-    footAbout: { ru: "Kwadrat PL · Mini App для Telegram", pl: "Kwadrat PL · Mini App dla Telegrama", ua: "Kwadrat PL · Mini App для Telegram", en: "Kwadrat PL · Telegram Mini App" },
+    footAbout: { ru: "Kwadrat PL · Пусть всё найдётся 🏠", pl: "Kwadrat PL · Niech się znajdzie 🏠", ua: "Kwadrat PL · Хай усе знайдеться 🏠", en: "Kwadrat PL · Let the right place find you 🏠" },
 
     /* ── раздел «Полезное» ── */
     secUseful:   { ru: "Полезное", pl: "Przydatne", ua: "Корисне", en: "Useful" },

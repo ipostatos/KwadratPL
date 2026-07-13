@@ -30,6 +30,8 @@ import time
 import urllib.parse
 from contextlib import asynccontextmanager
 from pathlib import Path
+from zoneinfo import ZoneInfo
+from datetime import datetime
 
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command, CommandStart
@@ -83,6 +85,19 @@ def init_db():
             c.execute("ALTER TABLE users ADD COLUMN muted INTEGER DEFAULT 0")
         except sqlite3.OperationalError:
             pass  # колонка уже есть
+        # миграция: тихие часы (Europe/Warsaw), NULL = выключены
+        for col in ("quiet_from", "quiet_to"):
+            try:
+                c.execute(f"ALTER TABLE users ADD COLUMN {col} INTEGER")
+            except sqlite3.OperationalError:
+                pass
+        # буфер уведомлений, накопленных за тихие часы (утром уйдёт сводкой)
+        c.execute("""CREATE TABLE IF NOT EXISTS pending(
+            user_id INTEGER NOT NULL,
+            listing_id TEXT NOT NULL,
+            ts INTEGER,
+            PRIMARY KEY (user_id, listing_id)
+        )""")
 
 
 # ── initData: проверка подписи Telegram WebApp ─────────────────────────────
@@ -159,21 +174,33 @@ T = {
     "unit_long": {"ru": "zł/мес", "pl": "zł/mies.", "ua": "zł/міс", "en": "zł/mo"},
     "unit_short": {"ru": "zł/сутки", "pl": "zł/dobę", "ua": "zł/доба", "en": "zł/day"},
     "start": {
-        "ru": "👋 Привет! Я Kwadrat PL — поиск аренды жилья в Польше.\n\n"
+        "ru": "👋 Привет! Я Kwadrat PL — новый опыт поиска жилья в Польше.\n\n"
               "🏠 Квартиры, комнаты и посуточное жильё в 6 городах, живые объявления с OLX.\n"
-              "🔔 Подпишитесь на поиск в приложении — новые объявления придут прямо сюда.",
-        "pl": "👋 Cześć! Jestem Kwadrat PL — wyszukiwarka najmu w Polsce.\n\n"
+              "🔔 Подпишитесь на поиск в приложении — новые объявления придут прямо сюда.\n"
+              "📚 Внутри — гайды: кауция, договор, готовые фразы по-польски.\n\n"
+              "Пусть всё получится. Пусть всё найдётся 🏠",
+        "pl": "👋 Cześć! Jestem Kwadrat PL — nowe doświadczenie szukania mieszkania w Polsce.\n\n"
               "🏠 Mieszkania, pokoje i noclegi w 6 miastach, ogłoszenia na żywo z OLX.\n"
-              "🔔 Subskrybuj wyszukiwanie w aplikacji — nowe ogłoszenia trafią prosto tutaj.",
-        "ua": "👋 Привіт! Я Kwadrat PL — пошук оренди житла в Польщі.\n\n"
+              "🔔 Subskrybuj wyszukiwanie w aplikacji — nowe ogłoszenia trafią prosto tutaj.\n"
+              "📚 W środku przewodniki: kaucja, umowa, gotowe wiadomości.\n\n"
+              "Niech się uda. Niech się znajdzie 🏠",
+        "ua": "👋 Привіт! Я Kwadrat PL — новий досвід пошуку житла в Польщі.\n\n"
               "🏠 Квартири, кімнати й подобове житло у 6 містах, живі оголошення з OLX.\n"
-              "🔔 Підпишіться на пошук у застосунку — нові оголошення надійдуть просто сюди.",
-        "en": "👋 Hi! I'm Kwadrat PL — rental search in Poland.\n\n"
+              "🔔 Підпишіться на пошук у застосунку — нові оголошення надійдуть просто сюди.\n"
+              "📚 Усередині — гайди: кауція, договір, готові фрази польською.\n\n"
+              "Хай усе вдасться. Хай усе знайдеться 🏠",
+        "en": "👋 Hi! I'm Kwadrat PL — a new way to find a home in Poland.\n\n"
               "🏠 Flats, rooms and short stays in 6 cities, live listings from OLX.\n"
-              "🔔 Subscribe to a search in the app — new listings will arrive right here.",
+              "🔔 Subscribe to a search in the app — new listings will arrive right here.\n"
+              "📚 Inside: guides on deposits, contracts and ready-made Polish messages.\n\n"
+              "May it work out. Let the right place find you 🏠",
     },
     "start_btn": {"ru": "🔎 Открыть поиск", "pl": "🔎 Otwórz wyszukiwarkę",
                   "ua": "🔎 Відкрити пошук", "en": "🔎 Open search"},
+    "digest": {"ru": "🌅 Пока уведомления были на паузе, по вашим подпискам появилось новых объявлений: {n}. Загляните в приложение!",
+               "pl": "🌅 Podczas ciszy nocnej pojawiło się {n} nowych ogłoszeń z Twoich subskrypcji. Zajrzyj do aplikacji!",
+               "ua": "🌅 Поки сповіщення були на паузі, за вашими підписками з'явилося нових оголошень: {n}. Загляньте в застосунок!",
+               "en": "🌅 While alerts were paused, {n} new listings matched your searches. Take a look in the app!"},
     "muted": {"ru": "🔕 Уведомления выключены. Включить снова: /on",
               "pl": "🔕 Powiadomienia wyłączone. Włącz ponownie: /on",
               "ua": "🔕 Сповіщення вимкнено. Увімкнути знову: /on",
@@ -212,6 +239,19 @@ def fmt_listing(l: dict, lang: str) -> str:
     lines.append(" · ".join(bits))
     lines.append(f"📍 {place}")
     return "\n".join(lines)
+
+
+# ── тихие часы (Europe/Warsaw) ─────────────────────────────────────────────
+TZ = ZoneInfo("Europe/Warsaw")
+
+
+def in_quiet(qf, qt, hour=None) -> bool:
+    """True, если сейчас внутри тихого окна [qf, qt). Окно может идти через
+    полночь (22 → 8). qf == qt или NULL = выключено."""
+    if qf is None or qt is None or qf == qt:
+        return False
+    h = hour if hour is not None else datetime.now(TZ).hour
+    return qf <= h < qt if qf < qt else (h >= qf or h < qt)
 
 
 # ── бот ────────────────────────────────────────────────────────────────────
@@ -275,6 +315,41 @@ async def notify_user(user_id: int, lang: str, hits: list[dict]):
             pass
 
 
+async def digest_loop():
+    """Раз в 5 минут: пользователям, у которых тихое окно закончилось и есть
+    накопленный буфер, шлём одну утреннюю сводку и чистим буфер."""
+    while True:
+        try:
+            with db() as c:
+                rows = c.execute("""
+                    SELECT p.user_id, COUNT(*) AS n, u.lang, u.quiet_from, u.quiet_to
+                    FROM pending p JOIN users u ON u.id = p.user_id
+                    GROUP BY p.user_id
+                """).fetchall()
+                done = []
+                for r in rows:
+                    if in_quiet(r["quiet_from"], r["quiet_to"]):
+                        continue  # окно ещё идёт
+                    lang = r["lang"] or "ru"
+                    kb = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(
+                        text=T["start_btn"][lang], web_app=WebAppInfo(url=WEBAPP_URL))]])
+                    try:
+                        await bot.send_message(
+                            r["user_id"], T["digest"][lang].format(n=r["n"]),
+                            reply_markup=kb)
+                    except Exception as e:
+                        log.warning("digest %s failed: %s", r["user_id"], e)
+                    done.append((r["user_id"],))
+                if done:
+                    c.executemany("DELETE FROM pending WHERE user_id=?", done)
+                # страховка: буфер старше 3 дней никому не нужен
+                c.execute("DELETE FROM pending WHERE ts < ?",
+                          (int(time.time()) - 3 * 86400,))
+        except Exception:
+            log.exception("digest loop error")
+        await asyncio.sleep(300)
+
+
 # ── FastAPI ────────────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -288,9 +363,11 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         log.warning("set_my_commands failed: %s", e)
     task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
+    digest = asyncio.create_task(digest_loop())
     log.info("bot polling started; listings at %s", LISTINGS_PATH)
     yield
     task.cancel()
+    digest.cancel()
     await bot.session.close()
 
 
@@ -335,24 +412,35 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
         # чистка: не даём таблице расти бесконечно (60 дней достаточно)
         c.execute("DELETE FROM seen WHERE ts < ?", (now - 60 * 86400,))
         rows = c.execute("""
-            SELECT s.user_id, s.data, u.lang FROM subs s
+            SELECT s.user_id, s.data, u.lang, u.quiet_from, u.quiet_to FROM subs s
             JOIN users u ON u.id = s.user_id
             WHERE s.notify = 1 AND COALESCE(u.muted, 0) = 0
         """).fetchall()
 
     notified = 0
     if not first_run and fresh and rows:
-        per_user: dict[int, tuple[str, list]] = {}
+        per_user: dict[int, tuple[str, bool, list]] = {}
         for r in rows:
             sub = json.loads(r["data"])
+            quiet = in_quiet(r["quiet_from"], r["quiet_to"])
             for l in fresh:
                 if matches(l, sub):
-                    per_user.setdefault(r["user_id"], (r["lang"], []))[1].append(l)
-        for uid, (lang, hits) in per_user.items():
+                    per_user.setdefault(r["user_id"], (r["lang"], quiet, []))[2].append(l)
+        buffered = []
+        for uid, (lang, quiet, hits) in per_user.items():
             # один и тот же лот может подойти под две подписки — дедуп
             uniq = list({l["id"]: l for l in hits}.values())
-            asyncio.create_task(notify_user(uid, lang or "ru", uniq))
-            notified += 1
+            if quiet:
+                # тихие часы: копим в буфер, утром уйдёт одной сводкой
+                buffered.extend((uid, l["id"], now) for l in uniq)
+            else:
+                asyncio.create_task(notify_user(uid, lang or "ru", uniq))
+                notified += 1
+        if buffered:
+            with db() as c:
+                c.executemany(
+                    "INSERT OR IGNORE INTO pending(user_id, listing_id, ts) VALUES(?,?,?)",
+                    buffered)
     log.info("ingest: %d listings, %d fresh, %d users notified%s",
              len(listings), len(fresh), notified, " (bootstrap)" if first_run else "")
     return {"accepted": len(listings), "fresh": len(fresh), "notified_users": notified}
@@ -370,12 +458,17 @@ def get_subs(authorization: str = Header("")):
     with db() as c:
         rows = c.execute("SELECT data, notify FROM subs WHERE user_id=? ORDER BY idx",
                          (user["id"],)).fetchall()
+        u = c.execute("SELECT quiet_from, quiet_to FROM users WHERE id=?",
+                      (user["id"],)).fetchone()
     out = []
     for r in rows:
         d = json.loads(r["data"])
         d["notify"] = bool(r["notify"])
         out.append(d)
-    return {"subs": out}
+    quiet = None
+    if u and u["quiet_from"] is not None and u["quiet_to"] is not None:
+        quiet = {"from": u["quiet_from"], "to": u["quiet_to"]}
+    return {"subs": out, "quiet": quiet}
 
 
 @app.put("/api/subs")
@@ -387,10 +480,21 @@ async def put_subs(request: Request, authorization: str = Header("")):
         raise HTTPException(422, "subs must be a list (max 50)")
     lang = body.get("lang") if body.get("lang") in ("ru", "pl", "ua", "en") \
         else lang_of(user.get("language_code"))
+    # тихие часы: {"from": 22, "to": 8} либо null/отсутствие = выключены
+    q = body.get("quiet")
+    qf = qt = None
+    if isinstance(q, dict):
+        try:
+            qf, qt = int(q.get("from")), int(q.get("to"))
+        except (TypeError, ValueError):
+            raise HTTPException(422, "quiet.from/to must be ints")
+        if not (0 <= qf <= 23 and 0 <= qt <= 23):
+            raise HTTPException(422, "quiet hours must be 0..23")
     with db() as c:
         c.execute("INSERT OR IGNORE INTO users(id, lang, first_seen) VALUES(?,?,?)",
                   (user["id"], lang, int(time.time())))
-        c.execute("UPDATE users SET lang=? WHERE id=?", (lang, user["id"]))
+        c.execute("UPDATE users SET lang=?, quiet_from=?, quiet_to=? WHERE id=?",
+                  (lang, qf, qt, user["id"]))
         c.execute("DELETE FROM subs WHERE user_id=?", (user["id"],))
         c.executemany(
             "INSERT INTO subs(user_id, idx, data, notify) VALUES(?,?,?,?)",
