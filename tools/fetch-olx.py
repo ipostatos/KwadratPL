@@ -9,7 +9,7 @@
 #   */15 * * * * python3 /opt/kwadratpl/tools/fetch-olx.py /opt/kwadratpl/webapp/data/listings.json
 #
 # Схема элемента listings[] совпадает с ожиданиями webapp/app.js:
-#   id "olx-<id>", city (слаг), district|null, type long|short, rooms|null,
+#   id "olx-<id>", city (слаг), district|null, type long|short|room, rooms|null,
 #   area|null, price, oldPrice|null, floor|null, pets|null, parking|null,
 #   balcony|null, photo|null, url, title, descr, source "OLX", ts (epoch ms)
 # ===========================================================================
@@ -35,8 +35,9 @@ CITIES = {
     "lodz": 10609,
 }
 # категория OLX → тип аренды в приложении
-CATEGORIES = {15: "long", 1816: "short"}  # mieszkania/wynajem, noclegi
-LIMIT = {"long": 40, "short": 10}
+# 15 mieszkania/wynajem, 1816 noclegi, 11 stancje i pokoje
+CATEGORIES = {15: "long", 1816: "short", 11: "room"}
+LIMIT = {"long": 40, "short": 10, "room": 25}
 
 ROOMS = {"one": 1, "two": 2, "three": 3, "four": 4}
 TAG_RE = re.compile(r"<[^>]+>")

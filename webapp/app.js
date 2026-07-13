@@ -70,12 +70,16 @@
     var cityKeys = Object.keys(CITIES);
     var city = over.city || cityKeys[Math.floor(rnd() * cityKeys.length)];
     var ds = CITIES[city].districts;
-    var rooms = over.rooms || 1 + Math.floor(rnd() * 4);
-    var area = 22 + rooms * 14 + Math.floor(rnd() * 20);
     var type = over.type || (rnd() < 0.8 ? "long" : "short");
+    var rooms = type === "room" ? 1 : (over.rooms || 1 + Math.floor(rnd() * 4));
+    var area = type === "room"
+      ? 10 + Math.floor(rnd() * 15)
+      : 22 + rooms * 14 + Math.floor(rnd() * 20);
     var base = type === "long"
       ? 1400 + rooms * 800 + Math.floor(rnd() * 1200)
-      : 120 + rooms * 80 + Math.floor(rnd() * 150);
+      : type === "room"
+        ? 800 + Math.floor(rnd() * 900)
+        : 120 + rooms * 80 + Math.floor(rnd() * 150);
     var drop = rnd() < 0.18 ? Math.round(base * 0.08 / 50) * 50 : 0;
     return {
       id: (idPrefix || "d") + _seq++,
@@ -105,6 +109,7 @@
       var n = Math.max(10, Math.ceil(CITIES[city].districts.length * 0.8));
       for (var i = 0; i < n; i++) arr.push(makeListing(rnd, { city: city, type: "long" }));
       for (var j = 0; j < 4; j++) arr.push(makeListing(rnd, { city: city, type: "short" }));
+      for (var m = 0; m < 5; m++) arr.push(makeListing(rnd, { city: city, type: "room" }));
       // Facebook-группы — демо-источник, выключен по умолчанию (настройки);
       // генерируем ВСЕГДА (сид общий), но включаем в выдачу только по флагу
       for (var k = 0; k < 3; k++) {
@@ -235,7 +240,7 @@
     saved: saved, favs: favs, persist: persist,
     matches: matches, searchLabel: searchLabel, districtsFor: districtsFor,
     toast: toast, timeAgo: timeAgo, esc: esc,
-    priceUnit: function (type) { return I18N.t(type === "long" ? "perMonth" : "perDay"); },
+    priceUnit: function (type) { return I18N.t(type === "short" ? "perDay" : "perMonth"); },
     cityName: function (key) { return I18N.cityName(key); },
     isFav: function (id) { return favs.some(function (f) { return f.id === id; }); },
     toggleFav: function (l) {

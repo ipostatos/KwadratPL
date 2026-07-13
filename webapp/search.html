@@ -41,6 +41,7 @@
         <label class="flabel" data-i18n="rentType"></label>
         <div class="seg" id="fType">
           <button data-val="long" data-i18n="long"></button>
+          <button data-val="room" data-i18n="room"></button>
           <button data-val="short" data-i18n="short"></button>
         </div>
       </div>
@@ -59,7 +60,7 @@
         <input type="number" id="fAreaMin" placeholder="0" min="0" step="5">
       </div>
     </div>
-    <div class="frow">
+    <div class="frow" id="rowRooms">
       <div class="fcol">
         <label class="flabel" data-i18n="roomsLabel"></label>
         <div class="seg" id="fRooms">
@@ -84,6 +85,15 @@
     <div class="fabs">
       <button class="btn" id="btnSave"><span class="emi" data-icon="bell"></span> <span data-i18n="subscribe"></span></button>
     </div>
+  </div>
+
+  <!-- Facebook-группы подселения — виден при типе «Комната» -->
+  <div class="card" id="fbCard" style="display:none; margin-bottom:var(--sp-2)">
+    <div class="h2" style="display:flex; align-items:center; gap:8px">
+      <span class="emi" data-icon="users"></span><span data-i18n="fbGroupsT"></span>
+    </div>
+    <p class="muted" id="fbGroupsDesc" style="font-size:var(--fs-sm)"></p>
+    <div id="fbLinks" style="display:flex; flex-direction:column; gap:8px"></div>
   </div>
 
   <div class="toolbar">
@@ -116,7 +126,7 @@ var qs = new URLSearchParams(location.search);
 var state = {
   city: App.CITIES[qs.get("city")] ? qs.get("city") : "warszawa",
   district: "",
-  type: qs.get("type") === "short" ? "short" : "long",
+  type: ["short", "room"].indexOf(qs.get("type")) >= 0 ? qs.get("type") : "long",
   priceMin: null, priceMax: null, areaMin: null,
   rooms: 0, pets: false, parking: false, balcony: false, sort: "new"
 };
@@ -135,6 +145,51 @@ function renderControls() {
   });
   document.querySelectorAll("#fRooms button").forEach(function (b) {
     b.classList.toggle("active", +b.dataset.val === state.rooms);
+  });
+  syncTypeUI();
+}
+
+/* у комнат нет счётчика комнат: фильтр прячем и сбрасываем,
+   иначе реальные объявления (rooms=null) отфильтруются в ноль */
+function syncTypeUI() {
+  var isRoom = state.type === "room";
+  $("#rowRooms").style.display = isRoom ? "none" : "";
+  if (isRoom && state.rooms) {
+    state.rooms = 0;
+    document.querySelectorAll("#fRooms button").forEach(function (x) {
+      x.classList.toggle("active", +x.dataset.val === 0);
+    });
+  }
+  renderFbCard();
+}
+
+/* ── Facebook-группы подселения: живые ссылки на поиск групп по городу ── */
+function fbSearchUrl(q) {
+  return "https://www.facebook.com/search/groups/?q=" + encodeURIComponent(q);
+}
+function renderFbCard() {
+  var card = $("#fbCard");
+  if (state.type !== "room") { card.style.display = "none"; return; }
+  card.style.display = "";
+  var names = KW_I18N.CITY_NAMES[state.city];
+  $("#fbGroupsDesc").textContent = I18N.t("fbGroupsD", { city: I18N.cityName(state.city) });
+  var links = [
+    { t: I18N.t("fbGroupsPL"), url: fbSearchUrl("pokój do wynajęcia " + names.pl) },
+    { t: I18N.t("fbGroupsRU"), url: fbSearchUrl("подселение аренда " + names.ru) },
+    { t: I18N.t("fbGroupsUA"), url: fbSearchUrl("підселення оренда " + names.ua) }
+  ];
+  $("#fbLinks").innerHTML = links.map(function (x, i) {
+    return '<button class="btn ghost" data-fb="' + i + '">' +
+      '<span class="emi">' + Icons.svg("facebook") + "</span> " + App.esc(x.t) + "</button>";
+  }).join("");
+  document.querySelectorAll("#fbLinks [data-fb]").forEach(function (b) {
+    b.onclick = function () {
+      haptic("light");
+      var url = links[+b.dataset.fb].url;
+      var tg = window.Telegram && window.Telegram.WebApp;
+      if (tg && tg.openLink) tg.openLink(url);
+      else window.open(url, "_blank", "noopener");
+    };
   });
 }
 function renderDistricts() {
@@ -272,7 +327,7 @@ function closeSheet() { $("#overlay").classList.remove("open"); }
 /* ── события ── */
 $("#fCity").onchange = function (e) {
   state.city = e.target.value; state.district = "";
-  renderDistricts(); renderList();
+  renderDistricts(); renderFbCard(); renderList();
 };
 $("#fDistrict").onchange = function (e) { state.district = e.target.value; renderList(); };
 document.querySelectorAll("#fType button").forEach(function (b) {
@@ -281,6 +336,7 @@ document.querySelectorAll("#fType button").forEach(function (b) {
     document.querySelectorAll("#fType button").forEach(function (x) {
       x.classList.toggle("active", x === b);
     });
+    syncTypeUI();
     renderList();
   };
 });
