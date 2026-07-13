@@ -83,7 +83,7 @@
     cellFavD:   { ru: "Отложенные варианты", pl: "Zapisane oferty", ua: "Відкладені варіанти", en: "Saved options" },
     aboutT:     { ru: "О сервисе", pl: "O serwisie", ua: "Про сервіс", en: "About" },
     aboutD:     { ru: "Как работают уведомления и откуда данные", pl: "Jak działają powiadomienia i skąd dane", ua: "Як працюють сповіщення і звідки дані", en: "How alerts work and where data comes from" },
-    footHome:   { ru: "Kwadrat PL · Пусть всё найдётся 🏠\nОбъявления загружаются с OLX и обновляются каждые несколько минут.", pl: "Kwadrat PL · Niech się znajdzie 🏠\nOgłoszenia pochodzą z OLX i są odświeżane co kilka minut.", ua: "Kwadrat PL · Хай усе знайдеться 🏠\nОголошення завантажуються з OLX і оновлюються кожні кілька хвилин.", en: "Kwadrat PL · Let the right place find you 🏠\nListings come from OLX and refresh every few minutes." },
+    footHome:   { ru: "Kwadrat PL · Пусть дом найдётся! 🏠\nОбъявления загружаются с OLX и обновляются каждые несколько минут.", pl: "Kwadrat PL · Niech dom się znajdzie! 🏠\nOgłoszenia pochodzą z OLX i są odświeżane co kilka minut.", ua: "Kwadrat PL · Хай дім знайдеться! 🏠\nОголошення завантажуються з OLX і оновлюються кожні кілька хвилин.", en: "Kwadrat PL · May your home find you! 🏠\nListings come from OLX and refresh every few minutes." },
     footHomeDemo: { ru: "Kwadrat PL · демо-режим.\nСервер данных недоступен, показаны тестовые объявления.", pl: "Kwadrat PL · tryb demo.\nSerwer danych niedostępny, pokazano ogłoszenia testowe.", ua: "Kwadrat PL · демо-режим.\nСервер даних недоступний, показано тестові оголошення.", en: "Kwadrat PL · demo mode.\nData server unavailable, showing test listings." },
     subsActive: { ru: "Подписки активны", pl: "Subskrypcje aktywne", ua: "Підписки активні", en: "Alerts active" },
     trackedN:   { ru: "Отслеживается поисков: {n}", pl: "Śledzone wyszukiwania: {n}", ua: "Відстежується пошуків: {n}", en: "Tracked searches: {n}" },
@@ -172,7 +172,7 @@
     srcOn:  { ru: "Источник включён", pl: "Źródło włączone", ua: "Джерело увімкнено", en: "Source enabled" },
     srcOff: { ru: "Источник выключен", pl: "Źródło wyłączone", ua: "Джерело вимкнено", en: "Source disabled" },
     sourceLabel: { ru: "Источник", pl: "Źródło", ua: "Джерело", en: "Source" },
-    footAbout: { ru: "Kwadrat PL · Пусть всё найдётся 🏠", pl: "Kwadrat PL · Niech się znajdzie 🏠", ua: "Kwadrat PL · Хай усе знайдеться 🏠", en: "Kwadrat PL · Let the right place find you 🏠" },
+    footAbout: { ru: "Kwadrat PL · Пусть дом найдётся! 🏠", pl: "Kwadrat PL · Niech dom się znajdzie! 🏠", ua: "Kwadrat PL · Хай дім знайдеться! 🏠", en: "Kwadrat PL · May your home find you! 🏠" },
 
     /* ── раздел «Полезное» ── */
     secUseful:   { ru: "Полезное", pl: "Przydatne", ua: "Корисне", en: "Useful" },

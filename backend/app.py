@@ -22,6 +22,7 @@
 import asyncio
 import hashlib
 import hmac
+import html
 import json
 import logging
 import os
@@ -34,6 +35,7 @@ from zoneinfo import ZoneInfo
 from datetime import datetime
 
 from aiogram import Bot, Dispatcher
+from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter
 from aiogram.filters import Command, CommandStart
 from aiogram.types import BotCommand
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
@@ -112,8 +114,9 @@ def validate_init_data(init_data: str) -> dict:
         calc = hmac.new(secret, check.encode(), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(calc, their_hash):
             raise ValueError("bad hash")
-        # auth_date не старше суток — initData не должна жить вечно
-        if time.time() - int(data.get("auth_date", "0")) > 86400:
+        # auth_date не старше часа — initData не должна жить вечно
+        # (Mini App выдаёт свежую initData при каждом открытии)
+        if time.time() - int(data.get("auth_date", "0")) > 3600:
             raise ValueError("stale auth_date")
         return json.loads(data["user"])
     except HTTPException:
@@ -178,22 +181,22 @@ T = {
               "🏠 Квартиры, комнаты и посуточное жильё в 6 городах, живые объявления с OLX.\n"
               "🔔 Подпишитесь на поиск в приложении — новые объявления придут прямо сюда.\n"
               "📚 Внутри — гайды: кауция, договор, готовые фразы по-польски.\n\n"
-              "Пусть всё получится. Пусть всё найдётся 🏠",
+              "Пусть дом найдётся! 🏠",
         "pl": "👋 Cześć! Jestem Kwadrat PL — nowe doświadczenie szukania mieszkania w Polsce.\n\n"
               "🏠 Mieszkania, pokoje i noclegi w 6 miastach, ogłoszenia na żywo z OLX.\n"
               "🔔 Subskrybuj wyszukiwanie w aplikacji — nowe ogłoszenia trafią prosto tutaj.\n"
               "📚 W środku przewodniki: kaucja, umowa, gotowe wiadomości.\n\n"
-              "Niech się uda. Niech się znajdzie 🏠",
+              "Niech dom się znajdzie! 🏠",
         "ua": "👋 Привіт! Я Kwadrat PL — новий досвід пошуку житла в Польщі.\n\n"
               "🏠 Квартири, кімнати й подобове житло у 6 містах, живі оголошення з OLX.\n"
               "🔔 Підпишіться на пошук у застосунку — нові оголошення надійдуть просто сюди.\n"
               "📚 Усередині — гайди: кауція, договір, готові фрази польською.\n\n"
-              "Хай усе вдасться. Хай усе знайдеться 🏠",
+              "Хай дім знайдеться! 🏠",
         "en": "👋 Hi! I'm Kwadrat PL — a new way to find a home in Poland.\n\n"
               "🏠 Flats, rooms and short stays in 6 cities, live listings from OLX.\n"
               "🔔 Subscribe to a search in the app — new listings will arrive right here.\n"
               "📚 Inside: guides on deposits, contracts and ready-made Polish messages.\n\n"
-              "May it work out. Let the right place find you 🏠",
+              "May your home find you! 🏠",
     },
     "start_btn": {"ru": "🔎 Открыть поиск", "pl": "🔎 Otwórz wyszukiwarkę",
                   "ua": "🔎 Відкрити пошук", "en": "🔎 Open search"},
@@ -224,21 +227,39 @@ def lang_of(code: str | None) -> str:
 
 
 def fmt_listing(l: dict, lang: str) -> str:
+    # ВСЁ из данных объявления экранируем: parse_mode=HTML, а title/district
+    # исходно пишут авторы объявлений на OLX (символ '<' валил бы send_message)
     unit = T["unit_short" if l.get("type") == "short" else "unit_long"][lang]
-    bits = [f"{l.get('price', 0):,}".replace(",", " ") + f" {unit}"]
+    try:
+        price = int(l.get("price") or 0)
+    except (TypeError, ValueError):
+        price = 0
+    bits = [f"{price:,}".replace(",", " ") + f" {unit}"]
     if l.get("rooms"):
-        bits.append(f"{l['rooms']} pok.")
+        bits.append(html.escape(f"{l['rooms']} pok."))
     if l.get("area"):
-        bits.append(f"{l['area']} m²")
-    city = CITY.get(l.get("city"), {}).get(lang, l.get("city", ""))
+        bits.append(html.escape(f"{l['area']} m²"))
+    city = CITY.get(l.get("city"), {}).get(lang, str(l.get("city", "")))
     place = city + (f", {l['district']}" if l.get("district") else "")
-    title = (l.get("title") or "").strip()
+    title = str(l.get("title") or "").strip()
     lines = [f"🔔 <b>{T['new'][lang]}</b>"]
     if title:
-        lines.append(title[:120])
+        lines.append(html.escape(title[:120]))
     lines.append(" · ".join(bits))
-    lines.append(f"📍 {place}")
+    lines.append("📍 " + html.escape(place))
     return "\n".join(lines)
+
+
+def safe_listing_url(url) -> str | None:
+    """Кнопку даём только на https-ссылки OLX — url приходит из данных."""
+    try:
+        p = urllib.parse.urlparse(str(url or ""))
+        host = (p.netloc or "").lower()
+        if p.scheme == "https" and (host == "olx.pl" or host.endswith(".olx.pl")):
+            return str(url)
+    except ValueError:
+        pass
+    return None
 
 
 # ── тихие часы (Europe/Warsaw) ─────────────────────────────────────────────
@@ -295,18 +316,31 @@ async def on_on(m: Message):
 
 async def notify_user(user_id: int, lang: str, hits: list[dict]):
     for l in hits[:MAX_NOTIFY_PER_USER]:
+        url = safe_listing_url(l.get("url"))
         kb = None
-        if l.get("url"):
+        if url:
             kb = InlineKeyboardMarkup(inline_keyboard=[[
-                InlineKeyboardButton(text=T["open"][lang], url=l["url"])]])
-        try:
-            await bot.send_message(
-                user_id, fmt_listing(l, lang), parse_mode="HTML", reply_markup=kb,
-                link_preview_options=LinkPreviewOptions(is_disabled=True))
-            await asyncio.sleep(0.05)
-        except Exception as e:  # заблокировал бота, чат удалён и т.п.
-            log.warning("notify %s failed: %s", user_id, e)
-            return
+                InlineKeyboardButton(text=T["open"][lang], url=url)]])
+        # терминально только «пользователь заблокировал бота»; флуд-контроль —
+        # подождать и повторить; прочие ошибки не должны терять остальные хиты
+        for attempt in (1, 2):
+            try:
+                await bot.send_message(
+                    user_id, fmt_listing(l, lang), parse_mode="HTML", reply_markup=kb,
+                    link_preview_options=LinkPreviewOptions(is_disabled=True))
+                await asyncio.sleep(0.05)
+                break
+            except TelegramRetryAfter as e:
+                if attempt == 2:
+                    log.warning("notify %s: flood limit, giving up", user_id)
+                    return
+                await asyncio.sleep(e.retry_after + 0.5)
+            except TelegramForbiddenError:
+                log.info("notify %s: bot blocked", user_id)
+                return
+            except Exception as e:
+                log.warning("notify %s failed on %s: %s", user_id, l.get("id"), e)
+                break  # к следующему объявлению
     if len(hits) > MAX_NOTIFY_PER_USER:
         try:
             await bot.send_message(
@@ -337,9 +371,13 @@ async def digest_loop():
                         await bot.send_message(
                             r["user_id"], T["digest"][lang].format(n=r["n"]),
                             reply_markup=kb)
+                        done.append((r["user_id"],))
+                    except TelegramForbiddenError:
+                        done.append((r["user_id"],))  # заблокировал — буфер не нужен
                     except Exception as e:
-                        log.warning("digest %s failed: %s", r["user_id"], e)
-                    done.append((r["user_id"],))
+                        # транзиентный сбой: буфер оставляем, попробуем через 5 мин
+                        log.warning("digest %s failed, keeping pending: %s",
+                                    r["user_id"], e)
                 if done:
                     c.executemany("DELETE FROM pending WHERE user_id=?", done)
                 # страховка: буфер старше 3 дней никому не нужен
@@ -386,15 +424,18 @@ def health():
     return {"ok": True, **meta}
 
 
-@app.post("/api/listings")
-async def ingest(request: Request, x_ingest_token: str = Header("")):
-    if not hmac.compare_digest(x_ingest_token, INGEST_TOKEN):
-        raise HTTPException(401, "bad ingest token")
-    payload = await request.json()
-    listings = payload.get("listings") or []
-    if not listings:
-        raise HTTPException(422, "empty listings")
+_ingest_lock = asyncio.Lock()          # два параллельных инжеста = двойные пуши
+_bg_tasks: set = set()                 # держим ссылки: create_task хранит weakref
 
+
+def _spawn(coro):
+    t = asyncio.create_task(coro)
+    _bg_tasks.add(t)
+    t.add_done_callback(_bg_tasks.discard)
+    return t
+
+
+def _write_listings(payload: dict):
     # атомарная запись — Caddy никогда не отдаст недописанный файл
     LISTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp = str(LISTINGS_PATH) + ".tmp"
@@ -402,30 +443,59 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
         json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
     os.replace(tmp, LISTINGS_PATH)
 
-    with db() as c:
-        first_run = c.execute("SELECT COUNT(*) FROM seen").fetchone()[0] == 0
-        seen = {r["id"] for r in c.execute("SELECT id FROM seen")}
-        fresh = [l for l in listings if l.get("id") and l["id"] not in seen]
+
+@app.post("/api/listings")
+async def ingest(request: Request, x_ingest_token: str = Header("")):
+    if not hmac.compare_digest(x_ingest_token, INGEST_TOKEN):
+        raise HTTPException(401, "bad ingest token")
+    # Caddy режет тело на 10MB; страховка на случай прямого доступа к порту
+    try:
+        if int(request.headers.get("content-length") or 0) > 15 * 1024 * 1024:
+            raise HTTPException(413, "payload too large")
+    except ValueError:
+        raise HTTPException(411, "content-length required")
+    payload = await request.json()
+    listings = payload.get("listings") or []
+    if not listings or not isinstance(listings, list):
+        raise HTTPException(422, "empty listings")
+
+    async with _ingest_lock:
+        # запись файла — в тред, чтобы не блокировать поллинг бота
+        await asyncio.to_thread(_write_listings, payload)
+
         now = int(time.time())
-        c.executemany("INSERT OR IGNORE INTO seen(id, ts) VALUES(?,?)",
-                      [(l["id"], now) for l in fresh])
-        # чистка: не даём таблице расти бесконечно (60 дней достаточно)
-        c.execute("DELETE FROM seen WHERE ts < ?", (now - 60 * 86400,))
-        rows = c.execute("""
-            SELECT s.user_id, s.data, u.lang, u.quiet_from, u.quiet_to FROM subs s
-            JOIN users u ON u.id = s.user_id
-            WHERE s.notify = 1 AND COALESCE(u.muted, 0) = 0
-        """).fetchall()
+        ids = [(str(l["id"]), now) for l in listings
+               if isinstance(l, dict) and l.get("id")]
+        with db() as c:
+            first_run = c.execute("SELECT COUNT(*) FROM seen").fetchone()[0] == 0
+            seen = {r["id"] for r in c.execute("SELECT id FROM seen")}
+            fresh = [l for l in listings
+                     if isinstance(l, dict) and l.get("id") and str(l["id"]) not in seen]
+            # upsert ts у ВСЕХ живых объявлений: иначе лот старше 60 дней
+            # вычищался бы и снова становился «новым» (повторный пуш)
+            c.executemany("""INSERT INTO seen(id, ts) VALUES(?,?)
+                             ON CONFLICT(id) DO UPDATE SET ts=excluded.ts""", ids)
+            c.execute("DELETE FROM seen WHERE ts < ?", (now - 60 * 86400,))
+            rows = c.execute("""
+                SELECT s.user_id, s.data, u.lang, u.quiet_from, u.quiet_to FROM subs s
+                JOIN users u ON u.id = s.user_id
+                WHERE s.notify = 1 AND COALESCE(u.muted, 0) = 0
+            """).fetchall()
 
     notified = 0
     if not first_run and fresh and rows:
         per_user: dict[int, tuple[str, bool, list]] = {}
         for r in rows:
-            sub = json.loads(r["data"])
-            quiet = in_quiet(r["quiet_from"], r["quiet_to"])
-            for l in fresh:
-                if matches(l, sub):
-                    per_user.setdefault(r["user_id"], (r["lang"], quiet, []))[2].append(l)
+            # битая подписка (старые строки до валидации) не должна ронять
+            # весь пайплайн уведомлений
+            try:
+                sub = json.loads(r["data"])
+                quiet = in_quiet(r["quiet_from"], r["quiet_to"])
+                for l in fresh:
+                    if matches(l, sub):
+                        per_user.setdefault(r["user_id"], (r["lang"], quiet, []))[2].append(l)
+            except Exception as e:
+                log.warning("bad sub for user %s skipped: %s", r["user_id"], e)
         buffered = []
         for uid, (lang, quiet, hits) in per_user.items():
             # один и тот же лот может подойти под две подписки — дедуп
@@ -434,7 +504,7 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
                 # тихие часы: копим в буфер, утром уйдёт одной сводкой
                 buffered.extend((uid, l["id"], now) for l in uniq)
             else:
-                asyncio.create_task(notify_user(uid, lang or "ru", uniq))
+                _spawn(notify_user(uid, lang or "ru", uniq))
                 notified += 1
         if buffered:
             with db() as c:
@@ -471,6 +541,43 @@ def get_subs(authorization: str = Header("")):
     return {"subs": out, "quiet": quiet}
 
 
+def _clean_sub(s: dict) -> dict | None:
+    """Строгая схема подписки: whitelist ключей + приведение типов.
+    Иначе любой владелец initData мог бы (а) раздуть БД мусором и
+    (б) сохранить priceMin:"abc", который ронял бы TypeError'ом матчинг
+    ВСЕХ уведомлений на каждом инжесте."""
+    if not isinstance(s, dict):
+        return None
+    city = s.get("city")
+    typ = s.get("type")
+    if city not in CITY or typ not in ("long", "short", "room"):
+        return None
+    out = {"city": city, "type": typ}
+    district = s.get("district")
+    if isinstance(district, str) and district.strip():
+        out["district"] = district.strip()[:100]
+    if s.get("owner") in ("private", "agency"):
+        out["owner"] = s["owner"]
+    for k, lo, hi in (("priceMin", 0, 10**7), ("priceMax", 0, 10**7),
+                      ("areaMin", 0, 10**4), ("rooms", 0, 4)):
+        v = s.get(k)
+        if v is None or v == "" or v == 0 and k == "rooms":
+            if k == "rooms":
+                out[k] = 0
+            continue
+        try:
+            v = int(v)
+        except (TypeError, ValueError):
+            continue
+        if lo <= v <= hi:
+            out[k] = v
+    for k in ("pets", "parking", "balcony"):
+        if s.get(k):
+            out[k] = True
+    out["notify"] = bool(s.get("notify"))
+    return out
+
+
 @app.put("/api/subs")
 async def put_subs(request: Request, authorization: str = Header("")):
     user = _auth_user(authorization)
@@ -478,6 +585,7 @@ async def put_subs(request: Request, authorization: str = Header("")):
     subs = body.get("subs")
     if not isinstance(subs, list) or len(subs) > 50:
         raise HTTPException(422, "subs must be a list (max 50)")
+    subs = [c for c in (_clean_sub(s) for s in subs) if c]
     lang = body.get("lang") if body.get("lang") in ("ru", "pl", "ua", "en") \
         else lang_of(user.get("language_code"))
     # тихие часы: {"from": 22, "to": 8} либо null/отсутствие = выключены

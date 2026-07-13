@@ -129,7 +129,8 @@ def normalize(offer, city_slug, rent_type):
         ts = int(datetime.fromisoformat(created).timestamp() * 1000)
     except (TypeError, ValueError):
         ts = int(time.time() * 1000)
-    title = WS_RE.sub(" ", offer.get("title") or "").strip()
+    # авторы объявлений — посторонние люди: срезаем HTML и из заголовка тоже
+    title = WS_RE.sub(" ", TAG_RE.sub(" ", offer.get("title") or "")).strip()
     descr = clean_text(offer.get("description"))
     district = (offer.get("location") or {}).get("district") or {}
     return {
@@ -172,9 +173,9 @@ def main():
                 continue
             got = 0
             for offer in data.get("data") or []:
-                if offer.get("id") in seen:
-                    continue
-                seen.add(offer.get("id"))
+                if not offer.get("id") or offer["id"] in seen:
+                    continue  # без id или дубль — иначе KeyError валил бы прогон
+                seen.add(offer["id"])
                 row = normalize(offer, city_slug, rent_type)
                 if row:
                     listings.append(row)

@@ -153,8 +153,10 @@
   var saved = load("kw_saved", []);   // сохранённые поиски [{city,district,type,priceMin,priceMax,areaMin,rooms,pets,parking,balcony,notify}]
   var favs = load("kw_favs", []);     // избранное — полные объекты объявлений
   function persist() {
-    localStorage.setItem("kw_saved", JSON.stringify(saved));
-    localStorage.setItem("kw_favs", JSON.stringify(favs));
+    try {
+      localStorage.setItem("kw_saved", JSON.stringify(saved));
+      localStorage.setItem("kw_favs", JSON.stringify(favs));
+    } catch (e) { /* приватный режим / квота — работаем из памяти */ }
     syncSubs();
   }
 
@@ -165,22 +167,38 @@
     return tg && tg.initData ? tg.initData : null;
   }
   var _syncTimer = null;
-  function syncSubs() {
+  var _syncDirty = false;
+  function doSync() {
     var init = tgInitData();
     if (!init) return;
-    clearTimeout(_syncTimer);
-    _syncTimer = setTimeout(function () {   // дебаунс: тумблеры щёлкают часто
-      fetch("/api/subs", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": "tma " + init },
-        body: JSON.stringify({
-          subs: saved,
-          lang: (global.I18N && global.I18N.lang) || "ru",
-          quiet: load("kw_quiet", null)
-        })
-      }).catch(function () {});
-    }, 400);
+    _syncDirty = false;
+    fetch("/api/subs", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": "tma " + init },
+      keepalive: true,   // переживает уход со страницы/закрытие Mini App
+      body: JSON.stringify({
+        subs: saved,
+        lang: (global.I18N && global.I18N.lang) || "ru",
+        quiet: load("kw_quiet", null)
+      })
+    }).catch(function () {});
   }
+  function syncSubs() {
+    if (!tgInitData()) return;
+    _syncDirty = true;
+    clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(doSync, 400);   // дебаунс: тумблеры щёлкают часто
+  }
+  // уход со страницы раньше дебаунса терял PUT — удалённая подписка
+  // «воскресала» с сервера; keepalive-фьюз досылает немедленно
+  ["pagehide", "visibilitychange"].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (_syncDirty && (ev === "pagehide" || document.hidden)) {
+        clearTimeout(_syncTimer);
+        doSync();
+      }
+    });
+  });
   function getQuiet() { return load("kw_quiet", null); }
   function setQuiet(q) {          // {from,to} либо null = выключить
     if (q) localStorage.setItem("kw_quiet", JSON.stringify(q));
@@ -260,8 +278,9 @@
       el.onclick = function () { el.classList.remove("show"); };
       document.body.appendChild(el);
     }
+    // title/text бывают собраны из данных объявлений (district и т.п.) — экранируем
     el.innerHTML = '<span class="em">' + emoji + '</span><span class="tt"><b>' +
-      title + "</b>" + text + "</span>";
+      esc(title) + "</b>" + esc(text) + "</span>";
     requestAnimationFrame(function () { el.classList.add("show"); });
     clearTimeout(_toastTimer);
     _toastTimer = setTimeout(function () { el.classList.remove("show"); }, 5500);
@@ -276,9 +295,24 @@
   }
 
   function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
+  }
+
+  // URL фото для inline-style: только https + вырезаем всё, чем можно
+  // вырваться из url("...") — кавычки, скобку, бэкслеш, пробелы
+  function safePhotoUrl(u) {
+    if (typeof u !== "string" || !/^https:\/\//.test(u)) return null;
+    return u.replace(/["'\\)\s]/g, "");
+  }
+
+  // наружу открываем только http(s) — url приходит из данных объявлений
+  function openListingUrl(url) {
+    if (!/^https?:\/\//i.test(String(url || ""))) return;
+    var tg = window.Telegram && window.Telegram.WebApp;
+    if (tg && tg.openLink) tg.openLink(url);
+    else window.open(url, "_blank", "noopener");
   }
 
   var App = {
@@ -292,6 +326,7 @@
     getQuiet: getQuiet, setQuiet: setQuiet,
     matches: matches, searchLabel: searchLabel, districtsFor: districtsFor,
     toast: toast, timeAgo: timeAgo, esc: esc,
+    safePhotoUrl: safePhotoUrl, openListingUrl: openListingUrl,
     priceUnit: function (type) { return I18N.t(type === "short" ? "perDay" : "perMonth"); },
     cityName: function (key) { return I18N.cityName(key); },
     isFav: function (id) { return favs.some(function (f) { return f.id === id; }); },

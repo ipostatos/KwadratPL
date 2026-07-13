@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Подписки — Kwadrat PL</title>
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="theme.css">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="nav.js"></script>
@@ -157,7 +158,8 @@ function openSheet(l) {
   haptic("light");
   var grad = l.grad || ["#3a6186", "#89253e"];
   var bg = "linear-gradient(135deg," + grad[0] + "," + grad[1] + ")";
-  if (l.photo) bg = "url('" + App.esc(l.photo) + "') center/cover no-repeat, " + bg;
+  var photo = App.safePhotoUrl(l.photo);
+  if (photo) bg = 'url("' + photo + '") center/cover no-repeat, ' + bg;
   var title = l.title ? App.esc(l.title) : App.esc(l.street || "");
   var specs = [
     [I18N.t("roomsLabel"), l.rooms],
@@ -169,7 +171,7 @@ function openSheet(l) {
     '<div style="position:relative">' +
     '<button class="close" id="btnClose">✕</button>' +
     '<div class="photo" style="background:' + bg + '">' +
-    (l.photo ? "" : Icons.svg(l.icon || "home")) +
+    (photo ? "" : Icons.svg(l.icon || "home")) +
     '<span class="lbadge type">' + App.esc(I18N.t(l.type)) + "</span>" +
     "</div></div>" +
     '<div class="sbody">' +
@@ -191,8 +193,7 @@ function openSheet(l) {
   $("#btnContact").onclick = function () {
     var tg = window.Telegram && window.Telegram.WebApp;
     if (l.url) {
-      if (tg && tg.openLink) tg.openLink(l.url);
-      else window.open(l.url, "_blank", "noopener");
+      App.openListingUrl(l.url);   // только http/https
     } else if (tg && tg.openTelegramLink) {
       tg.openTelegramLink("https://t.me/KwadratPLBot");
     }

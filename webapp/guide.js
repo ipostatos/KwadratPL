@@ -25,7 +25,8 @@
       var ta = document.createElement("textarea");
       ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand("copy"); done(); } catch (e) {}
+      // «Скопировано» показываем только если copy реально сработал
+      try { if (document.execCommand("copy")) done(); } catch (e) {}
       document.body.removeChild(ta);
     }
   }
