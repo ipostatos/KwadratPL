@@ -32,7 +32,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher
-from aiogram.filters import CommandStart
+from aiogram.filters import Command, CommandStart
+from aiogram.types import BotCommand
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
                            LinkPreviewOptions, Message, WebAppInfo)
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -77,6 +78,11 @@ def init_db():
             ts INTEGER
         );
         """)
+        # миграция: глобальная пауза уведомлений (/off), 0 = включены
+        try:
+            c.execute("ALTER TABLE users ADD COLUMN muted INTEGER DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass  # колонка уже есть
 
 
 # ── initData: проверка подписи Telegram WebApp ─────────────────────────────
@@ -104,6 +110,11 @@ def validate_init_data(init_data: str) -> dict:
 # ── матчинг (зеркало webapp/app.js matches) ────────────────────────────────
 def matches(l: dict, s: dict) -> bool:
     if l.get("city") != s.get("city") or l.get("type") != s.get("type"):
+        return False
+    owner = s.get("owner")
+    if owner == "agency" and l.get("agency") is not True:
+        return False
+    if owner == "private" and l.get("agency") is True:
         return False
     if s.get("district") and l.get("district") != s["district"]:
         return False
@@ -163,6 +174,14 @@ T = {
     },
     "start_btn": {"ru": "🔎 Открыть поиск", "pl": "🔎 Otwórz wyszukiwarkę",
                   "ua": "🔎 Відкрити пошук", "en": "🔎 Open search"},
+    "muted": {"ru": "🔕 Уведомления выключены. Включить снова: /on",
+              "pl": "🔕 Powiadomienia wyłączone. Włącz ponownie: /on",
+              "ua": "🔕 Сповіщення вимкнено. Увімкнути знову: /on",
+              "en": "🔕 Notifications paused. Turn back on: /on"},
+    "unmuted": {"ru": "🔔 Уведомления включены. Пауза: /off",
+                "pl": "🔔 Powiadomienia włączone. Pauza: /off",
+                "ua": "🔔 Сповіщення увімкнено. Пауза: /off",
+                "en": "🔔 Notifications on. Pause: /off"},
 }
 
 
@@ -213,6 +232,27 @@ async def on_start(m: Message):
     await m.answer(T["start"][lang], reply_markup=kb)
 
 
+def _set_muted(chat_id: int, muted: int) -> str:
+    with db() as c:
+        c.execute("INSERT OR IGNORE INTO users(id, lang, first_seen) VALUES(?,?,?)",
+                  (chat_id, "ru", int(time.time())))
+        c.execute("UPDATE users SET muted=? WHERE id=?", (muted, chat_id))
+        row = c.execute("SELECT lang FROM users WHERE id=?", (chat_id,)).fetchone()
+    return (row["lang"] if row else None) or "ru"
+
+
+@dp.message(Command("off"))
+async def on_off(m: Message):
+    lang = _set_muted(m.chat.id, 1)
+    await m.answer(T["muted"][lang])
+
+
+@dp.message(Command("on"))
+async def on_on(m: Message):
+    lang = _set_muted(m.chat.id, 0)
+    await m.answer(T["unmuted"][lang])
+
+
 async def notify_user(user_id: int, lang: str, hits: list[dict]):
     for l in hits[:MAX_NOTIFY_PER_USER]:
         kb = None
@@ -239,6 +279,14 @@ async def notify_user(user_id: int, lang: str, hits: list[dict]):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    try:
+        await bot.set_my_commands([
+            BotCommand(command="start", description="Поиск жилья / Szukaj mieszkania"),
+            BotCommand(command="off", description="Пауза уведомлений / Pauza powiadomień"),
+            BotCommand(command="on", description="Включить уведомления / Włącz powiadomienia"),
+        ])
+    except Exception as e:
+        log.warning("set_my_commands failed: %s", e)
     task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
     log.info("bot polling started; listings at %s", LISTINGS_PATH)
     yield
@@ -288,7 +336,8 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
         c.execute("DELETE FROM seen WHERE ts < ?", (now - 60 * 86400,))
         rows = c.execute("""
             SELECT s.user_id, s.data, u.lang FROM subs s
-            JOIN users u ON u.id = s.user_id WHERE s.notify = 1
+            JOIN users u ON u.id = s.user_id
+            WHERE s.notify = 1 AND COALESCE(u.muted, 0) = 0
         """).fetchall()
 
     notified = 0

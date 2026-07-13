@@ -48,6 +48,16 @@
     </div>
     <div class="frow">
       <div class="fcol">
+        <label class="flabel" data-i18n="ownerLabel"></label>
+        <div class="seg" id="fOwner">
+          <button data-val="" data-i18n="ownerAny"></button>
+          <button data-val="private" data-i18n="ownerPrivate"></button>
+          <button data-val="agency" data-i18n="ownerAgency"></button>
+        </div>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fcol">
         <label class="flabel" data-i18n="priceFrom"></label>
         <input type="number" id="fPriceMin" placeholder="0" min="0" step="100">
       </div>
@@ -128,6 +138,7 @@ var state = {
   city: App.CITIES[qs.get("city")] ? qs.get("city") : "warszawa",
   district: "",
   type: ["short", "room"].indexOf(qs.get("type")) >= 0 ? qs.get("type") : "long",
+  owner: ["private", "agency"].indexOf(qs.get("owner")) >= 0 ? qs.get("owner") : "",
   priceMin: null, priceMax: null, areaMin: null,
   rooms: 0, sort: "new",
   pets: qs.get("pets") === "1",
@@ -149,6 +160,9 @@ function renderControls() {
   });
   document.querySelectorAll("#fRooms button").forEach(function (b) {
     b.classList.toggle("active", +b.dataset.val === state.rooms);
+  });
+  document.querySelectorAll("#fOwner button").forEach(function (b) {
+    b.classList.toggle("active", b.dataset.val === state.owner);
   });
   document.querySelectorAll("#fFeat button").forEach(function (b) {
     b.classList.toggle("active", !!state[b.dataset.key]);
@@ -304,7 +318,8 @@ function renderList() {
       '<div class="ltitle">' + listingTitle(l) + "</div>" +
       '<div class="lmeta"><span>📍 ' + App.esc(App.cityName(l.city)) +
       (l.district ? ", " + App.esc(l.district) : "") +
-      "</span><span>🕐 " + App.timeAgo(l.ts) + "</span><span>📎 " + App.esc(l.source) + "</span></div>" +
+      "</span><span>🕐 " + App.timeAgo(l.ts) + "</span><span>📎 " + App.esc(l.source) +
+      (l.agency != null ? " · " + I18N.t(l.agency ? "ownerAgency" : "ownerPrivate") : "") + "</span></div>" +
       "</div></div>";
   }).join("");
 }
@@ -407,6 +422,15 @@ document.querySelectorAll("#fRooms button").forEach(function (b) {
     renderList();
   };
 });
+document.querySelectorAll("#fOwner button").forEach(function (b) {
+  b.onclick = function () {
+    state.owner = b.dataset.val; haptic("select");
+    document.querySelectorAll("#fOwner button").forEach(function (x) {
+      x.classList.toggle("active", x === b);
+    });
+    renderList();
+  };
+});
 document.querySelectorAll("#fFeat button").forEach(function (b) {
   b.onclick = function () {
     state[b.dataset.key] = !state[b.dataset.key];
@@ -423,6 +447,7 @@ $("#sort").onchange = function (e) { state.sort = e.target.value; renderList(); 
 $("#btnSave").onclick = function () {
   App.saved.push({
     city: state.city, district: state.district, type: state.type,
+    owner: state.owner,
     priceMin: state.priceMin, priceMax: state.priceMax,
     areaMin: state.areaMin, rooms: state.rooms,
     pets: state.pets, parking: state.parking, balcony: state.balcony,

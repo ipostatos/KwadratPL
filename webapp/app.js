@@ -95,6 +95,7 @@
       pets: over.pets != null ? over.pets : rnd() < 0.4,
       parking: over.parking != null ? over.parking : rnd() < 0.35,
       balcony: over.balcony != null ? over.balcony : rnd() < 0.6,
+      agency: over.agency != null ? over.agency : rnd() < 0.45,
       ts: Date.now() - Math.floor(rnd() * 5 * 24 * 3600 * 1000)
     };
   }
@@ -199,6 +200,7 @@
   // включённый фильтр пропускает только подтверждённые объявления.
   function matches(l, s) {
     return l.city === s.city && l.type === s.type &&
+      (!s.owner || (s.owner === "agency" ? l.agency === true : l.agency !== true)) &&
       (!s.district || l.district === s.district) &&
       (s.priceMin == null || l.price >= s.priceMin) &&
       (s.priceMax == null || l.price <= s.priceMax) &&
@@ -213,6 +215,7 @@
     var parts = [I18N.cityName(s.city)];
     if (s.district) parts.push(s.district);
     parts.push(I18N.t(s.type).toLowerCase());
+    if (s.owner) parts.push(I18N.t(s.owner === "agency" ? "ownerAgency" : "ownerPrivate").toLowerCase());
     if (s.rooms) parts.push((s.rooms === 4 ? "4+" : s.rooms) + " " + I18N.t("roomsShort"));
     if (s.priceMax) parts.push(I18N.t("upTo") + " " + s.priceMax + " zł");
     var feat = [];

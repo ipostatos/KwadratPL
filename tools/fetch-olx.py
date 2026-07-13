@@ -11,7 +11,8 @@
 # Схема элемента listings[] совпадает с ожиданиями webapp/app.js:
 #   id "olx-<id>", city (слаг), district|null, type long|short|room, rooms|null,
 #   area|null, price, oldPrice|null, floor|null, pets|null, parking|null,
-#   balcony|null, photo|null, url, title, descr, source "OLX", ts (epoch ms)
+#   balcony|null, photo|null, url, title, descr, source "OLX",
+#   agency (true = бизнес-аккаунт/агентство), ts (epoch ms)
 # ===========================================================================
 import json
 import os
@@ -149,6 +150,7 @@ def normalize(offer, city_slug, rent_type):
         "balcony": parse_balcony(title + " " + (offer.get("description") or "")),
         "photo": photo,
         "source": "OLX",
+        "agency": bool(offer.get("business")),
         "ts": ts,
     }
 
