@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Чек-лист осмотра — Kwadrat PL</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="guide.js"></script>
+<style>
+  .prog{ display:flex; align-items:center; gap:12px; margin-bottom:var(--sp-3) }
+  .prog .meter{ flex:1 }
+  .prog .pct{ font-weight:800; font-size:var(--fs-sm); min-width:44px; text-align:right }
+  .chk{ display:flex; align-items:flex-start; gap:10px; padding:9px 0;
+    border-bottom:1px solid var(--border); cursor:pointer; font-size:var(--fs-sm); line-height:1.45 }
+  .chk:last-child{ border-bottom:0 }
+  .chk input{ margin-top:2px; width:17px; height:17px; accent-color:var(--accent); flex:0 0 auto }
+  .chk.on span{ color:var(--hint); text-decoration:line-through }
+</style>
+</head>
+<body>
+  <h1><span class="emi" data-icon="check-square"></span><span id="ttl"></span></h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="prog"><div class="meter"><i id="bar" style="width:0"></i></div><div class="pct" id="pct">0%</div></div>
+  <div id="list"></div>
+
+  <button class="btn ghost" id="btnReset" style="margin-top:var(--sp-3)"></button>
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-2)" data-i18n="backHome"></a>
+  <p class="foot" id="foot"></p>
+
+<script>
+"use strict";
+var SUB = {
+  ru: "Отмечайте пункты прямо на просмотре — прогресс сохраняется на устройстве.",
+  pl: "Odznaczaj punkty podczas oglądania — postęp zapisuje się na urządzeniu.",
+  ua: "Відмічайте пункти просто на огляді — прогрес зберігається на пристрої.",
+  en: "Tick items during the viewing — progress is saved on your device."
+};
+var FOOT = {
+  ru: "Совет: всё, что вызвало сомнение, — сфотографируйте и внесите в протокол.",
+  pl: "Rada: wszystko, co budzi wątpliwości — sfotografuj i wpisz do protokołu.",
+  ua: "Порада: усе, що викликало сумнів, — сфотографуйте та внесіть у протокол.",
+  en: "Tip: photograph anything doubtful and put it in the protocol."
+};
+var GROUPS = [
+{ h: {ru:"Документы и деньги", pl:"Dokumenty i pieniądze", ua:"Документи й гроші", en:"Documents & money"}, items: [
+  {ru:"Владелец показал право собственности (или доверенность)", pl:"Właściciel okazał tytuł własności (lub pełnomocnictwo)", ua:"Власник показав право власності (або довіреність)", en:"Owner showed proof of ownership (or power of attorney)"},
+  {ru:"Полная цена: czynsz najmu + administracyjny + media — записана", pl:"Pełna cena: czynsz najmu + administracyjny + media — zapisana", ua:"Повна ціна: czynsz najmu + administracyjny + media — записана", en:"Full price: rent + building fee + utilities — written down"},
+  {ru:"Кауция: сумма и условия возврата оговорены", pl:"Kaucja: kwota i zasady zwrotu ustalone", ua:"Кауція: сума й умови повернення узгоджені", en:"Deposit: amount and return rules agreed"},
+  {ru:"Протокол передачи будет приложением к договору", pl:"Protokół zdawczo-odbiorczy będzie załącznikiem do umowy", ua:"Протокол передачі буде додатком до договору", en:"Handover protocol will be a contract annex"} ] },
+{ h: {ru:"Общее состояние", pl:"Stan ogólny", ua:"Загальний стан", en:"General condition"}, items: [
+  {ru:"Стены/потолок: нет пятен влаги, плесени, трещин (загляните за мебель!)", pl:"Ściany/sufit: brak zacieków, pleśni, pęknięć (zajrzyj za meble!)", ua:"Стіни/стеля: немає плям вологи, плісняви, тріщин (загляньте за меблі!)", en:"Walls/ceiling: no damp stains, mould, cracks (look behind furniture!)"},
+  {ru:"Окна открываются/закрываются, не дует, стеклопакеты целые", pl:"Okna otwierają się/zamykają, nie wieje, szyby całe", ua:"Вікна відчиняються/зачиняються, не дме, склопакети цілі", en:"Windows open/close, no drafts, glazing intact"},
+  {ru:"Двери и замки работают, комплект ключей полный", pl:"Drzwi i zamki działają, komplet kluczy pełny", ua:"Двері й замки працюють, комплект ключів повний", en:"Doors and locks work, full key set"},
+  {ru:"Полы ровные, ламинат/паркет без вздутий", pl:"Podłogi równe, panele/parkiet bez wybrzuszeń", ua:"Підлога рівна, ламінат/паркет без здуття", en:"Floors level, no swollen laminate/parquet"},
+  {ru:"Запахи: сырость, канализация, табак — принюхайтесь", pl:"Zapachy: wilgoć, kanalizacja, papierosy — powąchaj", ua:"Запахи: вогкість, каналізація, тютюн — принюхайтеся", en:"Smells: damp, sewage, smoke — sniff around"} ] },
+{ h: {ru:"Кухня и ванная", pl:"Kuchnia i łazienka", ua:"Кухня та ванна", en:"Kitchen & bathroom"}, items: [
+  {ru:"Напор и температура воды (откройте краны на пару минут)", pl:"Ciśnienie i temperatura wody (odkręć krany na parę minut)", ua:"Напір і температура води (відкрийте крани на пару хвилин)", en:"Water pressure and temperature (run taps for a couple of minutes)"},
+  {ru:"Слив не забит: раковина, душ/ванна уходят быстро", pl:"Odpływ drożny: zlew, prysznic/wanna schodzą szybko", ua:"Злив не забитий: раковина, душ/ванна йдуть швидко", en:"Drains clear: sink, shower/bath empty fast"},
+  {ru:"Под раковинами сухо, нет следов протечек", pl:"Pod zlewami sucho, brak śladów przecieków", ua:"Під раковинами сухо, немає слідів протікань", en:"Dry under sinks, no leak marks"},
+  {ru:"Плита, духовка, холодильник, стиральная машина — включите и проверьте", pl:"Kuchenka, piekarnik, lodówka, pralka — włącz i sprawdź", ua:"Плита, духовка, холодильник, пральна машина — увімкніть і перевірте", en:"Hob, oven, fridge, washing machine — switch on and test"},
+  {ru:"Вентиляция тянет (лист бумаги прилипает к решётке)", pl:"Wentylacja ciągnie (kartka przykleja się do kratki)", ua:"Вентиляція тягне (аркуш паперу прилипає до решітки)", en:"Ventilation works (paper sticks to the grille)"},
+  {ru:"Швы/силикон в ванной без чёрной плесени", pl:"Fugi/silikon w łazience bez czarnej pleśni", ua:"Шви/силікон у ванній без чорної плісняви", en:"Bathroom grout/silicone free of black mould"} ] },
+{ h: {ru:"Электрика и отопление", pl:"Elektryka i ogrzewanie", ua:"Електрика й опалення", en:"Electrics & heating"}, items: [
+  {ru:"Все розетки и выключатели работают (зарядка телефона в помощь)", pl:"Wszystkie gniazdka i włączniki działają (ładowarka do testu)", ua:"Усі розетки й вимикачі працюють (зарядка телефона в поміч)", en:"All sockets and switches work (phone charger as tester)"},
+  {ru:"Тип отопления и стоимость зимой — спросить и записать", pl:"Rodzaj ogrzewania i koszt zimą — zapytaj i zapisz", ua:"Тип опалення й вартість узимку — спитати й записати", en:"Heating type and winter cost — ask and note down"},
+  {ru:"Батареи греют во всех комнатах (в сезон)", pl:"Grzejniki grzeją we wszystkich pokojach (w sezonie)", ua:"Батареї гріють у всіх кімнатах (у сезон)", en:"Radiators heat in all rooms (in season)"},
+  {ru:"Счётчики: фото показаний электричества, газа, воды", pl:"Liczniki: zdjęcie stanów prądu, gazu, wody", ua:"Лічильники: фото показів електрики, газу, води", en:"Meters: photo of electricity, gas, water readings"},
+  {ru:"Интернет: какой провайдер, какая скорость возможна", pl:"Internet: jaki dostawca, jaka prędkość możliwa", ua:"Інтернет: який провайдер, яка швидкість можлива", en:"Internet: which provider, what speed is available"} ] },
+{ h: {ru:"Дом и район", pl:"Budynek i okolica", ua:"Будинок і район", en:"Building & area"}, items: [
+  {ru:"Шум: окна на улицу/двор, слышно ли соседей, бары рядом", pl:"Hałas: okna na ulicę/podwórko, słychać sąsiadów, bary obok", ua:"Шум: вікна на вулицю/двір, чути сусідів, бари поруч", en:"Noise: street/courtyard windows, neighbours audible, bars nearby"},
+  {ru:"Подъезд/лифт: состояние, домофон работает", pl:"Klatka/winda: stan, domofon działa", ua:"Під'їзд/ліфт: стан, домофон працює", en:"Staircase/lift: condition, intercom works"},
+  {ru:"Транспорт: реальное время до работы/учёбы в час пик", pl:"Transport: realny czas do pracy/uczelni w godzinach szczytu", ua:"Транспорт: реальний час до роботи/навчання в годину пік", en:"Transport: real commute time at rush hour"},
+  {ru:"Парковка/веломесто, если нужно — где и почём", pl:"Parking/miejsce na rower — gdzie i za ile", ua:"Парковка/веломісце, якщо треба — де і почому", en:"Parking/bike storage if needed — where and how much"},
+  {ru:"Вечером пройдитесь по району — ощущение безопасности", pl:"Przejdź się wieczorem po okolicy — poczucie bezpieczeństwa", ua:"Увечері пройдіться районом — відчуття безпеки", en:"Walk the area in the evening — how safe it feels"} ] },
+{ h: {ru:"Перед подписанием", pl:"Przed podpisaniem", ua:"Перед підписанням", en:"Before signing"}, items: [
+  {ru:"Фото/видео каждой комнаты и всех дефектов сделаны", pl:"Zdjęcia/film każdego pomieszczenia i wszystkich usterek zrobione", ua:"Фото/відео кожної кімнати та всіх дефектів зроблені", en:"Photos/video of every room and every defect taken"},
+  {ru:"Все дефекты внесены в протокол письменно", pl:"Wszystkie usterki wpisane do protokołu", ua:"Усі дефекти внесені в протокол письмово", en:"All defects written into the protocol"},
+  {ru:"Договор прочитан целиком, непонятные пункты переведены", pl:"Umowa przeczytana w całości, niejasne zapisy przetłumaczone", ua:"Договір прочитаний повністю, незрозумілі пункти перекладені", en:"Contract read in full, unclear clauses translated"},
+  {ru:"Устные обещания владельца перенесены в договор", pl:"Ustne obietnice właściciela przeniesione do umowy", ua:"Усні обіцянки власника перенесені в договір", en:"Verbal promises moved into the contract"} ] }
+];
+
+var KEY = "kw_check";
+var state = {};
+try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+
+function lang() { return I18N.lang; }
+function total() { return GROUPS.reduce(function (n, g) { return n + g.items.length; }, 0); }
+function done() { return Object.keys(state).filter(function (k) { return state[k]; }).length; }
+
+function renderProgress() {
+  var pct = Math.round(done() / total() * 100);
+  document.getElementById("bar").style.width = pct + "%";
+  document.getElementById("pct").textContent = pct + "%";
+}
+
+function render() {
+  var L = lang();
+  document.getElementById("sub").textContent = SUB[L] || SUB.ru;
+  document.getElementById("foot").textContent = FOOT[L] || FOOT.ru;
+  document.getElementById("btnReset").textContent = I18N.t("resetBtn");
+  var out = "";
+  GROUPS.forEach(function (g, gi) {
+    out += '<div class="card gsec"><div class="h2">' + (g.h[L] || g.h.ru) + "</div>";
+    g.items.forEach(function (it, ii) {
+      var id = gi + "." + ii;
+      var on = !!state[id];
+      out += '<label class="chk' + (on ? " on" : "") + '"><input type="checkbox" data-id="' + id + '"' +
+        (on ? " checked" : "") + "><span>" + (it[L] || it.ru) + "</span></label>";
+    });
+    out += "</div>";
+  });
+  document.getElementById("list").innerHTML = out;
+  document.querySelectorAll(".chk input").forEach(function (cb) {
+    cb.onchange = function () {
+      state[cb.dataset.id] = cb.checked;
+      localStorage.setItem(KEY, JSON.stringify(state));
+      cb.closest(".chk").classList.toggle("on", cb.checked);
+      if (typeof haptic === "function") haptic("select");
+      renderProgress();
+    };
+  });
+  renderProgress();
+}
+
+document.getElementById("btnReset").onclick = function () {
+  state = {};
+  localStorage.removeItem(KEY);
+  if (typeof haptic === "function") haptic("light");
+  render();
+};
+
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.getElementById("ttl").textContent = I18N.t("cellCheckT");
+document.title = I18N.t("cellCheckT") + " — Kwadrat PL";
+render();
+</script>
+</body>
+</html>

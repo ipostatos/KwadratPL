@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Калькулятор заезда — Kwadrat PL</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="guide.js"></script>
+<style>
+  .res{ text-align:center; padding:var(--sp-3) 0 }
+  .res .big{ font-size:32px; font-weight:800; color:var(--accent) }
+  .res .lbl{ font-size:var(--fs-xs); color:var(--hint); text-transform:uppercase; letter-spacing:.04em }
+  .breakdown{ font-size:var(--fs-sm) }
+  .breakdown .row{ display:flex; justify-content:space-between; padding:7px 0;
+    border-bottom:1px solid var(--border) }
+  .breakdown .row:last-child{ border-bottom:0; font-weight:800 }
+  .frow3{ display:flex; gap:10px } .frow3 .fcol{ flex:1 }
+</style>
+</head>
+<body>
+  <h1><span class="emi" data-icon="calculator"></span><span id="ttl"></span></h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="card" style="margin-bottom:var(--sp-2)">
+    <div class="frow3" style="margin-bottom:10px">
+      <div class="fcol">
+        <label class="flabel" id="lCzynsz"></label>
+        <input type="number" id="czynsz" placeholder="3000" min="0" step="100">
+      </div>
+      <div class="fcol">
+        <label class="flabel" id="lAdmin"></label>
+        <input type="number" id="admin" placeholder="700" min="0" step="50">
+      </div>
+    </div>
+    <div class="frow3" style="margin-bottom:10px">
+      <div class="fcol">
+        <label class="flabel" id="lMedia"></label>
+        <input type="number" id="media" placeholder="350" min="0" step="50">
+      </div>
+      <div class="fcol">
+        <label class="flabel" id="lKaucja"></label>
+        <div class="seg" id="segK">
+          <button data-k="1">1×</button>
+          <button data-k="2">2×</button>
+          <button data-k="3">3×</button>
+        </div>
+      </div>
+    </div>
+    <div class="frow3">
+      <div class="fcol">
+        <label class="flabel" id="lProw"></label>
+        <div class="seg" id="segP">
+          <button data-p="0" id="pNone"></button>
+          <button data-p="0.5">50%</button>
+          <button data-p="1">100%</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="res"><div class="lbl" id="lStart"></div><div class="big" id="startSum">—</div></div>
+    <div class="breakdown" id="bd"></div>
+  </div>
+
+  <div class="card" style="margin-top:var(--sp-2)">
+    <div class="res" style="padding:var(--sp-2) 0"><div class="lbl" id="lMonthly"></div>
+    <div class="big" style="font-size:24px" id="monthSum">—</div></div>
+  </div>
+
+  <p class="foot" id="foot"></p>
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-2)" data-i18n="backHome"></a>
+
+<script>
+"use strict";
+var L10N = {
+  sub: {ru:"Сколько денег нужно, чтобы заехать, и сколько квартира стоит в месяц на самом деле.", pl:"Ile pieniędzy trzeba na wprowadzkę i ile mieszkanie naprawdę kosztuje miesięcznie.", ua:"Скільки грошей треба, щоб заїхати, і скільки квартира коштує на місяць насправді.", en:"How much cash you need to move in — and what the flat really costs per month."},
+  czynsz: {ru:"Czynsz (аренда), zł", pl:"Czynsz najmu, zł", ua:"Czynsz (оренда), zł", en:"Rent (czynsz), zł"},
+  admin: {ru:"Administracyjny, zł", pl:"Czynsz administracyjny, zł", ua:"Administracyjny, zł", en:"Building fee, zł"},
+  media: {ru:"Media (свет, газ…), zł", pl:"Media (prąd, gaz…), zł", ua:"Media (світло, газ…), zł", en:"Utilities, zł"},
+  kaucja: {ru:"Кауция", pl:"Kaucja", ua:"Кауція", en:"Deposit"},
+  prow: {ru:"Комиссия посредника", pl:"Prowizja pośrednika", ua:"Комісія посередника", en:"Agent's fee"},
+  none: {ru:"Нет", pl:"Brak", ua:"Немає", en:"None"},
+  start: {ru:"Нужно при заезде", pl:"Potrzebne na start", ua:"Потрібно при заїзді", en:"Needed to move in"},
+  monthly: {ru:"Реальная цена в месяц", pl:"Realny koszt miesięczny", ua:"Реальна ціна на місяць", en:"True monthly cost"},
+  firstMonth: {ru:"Первый месяц (czynsz + admin + media)", pl:"Pierwszy miesiąc (czynsz + admin. + media)", ua:"Перший місяць (czynsz + admin + media)", en:"First month (rent + fee + utilities)"},
+  kaucjaRow: {ru:"Кауция", pl:"Kaucja", ua:"Кауція", en:"Deposit"},
+  prowRow: {ru:"Комиссия", pl:"Prowizja", ua:"Комісія", en:"Agent's fee"},
+  totalRow: {ru:"Итого", pl:"Razem", ua:"Разом", en:"Total"},
+  foot: {ru:"Кауция вернётся при выезде (см. гайд), комиссия — нет. Media зимой обычно выше — спросите владельца о счетах за январь.", pl:"Kaucja wraca przy wyprowadzce, prowizja — nie. Media zimą są zwykle wyższe.", ua:"Кауція повернеться при виїзді (див. гайд), комісія — ні. Media взимку зазвичай вищі — спитайте про рахунки за січень.", en:"The deposit comes back when you leave (see the guide), the fee doesn't. Utilities are higher in winter — ask about January bills."}
+};
+
+var kMult = 1, pMult = 0;
+function t(k) { return L10N[k][I18N.lang] || L10N[k].ru; }
+function val(id) { return +document.getElementById(id).value || 0; }
+function zl(n) { return n.toLocaleString("pl-PL") + " zł"; }
+
+function calc() {
+  var czynsz = val("czynsz"), admin = val("admin"), media = val("media");
+  var month = czynsz + admin + media;
+  var kaucja = czynsz * kMult;
+  var prow = Math.round(czynsz * pMult);
+  var start = month + kaucja + prow;
+  document.getElementById("startSum").textContent = month ? zl(start) : "—";
+  document.getElementById("monthSum").textContent = month ? zl(month) : "—";
+  document.getElementById("bd").innerHTML = month ?
+    '<div class="row"><span>' + t("firstMonth") + "</span><b>" + zl(month) + "</b></div>" +
+    '<div class="row"><span>' + t("kaucjaRow") + " (" + kMult + "×)</span><b>" + zl(kaucja) + "</b></div>" +
+    (prow ? '<div class="row"><span>' + t("prowRow") + "</span><b>" + zl(prow) + "</b></div>" : "") +
+    '<div class="row"><span>' + t("totalRow") + "</span><b>" + zl(start) + "</b></div>" : "";
+}
+
+function initLabels() {
+  document.getElementById("sub").textContent = t("sub");
+  document.getElementById("lCzynsz").textContent = t("czynsz");
+  document.getElementById("lAdmin").textContent = t("admin");
+  document.getElementById("lMedia").textContent = t("media");
+  document.getElementById("lKaucja").textContent = t("kaucja");
+  document.getElementById("lProw").textContent = t("prow");
+  document.getElementById("lStart").textContent = t("start");
+  document.getElementById("lMonthly").textContent = t("monthly");
+  document.getElementById("pNone").textContent = t("none");
+  document.getElementById("foot").textContent = t("foot");
+}
+
+["czynsz", "admin", "media"].forEach(function (id) {
+  document.getElementById(id).oninput = calc;
+});
+document.querySelectorAll("#segK button").forEach(function (b) {
+  b.onclick = function () {
+    kMult = +b.dataset.k;
+    document.querySelectorAll("#segK button").forEach(function (x) { x.classList.toggle("active", x === b); });
+    if (typeof haptic === "function") haptic("select");
+    calc();
+  };
+});
+document.querySelectorAll("#segP button").forEach(function (b) {
+  b.onclick = function () {
+    pMult = +b.dataset.p;
+    document.querySelectorAll("#segP button").forEach(function (x) { x.classList.toggle("active", x === b); });
+    if (typeof haptic === "function") haptic("select");
+    calc();
+  };
+});
+document.querySelector('#segK [data-k="1"]').classList.add("active");
+document.querySelector('#segP [data-p="0"]').classList.add("active");
+
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.getElementById("ttl").textContent = I18N.t("cellKosztyT");
+document.title = I18N.t("cellKosztyT") + " — Kwadrat PL";
+initLabels();
+calc();
+</script>
+</body>
+</html>

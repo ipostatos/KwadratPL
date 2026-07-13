@@ -164,7 +164,24 @@
     srcOn:  { ru: "Источник включён", pl: "Źródło włączone", ua: "Джерело увімкнено", en: "Source enabled" },
     srcOff: { ru: "Источник выключен", pl: "Źródło wyłączone", ua: "Джерело вимкнено", en: "Source disabled" },
     sourceLabel: { ru: "Источник", pl: "Źródło", ua: "Джерело", en: "Source" },
-    footAbout: { ru: "Kwadrat PL · Mini App для Telegram", pl: "Kwadrat PL · Mini App dla Telegrama", ua: "Kwadrat PL · Mini App для Telegram", en: "Kwadrat PL · Telegram Mini App" }
+    footAbout: { ru: "Kwadrat PL · Mini App для Telegram", pl: "Kwadrat PL · Mini App dla Telegrama", ua: "Kwadrat PL · Mini App для Telegram", en: "Kwadrat PL · Telegram Mini App" },
+
+    /* ── раздел «Полезное» ── */
+    secUseful:   { ru: "Полезное", pl: "Przydatne", ua: "Корисне", en: "Useful" },
+    cellKaucjaT: { ru: "Как вернуть кауцию", pl: "Jak odzyskać kaucję", ua: "Як повернути кауцію", en: "Get your deposit back" },
+    cellKaucjaD: { ru: "Ультимативный гайд: закон, протокол, шаблон претензии, суд", pl: "Kompletny przewodnik: prawo, protokół, wzór wezwania, sąd", ua: "Повний гайд: закон, протокол, шаблон претензії, суд", en: "The ultimate guide: law, protocol, demand letter, court" },
+    cellUmowaT:  { ru: "Договор аренды: разбор", pl: "Umowa najmu: przewodnik", ua: "Договір оренди: розбір", en: "Rental contract guide" },
+    cellUmowaD:  { ru: "Виды договоров, red flags, мелдунек, словарик", pl: "Rodzaje umów, czerwone flagi, meldunek, słowniczek", ua: "Види договорів, red flags, мелдунок, словничок", en: "Contract types, red flags, meldunek, glossary" },
+    cellCheckT:  { ru: "Чек-лист осмотра", pl: "Checklista oględzin", ua: "Чек-лист огляду", en: "Viewing checklist" },
+    cellCheckD:  { ru: "Что проверить в квартире до подписания", pl: "Co sprawdzić w mieszkaniu przed podpisaniem", ua: "Що перевірити у квартирі до підписання", en: "What to check before you sign" },
+    cellPhrasesT: { ru: "Фразы для владельца", pl: "Gotowe wiadomości", ua: "Фрази для власника", en: "Messages to landlord" },
+    cellPhrasesD: { ru: "Готовые сообщения на польском — просто скопируйте", pl: "Gotowe wiadomości po polsku — po prostu skopiuj", ua: "Готові повідомлення польською — просто скопіюйте", en: "Ready-made Polish messages — just copy" },
+    cellKosztyT: { ru: "Калькулятор заезда", pl: "Kalkulator wprowadzki", ua: "Калькулятор заїзду", en: "Move-in calculator" },
+    cellKosztyD: { ru: "Сколько денег нужно на старте аренды", pl: "Ile pieniędzy potrzeba na start najmu", ua: "Скільки грошей треба на старті оренди", en: "How much cash you need upfront" },
+    copyBtn:   { ru: "Скопировать", pl: "Skopiuj", ua: "Скопіювати", en: "Copy" },
+    copiedT:   { ru: "Скопировано", pl: "Skopiowano", ua: "Скопійовано", en: "Copied" },
+    resetBtn:  { ru: "Сбросить", pl: "Wyczyść", ua: "Скинути", en: "Reset" },
+    disclaimer: { ru: "Это общая информация, а не юридическая консультация. В сложной ситуации обратитесь к юристу — в Польше работает бесплатная юрпомощь (nieodpłatna pomoc prawna).", pl: "To informacje ogólne, nie porada prawna. W trudnej sytuacji skorzystaj z prawnika — działa nieodpłatna pomoc prawna.", ua: "Це загальна інформація, а не юридична консультація. У складній ситуації зверніться до юриста — у Польщі діє безоплатна правова допомога (nieodpłatna pomoc prawna).", en: "This is general information, not legal advice. For complex cases see a lawyer — Poland has free legal aid (nieodpłatna pomoc prawna)." }
   };
 
   return { LANGS: LANGS, CITY_NAMES: CITY_NAMES, DICT: DICT };

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Как вернуть кауцию — Kwadrat PL</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="guide.js"></script>
+</head>
+<body>
+  <h1><span class="emi" data-icon="wallet"></span><span id="ttl"></span></h1>
+  <p class="sub"></p>
+  <div id="art"></div>
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-2)" data-i18n="backHome"></a>
+
+<script>
+"use strict";
+var WEZWANIE = "[Miejscowość], dnia [data]\n\n[Imię i nazwisko najemcy]\n[adres do korespondencji]\n[telefon / e-mail]\n\nDo: [Imię i nazwisko wynajmującego]\n[adres]\n\nWEZWANIE DO ZAPŁATY\n\nNa podstawie art. 6 ust. 4 ustawy z dnia 21 czerwca 2001 r. o ochronie praw lokatorów wzywam do zwrotu kaucji zabezpieczającej w kwocie [kwota] zł, wpłaconej w związku z umową najmu lokalu przy ul. [adres lokalu], zawartą dnia [data umowy].\n\nLokal został zwrócony w dniu [data zwrotu] (protokół zdawczo-odbiorczy w załączeniu). Ustawowy miesięczny termin zwrotu kaucji upłynął w dniu [data].\n\nWpłaty proszę dokonać w terminie 7 dni od otrzymania niniejszego wezwania na rachunek bankowy:\n[numer konta]\n\nW przypadku braku zapłaty w wyznaczonym terminie skieruję sprawę na drogę postępowania sądowego, co narazi Pana/Panią na dodatkowe koszty (odsetki ustawowe za opóźnienie, koszty sądowe i zastępstwa procesowego).\n\nZ poważaniem,\n[podpis]";
+
+var GUIDE = {
+ru: {
+  sub: "Кауция (kaucja) — возвращаемый залог, а не подарок владельцу. Пошагово: как забрать её полностью.",
+  sections: [
+  { h: "Что говорит закон", p: ["Кауцию регулирует ст. 6 закона об охране прав жильцов (<i>ustawa o ochronie praw lokatorów</i>, 21.06.2001). Четыре главных факта:"], list: [
+    "<b>Максимум</b>: 12 месячных czynsz при обычном найме и 6 — при najem okazjonalny. На практике берут 1–2.",
+    "<b>Срок возврата</b>: 1 месяц со дня, когда вы освободили и сдали квартиру.",
+    "<b>Вычитать можно только</b> долги по оплате и ущерб сверх нормального износа. «Покраска, потому что так принято» — не основание.",
+    "<b>Валоризация</b>: если вносили «двойной czynsz», вернуть обязаны двойной czynsz по ставке на день возврата — важно, если аренда дорожала." ] },
+  { h: "Фундамент закладывается при заезде", p: ["90% споров о кауции выигрываются или проигрываются в первый день аренды."], list: [
+    "Требуйте <b>protokół zdawczo-odbiorczy</b> (передаточный протокол) как приложение к договору: состояние комнат, список мебели и техники, дефекты, показания счётчиков.",
+    "Сфотографируйте и снимите на видео каждую комнату, каждую царапину и пятно. Дата в метаданных файла — ваш свидетель.",
+    "Каждый дефект — письменно в протокол, даже мелочь («царапина на столешнице»). Подписи обеих сторон, копия — вам." ],
+    warn: "Нет протокола? Потом владелец скажет, что квартира была идеальной. Фото с датой заезда — минимум, который спасает." },
+  { h: "Во время аренды", list: [
+    "Все просьбы и сообщения о поломках — <b>письменно</b> (мессенджер, e-mail). Устных договорённостей в споре не существует.",
+    "Мелкий ремонт (<i>drobne naprawy</i>: капающий кран, лампочки, петли) — по закону на арендаторе. Капитальное (проводка, трубы, стены) — на владельце.",
+    "Храните подтверждения всех оплат. Наличные — только под расписку (<i>pokwitowanie</i>)." ] },
+  { h: "Нормальный износ — не ущерб", p: ["<i>Zużycie naturalne</i> вычитать из кауции нельзя — это позиция закона и судов."], list: [
+    "<b>Нормально</b>: потёртые стены и полы, выгоревшие обои, разболтанные ручки, следы мебели на ковре. Дырки от картин лучше зашпаклевать перед выездом.",
+    "<b>Ущерб</b>: разбитое, прожжённое, залитое; сломанная мебель; прокуренная квартира; потерянные ключи; самовольная перекраска.",
+    "Правило: вернуть «как приняли, минус естественное старение»." ] },
+  { h: "Выезд: как правильно сдать квартиру", num: true, list: [
+    "Уберите квартиру до состояния «как принимали».",
+    "Письменно пригласите владельца на передачу в конкретный день.",
+    "Составьте протокол выезда: состояние, показания счётчиков, комплект ключей. Снова фото/видео.",
+    "Все ключи — из рук в руки под подпись.",
+    "Письменно оставьте номер счёта и напомните про законный срок возврата — 1 месяц." ] },
+  { h: "Не возвращают? Алгоритм давления", num: true, list: [
+    "<b>Напоминание с дедлайном</b> (7 дней), вежливо и письменно. Часто этого хватает.",
+    "<b>Wezwanie do zapłaty</b> — досудебная претензия заказным письмом с уведомлением (list polecony za potwierdzeniem odbioru). Шаблон ниже.",
+    "Требуйте <b>odsetki ustawowe za opóźnienie</b> — законные проценты за каждый день просрочки.",
+    "<b>Суд</b>: pozew o zapłatę. До 20 000 zł — упрощённое производство, можно онлайн через e-sąd (EPU); пошлина небольшая (от 30 zł). Доказательства: договор, протоколы, фото, переписка, подтверждения оплат. Такие дела арендаторы стабильно выигрывают.",
+    "<b>Бесплатная помощь</b>: nieodpłatna pomoc prawna — пункты в каждом повяте (запись через ужонд); иностранцам помогают и НГО." ] },
+  { h: "Частые отговорки владельца — и ответы", list: [
+    "<b>«Кауция ушла на покраску»</b> — освежение квартиры после нормального проживания — забота владельца.",
+    "<b>«Нужна профессиональная уборка по чеку»</b> — закон этого не требует: достаточно чистоты «как приняли».",
+    "<b>«Протокола нет, но было идеально»</b> — без протокола доказывает тот, кто требует. Ваши фото заезда решают.",
+    "<b>«Верну позже, сейчас нет денег»</b> — трудности владельца не отменяют месячный срок. Дедлайн + odsetki.",
+    "<b>Игнор</b> — сразу wezwanie заказным письмом: молчание в суде выглядит плохо." ],
+    tpl: { label: "Шаблон претензии — заполните поля в [скобках] и отправьте заказным письмом", text: WEZWANIE } }
+]},
+pl: {
+  sub: "Kaucja to zwrotne zabezpieczenie, nie prezent dla wynajmującego. Krok po kroku: jak odzyskać ją w całości.",
+  sections: [
+  { h: "Co mówi prawo", p: ["Kaucję reguluje art. 6 ustawy o ochronie praw lokatorów (21.06.2001). Cztery kluczowe fakty:"], list: [
+    "<b>Maksimum</b>: 12-krotność czynszu przy najmie zwykłym, 6-krotność przy okazjonalnym. W praktyce 1–2.",
+    "<b>Termin zwrotu</b>: miesiąc od dnia opróżnienia lokalu.",
+    "<b>Potrącić można tylko</b> zaległości i szkody ponad normalne zużycie. „Malowanie, bo tak się przyjęło” to nie podstawa.",
+    "<b>Waloryzacja</b>: kaucja wraca jako iloczyn tej samej krotności i czynszu z dnia zwrotu." ] },
+  { h: "Fundament budujesz przy wprowadzce", p: ["90% sporów o kaucję wygrywa się albo przegrywa pierwszego dnia najmu."], list: [
+    "Żądaj <b>protokołu zdawczo-odbiorczego</b> jako załącznika do umowy: stan pomieszczeń, meble, sprzęty, usterki, liczniki.",
+    "Zrób zdjęcia i film z każdego pomieszczenia, każdej rysy. Data w metadanych to twój świadek.",
+    "Każdą usterkę wpisz do protokołu, nawet drobną. Podpisy obu stron, kopia dla ciebie." ],
+    warn: "Brak protokołu? Wynajmujący powie potem, że mieszkanie było idealne. Zdjęcia z datą to minimum, które ratuje." },
+  { h: "W trakcie najmu", list: [
+    "Wszystkie zgłoszenia usterek — <b>pisemnie</b> (komunikator, e-mail). Ustne ustalenia w sporze nie istnieją.",
+    "Drobne naprawy (cieknący kran, żarówki, zawiasy) obciążają najemcę; poważne (instalacje, ściany) — wynajmującego.",
+    "Zachowuj potwierdzenia wszystkich płatności. Gotówka — tylko za pokwitowaniem." ] },
+  { h: "Normalne zużycie to nie szkoda", p: ["Zużycia naturalnego nie wolno potrącać z kaucji — tak mówi ustawa i orzecznictwo."], list: [
+    "<b>Normalne</b>: przetarte ściany i podłogi, wyblakłe tapety, poluzowane klamki, ślady mebli. Dziury po obrazach lepiej zaszpachlować.",
+    "<b>Szkoda</b>: rzeczy rozbite, przypalone, zalane; zniszczone meble; zapach papierosów; zgubione klucze; samowolne malowanie.",
+    "Zasada: oddajesz „jak przyjąłeś, minus naturalne starzenie”." ] },
+  { h: "Wyprowadzka: jak oddać mieszkanie", num: true, list: [
+    "Posprzątaj do stanu „jak przy odbiorze”.",
+    "Pisemnie umów wynajmującego na przekazanie w konkretnym dniu.",
+    "Spisz protokół zdawczy: stan, liczniki, komplet kluczy. Znów zdjęcia/film.",
+    "Klucze przekaż za pokwitowaniem.",
+    "Zostaw pisemnie numer konta i przypomnij o ustawowym miesięcznym terminie." ] },
+  { h: "Brak zwrotu? Algorytm nacisku", num: true, list: [
+    "<b>Przypomnienie z terminem</b> (7 dni), grzecznie i pisemnie. Często wystarcza.",
+    "<b>Wezwanie do zapłaty</b> listem poleconym za potwierdzeniem odbioru. Wzór poniżej.",
+    "Naliczaj <b>odsetki ustawowe za opóźnienie</b>.",
+    "<b>Sąd</b>: pozew o zapłatę. Do 20 000 zł postępowanie uproszczone, online przez e-sąd (EPU); opłata od 30 zł. Dowody: umowa, protokoły, zdjęcia, korespondencja, potwierdzenia.",
+    "<b>Bezpłatna pomoc</b>: nieodpłatna pomoc prawna w każdym powiecie." ] },
+  { h: "Typowe wymówki — i odpowiedzi", list: [
+    "<b>„Kaucja poszła na malowanie”</b> — odświeżenie po normalnym używaniu to sprawa wynajmującego.",
+    "<b>„Wymagane sprzątanie z fakturą”</b> — ustawa tego nie wymaga; wystarczy czystość jak przy odbiorze.",
+    "<b>„Nie ma protokołu, ale było idealnie”</b> — bez protokołu dowodzi ten, kto żąda. Twoje zdjęcia rozstrzygają.",
+    "<b>„Oddam później, nie mam teraz”</b> — problemy finansowe nie uchylają terminu. Termin + odsetki.",
+    "<b>Cisza</b> — od razu wezwanie listem poleconym: milczenie źle wygląda w sądzie." ],
+    tpl: { label: "Wzór wezwania — uzupełnij pola w [nawiasach] i wyślij poleconym", text: WEZWANIE } }
+]},
+ua: {
+  sub: "Кауція — це поворотна застава, а не подарунок власнику. Покроково: як забрати її повністю.",
+  sections: [
+  { h: "Що каже закон", p: ["Кауцію регулює ст. 6 закону про охорону прав мешканців (<i>ustawa o ochronie praw lokatorów</i>, 21.06.2001). Чотири головні факти:"], list: [
+    "<b>Максимум</b>: 12 місячних czynsz при звичайному наймі та 6 — при najem okazjonalny. На практиці 1–2.",
+    "<b>Строк повернення</b>: 1 місяць з дня, коли ви звільнили квартиру.",
+    "<b>Вирахувати можна лише</b> борги з оплати та шкоду понад нормальний знос. «Фарбування, бо так заведено» — не підстава.",
+    "<b>Валоризація</b>: якщо вносили «подвійний czynsz», повернути мають подвійний czynsz за ставкою на день повернення." ] },
+  { h: "Фундамент закладається при заїзді", p: ["90% спорів про кауцію виграються або програються в перший день оренди."], list: [
+    "Вимагайте <b>protokół zdawczo-odbiorczy</b> (передавальний протокол) як додаток до договору: стан кімнат, меблі й техніка, дефекти, покази лічильників.",
+    "Сфотографуйте та зніміть на відео кожну кімнату, кожну подряпину. Дата в метаданих — ваш свідок.",
+    "Кожен дефект — письмово в протокол, навіть дрібний. Підписи обох сторін, копія — вам." ],
+    warn: "Немає протоколу? Власник потім скаже, що квартира була ідеальною. Фото з датою заїзду — мінімум, який рятує." },
+  { h: "Під час оренди", list: [
+    "Усі прохання та повідомлення про поломки — <b>письмово</b> (месенджер, e-mail). Усних домовленостей у спорі не існує.",
+    "Дрібний ремонт (<i>drobne naprawy</i>: кран, лампочки, завіси) — за законом на орендарі. Капітальне — на власнику.",
+    "Зберігайте підтвердження всіх оплат. Готівка — лише під розписку (<i>pokwitowanie</i>)." ] },
+  { h: "Нормальний знос — не шкода", p: ["<i>Zużycie naturalne</i> вираховувати з кауції не можна — це позиція закону й судів."], list: [
+    "<b>Нормально</b>: потерті стіни й підлога, вигорілі шпалери, розхитані ручки, сліди меблів. Дірки від картин краще зашпаклювати.",
+    "<b>Шкода</b>: розбите, пропалене, залите; зламані меблі; прокурена квартира; загублені ключі; самовільне перефарбування.",
+    "Правило: повернути «як прийняли, мінус природне старіння»." ] },
+  { h: "Виїзд: як правильно здати квартиру", num: true, list: [
+    "Приберіть квартиру до стану «як приймали».",
+    "Письмово запросіть власника на передачу в конкретний день.",
+    "Складіть протокол виїзду: стан, лічильники, комплект ключів. Знову фото/відео.",
+    "Усі ключі — з рук у руки під підпис.",
+    "Письмово залиште номер рахунку й нагадайте про законний строк — 1 місяць." ] },
+  { h: "Не повертають? Алгоритм тиску", num: true, list: [
+    "<b>Нагадування з дедлайном</b> (7 днів), ввічливо й письмово. Часто цього досить.",
+    "<b>Wezwanie do zapłaty</b> — досудова претензія рекомендованим листом із повідомленням. Шаблон нижче.",
+    "Вимагайте <b>odsetki ustawowe za opóźnienie</b> — законні відсотки за кожен день прострочення.",
+    "<b>Суд</b>: pozew o zapłatę. До 20 000 zł — спрощене провадження, можна онлайн через e-sąd (EPU); мито невелике (від 30 zł). Докази: договір, протоколи, фото, листування, підтвердження оплат.",
+    "<b>Безоплатна допомога</b>: nieodpłatna pomoc prawna — пункти в кожному повіті; іноземцям допомагають і НГО." ] },
+  { h: "Часті відмовки власника — і відповіді", list: [
+    "<b>«Кауція пішла на фарбування»</b> — освіження квартири після нормального проживання — справа власника.",
+    "<b>«Потрібне професійне прибирання з чеком»</b> — закон цього не вимагає: досить чистоти «як прийняли».",
+    "<b>«Протоколу немає, але було ідеально»</b> — без протоколу доводить той, хто вимагає. Ваші фото заїзду вирішують.",
+    "<b>«Поверну пізніше»</b> — труднощі власника не скасовують місячний строк. Дедлайн + odsetki.",
+    "<b>Ігнор</b> — одразу wezwanie рекомендованим листом: мовчання в суді виглядає погано." ],
+    tpl: { label: "Шаблон претензії — заповніть поля у [дужках] і надішліть рекомендованим", text: WEZWANIE } }
+]},
+en: {
+  sub: "The kaucja is a refundable deposit, not a gift to the landlord. Step by step: how to get all of it back.",
+  sections: [
+  { h: "What the law says", p: ["Deposits are governed by art. 6 of the Tenant Protection Act (<i>ustawa o ochronie praw lokatorów</i>, 21.06.2001). Four key facts:"], list: [
+    "<b>Maximum</b>: 12× monthly rent for a regular lease, 6× for najem okazjonalny. In practice 1–2×.",
+    "<b>Return deadline</b>: 1 month from the day you vacate the flat.",
+    "<b>Deductions allowed only</b> for unpaid rent and damage beyond normal wear. “Repainting because that's customary” is not a reason.",
+    "<b>Indexation</b>: if you paid “two months of rent”, you get back two months of rent at the rate on the return date." ] },
+  { h: "The foundation is laid on move-in day", p: ["90% of deposit disputes are won or lost on the first day of the lease."], list: [
+    "Demand a <b>protokół zdawczo-odbiorczy</b> (handover protocol) as a contract annex: room condition, furniture, appliances, defects, meter readings.",
+    "Photograph and film every room, every scratch and stain. File metadata dates are your witness.",
+    "Every defect goes into the protocol in writing, however small. Both signatures, keep a copy." ],
+    warn: "No protocol? The landlord will later claim the flat was perfect. Dated move-in photos are the minimum that saves you." },
+  { h: "During the tenancy", list: [
+    "Report all issues <b>in writing</b> (messenger, e-mail). Verbal agreements don't exist in a dispute.",
+    "Minor repairs (<i>drobne naprawy</i>: dripping tap, bulbs, hinges) are on the tenant by law; major ones (wiring, pipes, walls) on the landlord.",
+    "Keep proof of every payment. Cash — only against a receipt (<i>pokwitowanie</i>)." ] },
+  { h: "Normal wear is not damage", p: ["<i>Zużycie naturalne</i> cannot be deducted from the deposit — that's the law and the courts' position."], list: [
+    "<b>Normal</b>: scuffed walls and floors, faded wallpaper, loose handles, furniture marks. Fill picture-hook holes before leaving.",
+    "<b>Damage</b>: broken, burnt or flooded items; wrecked furniture; smoke smell; lost keys; unauthorised repainting.",
+    "Rule: return it “as received, minus natural ageing”." ] },
+  { h: "Moving out the right way", num: true, list: [
+    "Clean the flat to “as received” condition.",
+    "Invite the landlord in writing to a handover on a specific day.",
+    "Draw up a move-out protocol: condition, meters, full key set. Photos/video again.",
+    "Hand over all keys against a signature.",
+    "Leave your bank account number in writing and remind them of the statutory 1-month deadline." ] },
+  { h: "Not returned? The pressure algorithm", num: true, list: [
+    "<b>A reminder with a deadline</b> (7 days), polite and written. Often enough.",
+    "<b>Wezwanie do zapłaty</b> — a formal demand letter, sent by registered mail with confirmation. Template below.",
+    "Claim <b>statutory late-payment interest</b> (odsetki ustawowe za opóźnienie).",
+    "<b>Court</b>: a payment claim (pozew o zapłatę). Up to 20 000 zł it's simplified procedure, online via e-sąd (EPU); fee from 30 zł. Evidence: contract, protocols, photos, correspondence, payment proofs. Tenants consistently win these.",
+    "<b>Free help</b>: nieodpłatna pomoc prawna — legal aid points in every powiat; NGOs also help foreigners." ] },
+  { h: "Common excuses — and your answers", list: [
+    "<b>“The deposit went on repainting”</b> — refreshing after normal use is the landlord's duty.",
+    "<b>“Professional cleaning with an invoice required”</b> — the law doesn't require it; “clean as received” is enough.",
+    "<b>“No protocol, but it was perfect”</b> — without a protocol, the burden of proof is on the claimant. Your move-in photos decide.",
+    "<b>“I'll pay later”</b> — the landlord's finances don't suspend the one-month deadline. Deadline + interest.",
+    "<b>Silence</b> — go straight to a registered demand letter: silence looks bad in court." ],
+    tpl: { label: "Demand letter template — fill in the [brackets] and send by registered mail", text: WEZWANIE } }
+]}
+};
+
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.getElementById("ttl").textContent = I18N.t("cellKaucjaT");
+document.title = I18N.t("cellKaucjaT") + " — Kwadrat PL";
+Guide.renderArticle("#art", GUIDE);
+</script>
+</body>
+</html>

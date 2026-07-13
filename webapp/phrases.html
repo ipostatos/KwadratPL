@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Фразы для владельца — Kwadrat PL</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="guide.js"></script>
+</head>
+<body>
+  <h1><span class="emi" data-icon="message-circle"></span><span id="ttl"></span></h1>
+  <p class="sub" id="sub"></p>
+  <div id="list"></div>
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-2)" data-i18n="backHome"></a>
+  <p class="foot" id="foot"></p>
+
+<script>
+"use strict";
+var SUB = {
+  ru: "Готовые сообщения на грамотном польском: замените [поля] и отправьте. Владельцы отвечают охотнее тем, кто пишет по-польски.",
+  pl: "Gotowe wiadomości — uzupełnij [pola] i wyślij.",
+  ua: "Готові повідомлення грамотною польською: замініть [поля] і надішліть. Власники охочіше відповідають тим, хто пише польською.",
+  en: "Ready-made messages in proper Polish: replace the [fields] and send. Landlords reply far more willingly to Polish messages."
+};
+var FOOT = {
+  ru: "Совет: важные договорённости дублируйте текстом — переписка потом работает как доказательство.",
+  pl: "Rada: ważne ustalenia potwierdzaj na piśmie — korespondencja działa potem jak dowód.",
+  ua: "Порада: важливі домовленості дублюйте текстом — листування потім працює як доказ.",
+  en: "Tip: confirm important agreements in writing — the thread later works as evidence."
+};
+var PHRASES = [
+{ t: {ru:"Отклик на объявление", pl:"Odpowiedź na ogłoszenie", ua:"Відгук на оголошення", en:"Replying to a listing"},
+  n: {ru:"Первое сообщение. Коротко о себе — это сильно повышает шанс ответа.", pl:"Pierwsza wiadomość — krótko o sobie.", ua:"Перше повідомлення. Коротко про себе — це сильно підвищує шанс відповіді.", en:"First contact. A short intro greatly boosts reply rates."},
+  pl: "Dzień dobry! Piszę w sprawie ogłoszenia o wynajmie mieszkania przy ul. [ulica]. Jestem zainteresowany/a wynajmem od [data] na dłuższy okres. Pracuję jako [zawód], mieszkam [sam/sama / z partnerem / z rodziną]. Nie palę. Czy mieszkanie jest nadal dostępne i czy mógłbym/mogłabym umówić się na oglądanie? Pozdrawiam, [imię]" },
+{ t: {ru:"Вопросы перед просмотром", pl:"Pytania przed oglądaniem", ua:"Питання перед оглядом", en:"Questions before a viewing"},
+  n: {ru:"Сэкономит поездку, если что-то не подходит.", pl:"Oszczędzi dojazd, jeśli coś nie pasuje.", ua:"Заощадить поїздку, якщо щось не підходить.", en:"Saves a trip if something's a dealbreaker."},
+  pl: "Dzień dobry! Zanim umówimy się na oglądanie, chciałbym/chciałabym dopytać: 1) Jaka jest pełna miesięczna kwota razem z czynszem administracyjnym i mediami? 2) Jaka jest wysokość kaucji? 3) Czy mieszkanie jest dostępne od [data]? 4) Czy akceptują Państwo [zwierzęta / dzieci / parę]? 5) Czy możliwe jest zameldowanie? Z góry dziękuję za odpowiedź!" },
+{ t: {ru:"Договориться о просмотре", pl:"Umówienie oglądania", ua:"Домовитися про огляд", en:"Arranging a viewing"},
+  n: {ru:"", pl:"", ua:"", en:""},
+  pl: "Dzień dobry! Czy mógłbym/mogłabym obejrzeć mieszkanie w tym tygodniu? Pasuje mi [dzień] po godzinie [godzina] albo [dzień] w ciągu dnia. Proszę o informację, który termin Państwu odpowiada. Pozdrawiam!" },
+{ t: {ru:"Сообщить о поломке", pl:"Zgłoszenie usterki", ua:"Повідомити про поломку", en:"Reporting a fault"},
+  n: {ru:"Письменное сообщение = доказательство. Фото прикладывайте всегда.", pl:"Pisemne zgłoszenie = dowód. Zawsze dołącz zdjęcie.", ua:"Письмове повідомлення = доказ. Фото додавайте завжди.", en:"A written report = evidence. Always attach a photo."},
+  pl: "Dzień dobry! Chciałbym/chciałabym zgłosić usterkę w mieszkaniu: [opis problemu, np. przecieka kran w łazience / nie działa lodówka]. Problem pojawił się [kiedy]. Przesyłam zdjęcie. Proszę o informację, kiedy będzie możliwa naprawa. Dziękuję i pozdrawiam, [imię]" },
+{ t: {ru:"Напомнить о ремонте", pl:"Przypomnienie o naprawie", ua:"Нагадати про ремонт", en:"Chasing a repair"},
+  n: {ru:"Если владелец тянет. Вежливо, но со ссылкой на обязанность.", pl:"Gdy właściciel zwleka.", ua:"Якщо власник зволікає. Ввічливо, але з посиланням на обов'язок.", en:"When the landlord stalls. Polite but firm."},
+  pl: "Dzień dobry! Wracam do zgłoszonej [data] usterki: [opis]. Do tej pory nie została naprawiona, a zgodnie z art. 6a ustawy o ochronie praw lokatorów naprawy tego typu obciążają wynajmującego. Proszę o ustalenie terminu naprawy w tym tygodniu. Dziękuję, [imię]" },
+{ t: {ru:"Торг о цене", pl:"Negocjacja ceny", ua:"Торг про ціну", en:"Negotiating the price"},
+  n: {ru:"Работает лучше с аргументом: долгий срок, предоплата, готовность заехать сразу.", pl:"Działa lepiej z argumentem: dłuższy okres, szybka wprowadzka.", ua:"Працює краще з аргументом: довгий строк, передоплата, готовність заїхати одразу.", en:"Works best with an argument: long stay, quick move-in."},
+  pl: "Dzień dobry! Mieszkanie bardzo mi się podoba i jestem gotowy/gotowa podpisać umowę na [12/24] miesięcy oraz wprowadzić się od zaraz. Czy przy dłuższej umowie byłaby możliwa cena [kwota] zł miesięcznie? Jestem sprawdzonym najemcą i mogę przedstawić referencje. Pozdrawiam, [imię]" },
+{ t: {ru:"Уведомление о выезде", pl:"Wypowiedzenie umowy", ua:"Повідомлення про виїзд", en:"Move-out notice"},
+  n: {ru:"Отправьте письменно с соблюдением срока из договора; сохраните подтверждение.", pl:"Złóż pisemnie z zachowaniem okresu z umowy.", ua:"Надішліть письмово з дотриманням строку з договору; збережіть підтвердження.", en:"Send in writing per your contract's notice period; keep proof."},
+  pl: "Dzień dobry! Zgodnie z § [numer] umowy najmu z dnia [data umowy] niniejszym wypowiadam umowę najmu lokalu przy ul. [adres] z zachowaniem [1-miesięcznego] okresu wypowiedzenia, ze skutkiem na dzień [data]. Proszę o ustalenie terminu przekazania mieszkania i spisania protokołu. Pozdrawiam, [imię i nazwisko]" },
+{ t: {ru:"Напоминание о кауции", pl:"Przypomnienie o kaucji", ua:"Нагадування про кауцію", en:"Deposit reminder"},
+  n: {ru:"Первый шаг перед официальной претензией — см. гайд «Как вернуть кауцию».", pl:"Pierwszy krok przed formalnym wezwaniem.", ua:"Перший крок перед офіційною претензією — див. гайд про кауцію.", en:"First step before a formal demand letter — see the deposit guide."},
+  pl: "Dzień dobry! Mieszkanie przy ul. [adres] zostało zwrócone [data zwrotu] wraz z protokołem. Zgodnie z art. 6 ust. 4 ustawy o ochronie praw lokatorów kaucja podlega zwrotowi w ciągu miesiąca od opróżnienia lokalu. Proszę o zwrot kwoty [kwota] zł na konto [numer konta] w terminie 7 dni. W razie braku wpłaty będę zmuszony/zmuszona wystąpić z formalnym wezwaniem do zapłaty. Pozdrawiam, [imię i nazwisko]" }
+];
+
+function render() {
+  var L = I18N.lang;
+  document.getElementById("sub").textContent = SUB[L] || SUB.ru;
+  document.getElementById("foot").textContent = FOOT[L] || FOOT.ru;
+  document.getElementById("list").innerHTML = PHRASES.map(function (p, i) {
+    var note = p.n[L] || "";
+    return '<div class="card gsec"><div class="h2">' + (p.t[L] || p.t.ru) + "</div>" +
+      (note ? '<p class="gp" style="color:var(--hint)">' + note + "</p>" : "") +
+      '<div class="gtpl"><pre>' + Guide.esc(p.pl) + "</pre>" +
+      '<button class="btn sm" data-i="' + i + '"><span class="emi">' + Icons.svg("copy") +
+      "</span> " + I18N.t("copyBtn") + "</button></div></div>";
+  }).join("");
+  document.querySelectorAll("[data-i]").forEach(function (b) {
+    b.onclick = function () { Guide.copyText(PHRASES[+b.dataset.i].pl, b); };
+  });
+}
+
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.getElementById("ttl").textContent = I18N.t("cellPhrasesT");
+document.title = I18N.t("cellPhrasesT") + " — Kwadrat PL";
+render();
+</script>
+</body>
+</html>

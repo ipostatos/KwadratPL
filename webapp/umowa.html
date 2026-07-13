@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Договор аренды — Kwadrat PL</title>
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="guide.js"></script>
+</head>
+<body>
+  <h1><span class="emi" data-icon="file-text"></span><span id="ttl"></span></h1>
+  <p class="sub"></p>
+  <div id="art"></div>
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-2)" data-i18n="backHome"></a>
+
+<script>
+"use strict";
+var GUIDE = {
+ru: {
+  sub: "Что должно быть в umowa najmu, какие пункты — красные флаги, и что значат все эти польские слова.",
+  sections: [
+  { h: "Виды договоров", list: [
+    "<b>Najem zwykły</b> (обычный) — стандарт. Максимальная защита арендатора: выселить принудительно можно только через суд.",
+    "<b>Najem okazjonalny</b> — владелец-физлицо, до 10 лет. Требует нотариального заявления арендатора о добровольном выселении и «запасного адреса». Для арендатора это нормально и не ловушка — просто владельцу проще расстаться с проблемным жильцом. Часто такие владельцы аккуратнее с документами.",
+    "<b>Najem instytucjonalny</b> — то же, но владелец-фирма (частые «operator najmu»)." ] },
+  { h: "Что обязательно должно быть в договоре", list: [
+    "Стороны полностью: имена, PESEL/паспорт, адреса. Проверьте, что подписывает <b>владелец</b> (или доверенность!).",
+    "Точный адрес и описание квартиры; список мебели — в протоколе-приложении.",
+    "Срок: na czas określony (фиксированный) или nieokreślony (бессрочный).",
+    "<b>Czynsz najmu</b> (аренда владельцу) и отдельно: кто платит czynsz administracyjny и media (см. ниже).",
+    "Кауция: сумма, условия возврата, срок (по закону — месяц).",
+    "Protokół zdawczo-odbiorczy как приложение (załącznik).",
+    "Условия и сроки расторжения (wypowiedzenie) для обеих сторон." ] },
+  { h: "Красные флаги 🚩", list: [
+    "<b>Запрет на meldunek</b> — регистрация по месту жительства ваше законное право, согласие владельца не требуется. Пункт «zakaz meldunku» юридически ничтожен, но показывает отношение.",
+    "Кауция больше 2–3 czynsz — нетипично, повод торговаться.",
+    "«Владелец может расторгнуть в любой момент» — при umowa na czas określony расторжение возможно только по причинам, прописанным в договоре.",
+    "Только наличные без расписок; отказ показать документ собственности.",
+    "Кары (kary umowne) за всё подряд: гости, задержка на день, «шум».",
+    "Обязанность «покрасить при выезде» без учёта нормального износа.",
+    "«Договор не нужен, всё на доверии» — вообще без договора вы бесправны, а владелец рискует налоговой." ] },
+  { h: "Czynsz — это три разных платежа", list: [
+    "<b>Czynsz najmu</b> — плата владельцу за аренду.",
+    "<b>Czynsz administracyjny</b> — платёж ЖСК/wspólnota (содержание дома, часто включает воду, отопление, вывоз мусора).",
+    "<b>Media</b> — электричество, газ, интернет по счётчикам/договорам.",
+    "В объявлениях цена часто указана <i>без</i> administracyjny и media — уточняйте полную сумму «all-in» и требуйте ежегодного rozliczenie (перерасчёта) по media." ] },
+  { h: "Расторжение (wypowiedzenie)", list: [
+    "<b>Na czas określony</b>: досрочно — только по причинам, прописанным в договоре (проверьте, что они есть и у вас!).",
+    "<b>Na czas nieokreślony</b>: сроки уведомления из договора; платящего вовремя жильца закон защищает сильно — выселение только по суду.",
+    "Повышение czynsz — только письменным wypowiedzeniem wysokości czynszu, с уведомлением минимум за 3 месяца.",
+    "Своё уведомление о выезде отправляйте письменно и храните подтверждение." ] },
+  { h: "Meldunek (регистрация)", p: ["Zameldowanie — ваше право и формально обязанность (для пребывания >30 дней). Делается в ужонде (urząd miasta/gminy), достаточно договора аренды. <b>Регистрация не даёт вам никаких прав на квартиру</b> — покажите это владельцу, если он боится. Для иностранца meldunek нужен для многих процедур (PESEL, карта побыту)."] },
+  { h: "Перед подписанием: мини-чек-лист", num: true, list: [
+    "Прочитайте весь договор. Не понимаете пункт — переведите, спросите, не подписывайте вслепую.",
+    "Сверьте цену и условия с объявлением: всё обещанное — письменно.",
+    "Попросите показать право собственности: номер księga wieczysta можно бесплатно проверить онлайн (ekw.ms.gov.pl).",
+    "Проверьте протокол и сфотографируйте квартиру (см. гайд про кауцию).",
+    "Два экземпляра, подписи на каждой странице, один — вам." ] },
+  { h: "Словарик", list: [
+    "<b>najemca</b> — арендатор (вы) · <b>wynajmujący</b> — владелец",
+    "<b>kaucja</b> — залог · <b>odstępne</b> — невозвращаемый «вступительный» платёж (избегайте)",
+    "<b>protokół zdawczo-odbiorczy</b> — передаточный протокол",
+    "<b>wypowiedzenie</b> — расторжение/уведомление · <b>okres wypowiedzenia</b> — срок уведомления",
+    "<b>księga wieczysta</b> — реестр недвижимости · <b>zameldowanie</b> — регистрация",
+    "<b>kary umowne</b> — договорные штрафы · <b>rozliczenie mediów</b> — перерасчёт коммуналки" ] }
+]},
+pl: {
+  sub: "Co musi zawierać umowa najmu, które zapisy to czerwone flagi i co oznaczają kluczowe pojęcia.",
+  sections: [
+  { h: "Rodzaje umów", list: [
+    "<b>Najem zwykły</b> — standard, najsilniejsza ochrona najemcy: eksmisja tylko przez sąd.",
+    "<b>Najem okazjonalny</b> — właściciel-osoba fizyczna, do 10 lat. Wymaga notarialnego oświadczenia najemcy o poddaniu się egzekucji i adresu zapasowego. To nie pułapka — właściciele z taką umową często są bardziej uporządkowani.",
+    "<b>Najem instytucjonalny</b> — analogicznie, gdy wynajmuje firma." ] },
+  { h: "Co musi być w umowie", list: [
+    "Pełne dane stron: imiona, PESEL/paszport, adresy. Sprawdź, czy podpisuje <b>właściciel</b> (albo pełnomocnictwo!).",
+    "Dokładny adres i opis lokalu; wyposażenie — w protokole.",
+    "Czas: określony albo nieokreślony.",
+    "<b>Czynsz najmu</b> oraz osobno: kto płaci czynsz administracyjny i media.",
+    "Kaucja: kwota, zasady zwrotu, termin (ustawowo miesiąc).",
+    "Protokół zdawczo-odbiorczy jako załącznik.",
+    "Zasady wypowiedzenia dla obu stron." ] },
+  { h: "Czerwone flagi 🚩", list: [
+    "<b>„Zakaz meldunku”</b> — zameldowanie to twoje prawo, zgoda właściciela nie jest wymagana; zapis jest nieważny, ale pokazuje nastawienie.",
+    "Kaucja powyżej 2–3 czynszów — nietypowa, negocjuj.",
+    "„Wynajmujący może wypowiedzieć w każdej chwili” — przy umowie na czas określony wypowiedzenie tylko z przyczyn wskazanych w umowie.",
+    "Tylko gotówka bez pokwitowań; odmowa okazania tytułu własności.",
+    "Kary umowne za wszystko: goście, dzień spóźnienia, „hałas”.",
+    "Obowiązek „odmalowania przy wyprowadzce” bez uwzględnienia normalnego zużycia.",
+    "„Umowa niepotrzebna, na zaufanie” — bez umowy jesteś bez ochrony." ] },
+  { h: "Czynsz to trzy różne płatności", list: [
+    "<b>Czynsz najmu</b> — dla właściciela.",
+    "<b>Czynsz administracyjny</b> — dla wspólnoty/spółdzielni (często woda, ogrzewanie, śmieci).",
+    "<b>Media</b> — prąd, gaz, internet wg liczników.",
+    "W ogłoszeniach cena często <i>nie zawiera</i> administracyjnego i mediów — pytaj o kwotę „all-in” i żądaj rocznego rozliczenia mediów." ] },
+  { h: "Wypowiedzenie", list: [
+    "<b>Czas określony</b>: wcześniejsze rozwiązanie tylko z przyczyn zapisanych w umowie (sprawdź, czy masz je też ty!).",
+    "<b>Czas nieokreślony</b>: terminy z umowy; płacącego w terminie najemcę ustawa mocno chroni.",
+    "Podwyżka czynszu — tylko pisemnym wypowiedzeniem wysokości czynszu, min. 3 miesiące naprzód.",
+    "Swoje wypowiedzenie składaj pisemnie i zachowaj potwierdzenie." ] },
+  { h: "Meldunek", p: ["Zameldowanie to twoje prawo i formalny obowiązek (pobyt >30 dni). Załatwiasz w urzędzie, wystarczy umowa najmu. <b>Meldunek nie daje żadnych praw do lokalu</b> — pokaż to właścicielowi, jeśli się obawia."] },
+  { h: "Przed podpisaniem: mini-checklista", num: true, list: [
+    "Przeczytaj całość. Niezrozumiały zapis — przetłumacz, dopytaj, nie podpisuj w ciemno.",
+    "Porównaj cenę i warunki z ogłoszeniem: wszystko obiecane — na piśmie.",
+    "Poproś o tytuł własności: numer księgi wieczystej sprawdzisz bezpłatnie online (ekw.ms.gov.pl).",
+    "Sprawdź protokół i zrób zdjęcia mieszkania.",
+    "Dwa egzemplarze, podpisy na każdej stronie, jeden dla ciebie." ] },
+  { h: "Słowniczek", list: [
+    "<b>najemca</b> — lokator · <b>wynajmujący</b> — właściciel",
+    "<b>kaucja</b> — zabezpieczenie · <b>odstępne</b> — bezzwrotna opłata „wejściowa” (unikaj)",
+    "<b>protokół zdawczo-odbiorczy</b> — spis stanu lokalu",
+    "<b>okres wypowiedzenia</b> — czas od złożenia wypowiedzenia do końca umowy",
+    "<b>księga wieczysta</b> — rejestr nieruchomości · <b>kary umowne</b> — kary zapisane w umowie" ] }
+]},
+ua: {
+  sub: "Що має бути в umowa najmu, які пункти — червоні прапорці, і що означають усі ці польські слова.",
+  sections: [
+  { h: "Види договорів", list: [
+    "<b>Najem zwykły</b> (звичайний) — стандарт. Максимальний захист орендаря: примусове виселення лише через суд.",
+    "<b>Najem okazjonalny</b> — власник-фізособа, до 10 років. Потребує нотаріальної заяви орендаря про добровільне виселення та «запасної адреси». Це не пастка — такі власники часто акуратніші з документами.",
+    "<b>Najem instytucjonalny</b> — те саме, але власник-фірма." ] },
+  { h: "Що обов'язково має бути в договорі", list: [
+    "Сторони повністю: імена, PESEL/паспорт, адреси. Перевірте, що підписує <b>власник</b> (або довіреність!).",
+    "Точна адреса й опис квартири; меблі — у протоколі-додатку.",
+    "Строк: na czas określony (фіксований) або nieokreślony (безстроковий).",
+    "<b>Czynsz najmu</b> (оренда власнику) й окремо: хто платить czynsz administracyjny і media.",
+    "Кауція: сума, умови повернення, строк (за законом — місяць).",
+    "Protokół zdawczo-odbiorczy як додаток.",
+    "Умови розірвання (wypowiedzenie) для обох сторін." ] },
+  { h: "Червоні прапорці 🚩", list: [
+    "<b>Заборона meldunek</b> — реєстрація за місцем проживання — ваше законне право, згода власника не потрібна. Пункт нікчемний, але показує ставлення.",
+    "Кауція більша за 2–3 czynsz — нетипово, торгуйтеся.",
+    "«Власник може розірвати будь-коли» — при umowa na czas określony розірвання можливе лише з причин, прописаних у договорі.",
+    "Лише готівка без розписок; відмова показати документ власності.",
+    "Штрафи (kary umowne) за все підряд: гості, день затримки, «шум».",
+    "Обов'язок «пофарбувати при виїзді» без урахування нормального зносу.",
+    "«Договір не потрібен, усе на довірі» — без договору ви безправні." ] },
+  { h: "Czynsz — це три різні платежі", list: [
+    "<b>Czynsz najmu</b> — плата власнику за оренду.",
+    "<b>Czynsz administracyjny</b> — платіж ОСББ/wspólnota (утримання будинку, часто вода, опалення, сміття).",
+    "<b>Media</b> — електрика, газ, інтернет за лічильниками.",
+    "В оголошеннях ціна часто <i>без</i> administracyjny і media — уточнюйте повну суму «all-in» і вимагайте щорічного rozliczenie за media." ] },
+  { h: "Розірвання (wypowiedzenie)", list: [
+    "<b>Na czas określony</b>: достроково — лише з причин, прописаних у договорі (перевірте, що вони є й у вас!).",
+    "<b>Na czas nieokreślony</b>: строки повідомлення з договору; орендаря, який платить вчасно, закон захищає сильно.",
+    "Підвищення czynsz — лише письмовим wypowiedzeniem wysokości czynszu, мінімум за 3 місяці.",
+    "Своє повідомлення про виїзд надсилайте письмово та зберігайте підтвердження." ] },
+  { h: "Meldunek (реєстрація)", p: ["Zameldowanie — ваше право і формально обов'язок (перебування >30 днів). Робиться в ужонді, достатньо договору оренди. <b>Реєстрація не дає жодних прав на квартиру</b> — покажіть це власнику, якщо він боїться. Іноземцю meldunek потрібен для багатьох процедур (PESEL, карта побиту)."] },
+  { h: "Перед підписанням: міні-чек-лист", num: true, list: [
+    "Прочитайте весь договір. Не розумієте пункт — перекладіть, спитайте, не підписуйте наосліп.",
+    "Звірте ціну й умови з оголошенням: усе обіцяне — письмово.",
+    "Попросіть показати право власності: номер księga wieczysta можна безкоштовно перевірити онлайн (ekw.ms.gov.pl).",
+    "Перевірте протокол і сфотографуйте квартиру (див. гайд про кауцію).",
+    "Два примірники, підписи на кожній сторінці, один — вам." ] },
+  { h: "Словничок", list: [
+    "<b>najemca</b> — орендар (ви) · <b>wynajmujący</b> — власник",
+    "<b>kaucja</b> — застава · <b>odstępne</b> — безповоротний «вступний» платіж (уникайте)",
+    "<b>protokół zdawczo-odbiorczy</b> — передавальний протокол",
+    "<b>wypowiedzenie</b> — розірвання/повідомлення · <b>okres wypowiedzenia</b> — строк повідомлення",
+    "<b>księga wieczysta</b> — реєстр нерухомості · <b>zameldowanie</b> — реєстрація",
+    "<b>kary umowne</b> — договірні штрафи · <b>rozliczenie mediów</b> — перерахунок комуналки" ] }
+]},
+en: {
+  sub: "What a Polish lease must contain, which clauses are red flags, and what all those Polish terms mean.",
+  sections: [
+  { h: "Types of lease", list: [
+    "<b>Najem zwykły</b> (regular) — the standard. Strongest tenant protection: eviction only through court.",
+    "<b>Najem okazjonalny</b> — individual landlord, up to 10 years. Requires the tenant's notarised declaration of voluntary eviction and a backup address. Not a trap — such landlords are often more organised.",
+    "<b>Najem instytucjonalny</b> — same idea, but the landlord is a company." ] },
+  { h: "What the contract must contain", list: [
+    "Full details of both parties: names, PESEL/passport, addresses. Make sure the <b>owner</b> signs (or a power of attorney!).",
+    "Exact address and description; furniture listed in the protocol annex.",
+    "Term: fixed (na czas określony) or indefinite (nieokreślony).",
+    "<b>Czynsz najmu</b> (rent to the owner) and separately: who pays czynsz administracyjny and utilities.",
+    "Deposit: amount, return rules, deadline (one month by law).",
+    "Handover protocol as an annex (załącznik).",
+    "Termination rules (wypowiedzenie) for both sides." ] },
+  { h: "Red flags 🚩", list: [
+    "<b>A “no meldunek” clause</b> — residence registration is your legal right; the landlord's consent isn't required. The clause is void, but telling.",
+    "Deposit above 2–3 months' rent — unusual, negotiate.",
+    "“The landlord may terminate at any time” — a fixed-term lease can only be terminated for reasons written into it.",
+    "Cash only with no receipts; refusing to show proof of ownership.",
+    "Contractual penalties for everything: guests, one day's delay, “noise”.",
+    "An obligation to “repaint on move-out” ignoring normal wear.",
+    "“No contract needed, we trust each other” — without a contract you have no protection." ] },
+  { h: "“Czynsz” is three different payments", list: [
+    "<b>Czynsz najmu</b> — rent to the owner.",
+    "<b>Czynsz administracyjny</b> — building fee to the housing community (often includes water, heating, rubbish).",
+    "<b>Media</b> — electricity, gas, internet per meters.",
+    "Listed prices often <i>exclude</i> the building fee and utilities — ask for the all-in amount and demand a yearly utilities reconciliation (rozliczenie)." ] },
+  { h: "Termination (wypowiedzenie)", list: [
+    "<b>Fixed term</b>: early termination only for reasons written in the contract (make sure you have some too!).",
+    "<b>Indefinite</b>: notice periods per contract; a tenant who pays on time is strongly protected by law.",
+    "Rent increases require a written notice (wypowiedzenie wysokości czynszu) at least 3 months ahead.",
+    "Send your own move-out notice in writing and keep proof." ] },
+  { h: "Meldunek (registration)", p: ["Residence registration is your right and formally a duty (stays >30 days). Done at the local office; the lease is enough. <b>It gives you no rights to the property</b> — reassure the landlord if needed. Foreigners need it for many procedures (PESEL, residence card)."] },
+  { h: "Before signing: mini-checklist", num: true, list: [
+    "Read the whole contract. Don't understand a clause — translate it, ask, never sign blind.",
+    "Compare price and terms with the listing: everything promised — in writing.",
+    "Ask for proof of ownership: the księga wieczysta number can be checked free online (ekw.ms.gov.pl).",
+    "Check the protocol and photograph the flat (see the deposit guide).",
+    "Two copies, signatures on every page, one for you." ] },
+  { h: "Glossary", list: [
+    "<b>najemca</b> — tenant (you) · <b>wynajmujący</b> — landlord",
+    "<b>kaucja</b> — deposit · <b>odstępne</b> — non-refundable “entry” fee (avoid)",
+    "<b>protokół zdawczo-odbiorczy</b> — handover protocol",
+    "<b>wypowiedzenie</b> — termination/notice · <b>okres wypowiedzenia</b> — notice period",
+    "<b>księga wieczysta</b> — land register · <b>zameldowanie</b> — residence registration",
+    "<b>kary umowne</b> — contractual penalties · <b>rozliczenie mediów</b> — utilities reconciliation" ] }
+]}
+};
+
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.getElementById("ttl").textContent = I18N.t("cellUmowaT");
+document.title = I18N.t("cellUmowaT") + " — Kwadrat PL";
+Guide.renderArticle("#art", GUIDE);
+</script>
+</body>
+</html>
