@@ -103,6 +103,18 @@
     ownerAny:   { ru: "Все", pl: "Wszyscy", ua: "Усі", en: "All" },
     ownerPrivate: { ru: "Частник", pl: "Prywatne", ua: "Приватник", en: "Private" },
     ownerAgency:  { ru: "Агентство", pl: "Biuro", ua: "Агентство", en: "Agency" },
+    /* ── справедливая цена / анти-скам ── */
+    pvDeal:   { ru: "ниже рынка на {n}%", pl: "{n}% poniżej rynku", ua: "нижче ринку на {n}%", en: "{n}% below market" },
+    pvAbove:  { ru: "выше рынка на {n}%", pl: "{n}% powyżej rynku", ua: "вище ринку на {n}%", en: "{n}% above market" },
+    pvFair:   { ru: "по рынку района", pl: "cena rynkowa", ua: "по ринку району", en: "at market rate" },
+    pvScamBadge: { ru: "подозрительно дёшево", pl: "podejrzanie tanio", ua: "підозріло дешево", en: "suspiciously cheap" },
+    pvScamTitle: { ru: "Цена сильно ниже рынка — будьте осторожны", pl: "Cena mocno poniżej rynku — zachowaj ostrożność", ua: "Ціна значно нижча за ринок — будьте обережні", en: "Price far below market — be careful" },
+    pvScamText: { ru: "Аномально низкая цена — классический признак мошенничества. Никогда не переводите деньги (кауцию, «бронь») до личного просмотра и подписания договора.", pl: "Nienaturalnie niska cena to typowy sygnał oszustwa. Nigdy nie wysyłaj pieniędzy (kaucji, „rezerwacji”) przed obejrzeniem i podpisaniem umowy.", ua: "Аномально низька ціна — класична ознака шахрайства. Ніколи не переказуйте гроші (кауцію, «бронь») до особистого огляду й підписання договору.", en: "An abnormally low price is a classic scam signal. Never send money (deposit, “reservation”) before viewing in person and signing a contract." },
+    pvVsDistrict: { ru: "медиана района", pl: "mediana dzielnicy", ua: "медіана району", en: "district median" },
+    pvVsCity: { ru: "медиана города", pl: "mediana miasta", ua: "медіана міста", en: "city median" },
+    /* ── полная стоимость въезда ── */
+    allInNote: { ru: "Цена может не включать czynsz administracyjny и media. Уточните полную сумму у владельца.", pl: "Cena może nie zawierać czynszu administracyjnego i mediów. Dopytaj właściciela o pełną kwotę.", ua: "Ціна може не включати czynsz administracyjny і media. Уточніть повну суму у власника.", en: "The price may exclude the building fee (czynsz) and utilities. Ask the owner for the full amount." },
+    allInBtn: { ru: "Прикинуть полную стоимость", pl: "Oblicz pełny koszt", ua: "Прикинути повну вартість", en: "Estimate full cost" },
     subscribe:  { ru: "Подписаться на поиск", pl: "Subskrybuj wyszukiwanie", ua: "Підписатися на пошук", en: "Subscribe to this search" },
     sortNew:    { ru: "Сначала новые", pl: "Najnowsze", ua: "Спочатку нові", en: "Newest first" },
     sortPriceAsc: { ru: "Дешевле", pl: "Najtańsze", ua: "Дешевші", en: "Cheapest" },

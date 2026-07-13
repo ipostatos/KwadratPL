@@ -175,7 +175,8 @@ function openSheet(l) {
     '<span class="lbadge type">' + App.esc(I18N.t(l.type)) + "</span>" +
     "</div></div>" +
     '<div class="sbody">' +
-    '<div class="lprice" style="font-size:22px">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) + "</div>" +
+    '<div class="lprice" style="font-size:22px">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) +
+    App.priceBadge(l) + "</div>" +
     '<div class="ltitle">' + title + " · " + App.esc(App.cityName(l.city)) +
     (l.district ? ", " + App.esc(l.district) : "") + "</div>" +
     '<div class="specs">' +
@@ -183,6 +184,7 @@ function openSheet(l) {
       return '<div class="spec"><div class="k">' + App.esc(s[0]) + '</div><div class="v">' + App.esc(s[1]) + "</div></div>";
     }).join("") +
     "</div>" +
+    App.priceInsight(l) +
     (l.descr ? '<p class="muted" style="font-size:var(--fs-sm)">' + App.esc(l.descr) + "</p>" : "") +
     '<button class="btn" id="btnContact"><span class="emi">' +
     Icons.svg(l.url ? "key" : "message-circle") + "</span> " +

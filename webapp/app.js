@@ -315,6 +315,99 @@
     else window.open(url, "_blank", "noopener");
   }
 
+  // ── «справедливая цена» и анти-скам-флаг из собственных данных ──
+  // Считаем медиану цены за м² по группам (город+тип+район, с фолбэком на
+  // город+тип). Сравниваем объявление с медианой похожих → вердикт.
+  // Всё на клиенте: данные уже загружены, внешних сервисов ноль.
+  var MIN_GROUP = 6;          // меньше — медиана шумная, не судим
+  var _market = null;         // { "city|type|district": medianPPM, "city|type": ... }
+
+  function median(arr) {
+    if (!arr.length) return null;
+    var s = arr.slice().sort(function (a, b) { return a - b; });
+    var m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+  }
+
+  function ppm(l) {            // цена за м² (нужна площадь и цена)
+    return (l.area && l.area > 0 && l.price > 0) ? l.price / l.area : null;
+  }
+
+  function buildMarket() {
+    var groups = {};
+    listings.forEach(function (l) {
+      var v = ppm(l);
+      if (v == null) return;
+      var base = l.city + "|" + l.type;
+      (groups[base] = groups[base] || []).push(v);
+      if (l.district) {
+        var k = base + "|" + l.district;
+        (groups[k] = groups[k] || []).push(v);
+      }
+    });
+    _market = {};
+    Object.keys(groups).forEach(function (k) {
+      if (groups[k].length >= MIN_GROUP) _market[k] = median(groups[k]);
+    });
+  }
+
+  // вердикт по цене: {level, pct, scope} либо null (мало данных / нет площади)
+  //   level: "scam" | "deal" | "fair" | "above"
+  //   pct: отклонение от медианы (−0.3 = на 30% дешевле)
+  //   scope: "district" | "city" — по какой выборке сравнили
+  function priceVerdict(l) {
+    if (!App.live) return null;               // на демо-данных смысла нет
+    if (_market == null) buildMarket();
+    var v = ppm(l);
+    if (v == null) return null;
+    var base = l.city + "|" + l.type;
+    var med, scope;
+    if (l.district && _market[base + "|" + l.district] != null) {
+      med = _market[base + "|" + l.district]; scope = "district";
+    } else if (_market[base] != null) {
+      med = _market[base]; scope = "city";
+    } else return null;
+    if (!med) return null;
+    var pct = (v - med) / med;
+    var level = pct <= -0.40 ? "scam"
+      : pct <= -0.12 ? "deal"
+      : pct < 0.15 ? "fair" : "above";
+    return { level: level, pct: pct, scope: scope };
+  }
+
+  // компактный бейдж рядом с ценой (карточка/шторка)
+  function priceBadge(l) {
+    var v = priceVerdict(l);
+    if (!v || v.level === "fair") return "";
+    var pct = Math.round(Math.abs(v.pct) * 100);
+    if (v.level === "scam")
+      return ' <span class="pv scam">⚠ ' + esc(I18N.t("pvScamBadge")) + "</span>";
+    if (v.level === "deal")
+      return ' <span class="pv deal">↓ ' + esc(I18N.t("pvDeal", { n: pct })) + "</span>";
+    return ' <span class="pv above">↑ ' + esc(I18N.t("pvAbove", { n: pct })) + "</span>";
+  }
+
+  // блок в шторке: сравнение с рынком, анти-скам-плашка, all-in напоминание
+  function priceInsight(l) {
+    var out = "", v = priceVerdict(l);
+    if (v && v.level !== "fair") {
+      var pct = Math.round(Math.abs(v.pct) * 100);
+      var scope = I18N.t(v.scope === "district" ? "pvVsDistrict" : "pvVsCity");
+      var cls = v.level === "scam" ? "scam" : v.level;
+      var txt = v.level === "above" ? I18N.t("pvAbove", { n: pct }) : I18N.t("pvDeal", { n: pct });
+      out += '<div class="pv-line">📊 <span class="em ' + cls + '">' + esc(txt) +
+        "</span> · " + esc(scope) + "</div>";
+    }
+    if (v && v.level === "scam") {
+      out += '<div class="scam-warn"><span class="ic">🚨</span><div><b>' +
+        esc(I18N.t("pvScamTitle")) + "</b>" + esc(I18N.t("pvScamText")) + "</div></div>";
+    }
+    out += '<div class="allin">💡 ' + esc(I18N.t("allInNote")) +
+      ' <a href="koszty.html?czynsz=' + encodeURIComponent(l.price) +
+      '" style="color:var(--accent); white-space:nowrap">' + esc(I18N.t("allInBtn")) + " →</a></div>";
+    return out;
+  }
+
   var App = {
     CITIES: CITIES,
     listings: listings,
@@ -327,6 +420,7 @@
     matches: matches, searchLabel: searchLabel, districtsFor: districtsFor,
     toast: toast, timeAgo: timeAgo, esc: esc,
     safePhotoUrl: safePhotoUrl, openListingUrl: openListingUrl,
+    priceVerdict: priceVerdict, priceBadge: priceBadge, priceInsight: priceInsight,
     priceUnit: function (type) { return I18N.t(type === "short" ? "perDay" : "perMonth"); },
     cityName: function (key) { return I18N.cityName(key); },
     isFav: function (id) { return favs.some(function (f) { return f.id === id; }); },

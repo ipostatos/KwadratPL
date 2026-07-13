@@ -240,3 +240,24 @@ select:focus, input:focus{ border-color:var(--accent) }
   padding:12px; font-size:12px; line-height:1.55; white-space:pre-wrap;
   word-break:break-word; margin:0 0 8px; font-family:ui-monospace,Consolas,monospace }
 .gtpl .btn{ width:auto }
+
+/* ── справедливая цена / анти-скам ── */
+.pv{ display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700;
+  padding:2px 7px; border-radius:6px; white-space:nowrap; line-height:1.4 }
+.pv.deal{ background:color-mix(in srgb,#1f9d63 16%,transparent); color:#1a8a56 }
+.pv.above{ background:color-mix(in srgb,#c5850c 16%,transparent); color:#a8730b }
+.pv.scam{ background:color-mix(in srgb,#d1495b 18%,transparent); color:#c33} 
+.lprice .pv{ margin-left:6px; vertical-align:middle }
+/* плашка анти-скам в шторке */
+.scam-warn{ display:flex; gap:10px; align-items:flex-start;
+  background:color-mix(in srgb,#d1495b 12%,transparent);
+  border:1px solid color-mix(in srgb,#d1495b 40%,transparent);
+  border-radius:var(--r-md); padding:12px; margin-top:12px; font-size:var(--fs-sm); line-height:1.5 }
+.scam-warn .ic{ font-size:20px; flex:0 0 auto; line-height:1 }
+.scam-warn b{ display:block; margin-bottom:3px }
+/* строка сравнения с рынком в шторке */
+.pv-line{ font-size:var(--fs-sm); color:var(--hint); margin-top:4px }
+.pv-line .em{ font-weight:700 }
+.pv-line .deal{ color:#1a8a56 } .pv-line .above{ color:#a8730b } .pv-line .scam{ color:#c33 }
+/* all-in подсказка */
+.allin{ margin-top:12px; font-size:var(--fs-sm); color:var(--hint); line-height:1.5 }

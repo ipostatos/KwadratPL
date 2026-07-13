@@ -156,6 +156,9 @@ I18N.hydrate();
 document.getElementById("ttl").textContent = I18N.t("cellKosztyT");
 document.title = I18N.t("cellKosztyT") + " — Kwadrat PL";
 initLabels();
+// предзаполнение аренды из объявления (переход из шторки: ?czynsz=3000)
+var _q = +new URLSearchParams(location.search).get("czynsz");
+if (_q > 0) document.getElementById("czynsz").value = Math.round(_q);
 calc();
 </script>
 </body>

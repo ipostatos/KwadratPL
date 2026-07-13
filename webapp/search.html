@@ -317,7 +317,8 @@ function renderList() {
       photoHtml(l, "card") +
       '<div class="lbody">' +
       '<div class="lprice">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) +
-      (l.oldPrice ? '<span class="old">' + l.oldPrice.toLocaleString() + "</span>" : "") + "</div>" +
+      (l.oldPrice ? '<span class="old">' + l.oldPrice.toLocaleString() + "</span>" : "") +
+      App.priceBadge(l) + "</div>" +
       '<div class="ltitle">' + listingTitle(l) + "</div>" +
       '<div class="lmeta"><span>📍 ' + App.esc(App.cityName(l.city)) +
       (l.district ? ", " + App.esc(l.district) : "") +
@@ -354,7 +355,8 @@ function openSheet(id) {
     '<button class="close" id="btnClose">✕</button>' + photoHtml(l) + "</div>" +
     '<div class="sbody">' +
     '<div class="lprice" style="font-size:22px">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) +
-    (l.oldPrice ? '<span class="old">' + l.oldPrice.toLocaleString() + "</span>" : "") + "</div>" +
+    (l.oldPrice ? '<span class="old">' + l.oldPrice.toLocaleString() + "</span>" : "") +
+    App.priceBadge(l) + "</div>" +
     '<div class="ltitle">' + listingTitle(l) + " · " + App.esc(App.cityName(l.city)) +
     (l.district ? ", " + App.esc(l.district) : "") + "</div>" +
     '<div class="specs">' +
@@ -362,6 +364,7 @@ function openSheet(id) {
       return '<div class="spec"><div class="k">' + App.esc(s[0]) + '</div><div class="v">' + App.esc(s[1]) + "</div></div>";
     }).join("") +
     "</div>" +
+    App.priceInsight(l) +
     (descr ? '<p class="muted" style="font-size:var(--fs-sm)">' + App.esc(descr) + "</p>" : "") +
     '<div style="display:flex; gap:8px; margin-top:12px">' +
     '<button class="btn" id="btnContact"><span class="emi">' +
