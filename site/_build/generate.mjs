@@ -61,6 +61,15 @@ const C = {
       { t: "Настройте поиск", d: "Выберите город, тип аренды, цену и фильтры. Результат обновляется мгновенно." },
       { t: "Получайте новое первыми", d: "Подпишитесь — и свежие объявления будут приходить в чат раньше, чем их разберут." },
     ],
+    shotsTitle: "Как это выглядит",
+    shotsLead: "Поиск, справедливая цена и полная стоимость входа — всё внутри Telegram.",
+    altHome: "Главный экран Kwadrat PL: поиск аренды жилья в 6 городах Польши",
+    altCards: "Список квартир на аренду с фото, ценой и бейджем «ниже рынка»",
+    altSheet: "Карточка объявления: стоимость входа — аренда и кауция — и источник",
+    widgetTitle: "Виджет на домашний экран iPhone",
+    widgetLead: "Сколько подходящих квартир и свежие цены — прямо на экране, не открывая Telegram. Через бесплатное приложение Scriptable, без App Store-платежей и аккаунта разработчика.",
+    widgetImgAlt: "Виджет Kwadrat PL на домашнем экране iPhone: число подходящих квартир и цены аренды",
+    widgetSteps: ["Установите бесплатный Scriptable из App Store", "Напишите боту команду /widget и получите личный код", "Добавьте виджет на экран — новые квартиры всегда на виду"],
     citiesTitle: "Города Польши",
     citiesLead: "Аренда квартир и комнат в шести крупнейших городах:",
     faqTitle: "Частые вопросы",
@@ -103,6 +112,15 @@ const C = {
       { t: "Налаштуйте пошук", d: "Виберіть місто, тип оренди, ціну та фільтри. Результат оновлюється миттєво." },
       { t: "Отримуйте нове першими", d: "Підпишіться — і свіжі оголошення надходитимуть у чат раніше, ніж їх розберуть." },
     ],
+    shotsTitle: "Як це виглядає",
+    shotsLead: "Пошук, справедлива ціна й повна вартість входу — усе всередині Telegram.",
+    altHome: "Головний екран Kwadrat PL: пошук оренди житла в 6 містах Польщі",
+    altCards: "Список квартир на оренду з фото, ціною та бейджем «нижче ринку»",
+    altSheet: "Картка оголошення: вартість входу — оренда й кауція — і джерело",
+    widgetTitle: "Віджет на домашній екран iPhone",
+    widgetLead: "Скільки відповідних квартир і свіжі ціни — просто на екрані, не відкриваючи Telegram. Через безкоштовний застосунок Scriptable, без оплат App Store і акаунта розробника.",
+    widgetImgAlt: "Віджет Kwadrat PL на домашньому екрані iPhone: число відповідних квартир і ціни оренди",
+    widgetSteps: ["Установіть безкоштовний Scriptable з App Store", "Напишіть боту команду /widget і отримайте особистий код", "Додайте віджет на екран — нові квартири завжди на очах"],
     citiesTitle: "Міста Польщі",
     citiesLead: "Оренда квартир і кімнат у шести найбільших містах:",
     faqTitle: "Часті запитання",
@@ -145,6 +163,15 @@ const C = {
       { t: "Ustaw wyszukiwanie", d: "Wybierz miasto, typ najmu, cenę i filtry. Wynik odświeża się natychmiast." },
       { t: "Miej nowe jako pierwszy", d: "Zasubskrybuj — świeże ogłoszenia będą trafiać na czat, zanim inni je rozchwytają." },
     ],
+    shotsTitle: "Jak to wygląda",
+    shotsLead: "Wyszukiwanie, uczciwa cena i pełny koszt wejścia — wszystko w Telegramie.",
+    altHome: "Ekran główny Kwadrat PL: wyszukiwanie wynajmu w 6 miastach w Polsce",
+    altCards: "Lista mieszkań na wynajem ze zdjęciem, ceną i znacznikiem „poniżej rynku”",
+    altSheet: "Ogłoszenie: koszt wejścia — najem i kaucja — oraz źródło",
+    widgetTitle: "Widżet na ekran główny iPhone'a",
+    widgetLead: "Ile pasujących mieszkań i świeże ceny — prosto na ekranie, bez otwierania Telegrama. Przez darmową aplikację Scriptable, bez opłat App Store i konta developera.",
+    widgetImgAlt: "Widżet Kwadrat PL na ekranie iPhone'a: liczba pasujących mieszkań i ceny najmu",
+    widgetSteps: ["Zainstaluj darmowy Scriptable z App Store", "Napisz do bota komendę /widget i odbierz osobisty kod", "Dodaj widżet na ekran — nowe mieszkania zawsze na widoku"],
     citiesTitle: "Miasta w Polsce",
     citiesLead: "Wynajem mieszkań i pokoi w sześciu największych miastach:",
     faqTitle: "Najczęstsze pytania",
@@ -187,6 +214,15 @@ const C = {
       { t: "Set up a search", d: "Pick a city, rental type, price and filters. Results update instantly." },
       { t: "Get new ones first", d: "Subscribe and fresh listings arrive in your chat before others snap them up." },
     ],
+    shotsTitle: "How it looks",
+    shotsLead: "Search, fair-price check and the full move-in cost — all inside Telegram.",
+    altHome: "Kwadrat PL home screen: searching rentals across 6 cities in Poland",
+    altCards: "List of flats for rent with photo, price and a below-market badge",
+    altSheet: "Listing card: move-in cost — rent and deposit — and the source",
+    widgetTitle: "iPhone home-screen widget",
+    widgetLead: "How many matching flats and the latest prices — right on your screen, without opening Telegram. Via the free Scriptable app, no App Store payments and no developer account.",
+    widgetImgAlt: "Kwadrat PL widget on an iPhone home screen: number of matching flats and rental prices",
+    widgetSteps: ["Install the free Scriptable app from the App Store", "Message the bot the /widget command and get your personal code", "Add the widget to your screen — new flats always in view"],
     citiesTitle: "Cities in Poland",
     citiesLead: "Flats and rooms for rent in the six largest cities:",
     faqTitle: "FAQ",
@@ -247,6 +283,8 @@ function jsonLd(lang, meta) {
       url: pageUrl,
       inLanguage: LANGS.map((l) => l.hreflang),
       description: c.desc,
+      screenshot: [url("shots/shot-home.png"), url("shots/shot-cards.png"),
+                   url("shots/shot-sheet.png"), url("shots/shot-widget.png")],
       offers: { "@type": "Offer", price: "0", priceCurrency: "PLN" },
     },
     {
@@ -445,6 +483,22 @@ section{ padding:52px 0 }
 .chip{ font-weight:700; font-size:15px; background:var(--card); border:1px solid var(--border);
   padding:10px 18px; border-radius:12px }
 
+/* screenshots */
+.shots{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap }
+.shot{ margin:0; flex:0 1 240px; max-width:250px }
+.shot img{ width:100%; height:auto; display:block; border-radius:20px;
+  border:1px solid var(--border); box-shadow:var(--shadow); background:var(--card) }
+
+/* widget */
+.widget-sec{ display:flex; gap:32px; align-items:center; flex-wrap:wrap; justify-content:center }
+.widget-txt{ flex:1 1 300px; max-width:460px }
+.widget-txt .sec-h{ text-align:left }
+.widget-lead{ color:var(--muted); margin:12px 0 18px }
+.wsteps{ margin:0; padding-left:22px; display:grid; gap:9px; font-size:15px }
+.wsteps li{ padding-left:3px }
+.widget-img{ flex:0 1 440px; margin:0; max-width:100% }
+.widget-img img{ width:100%; height:auto; display:block; border-radius:20px; box-shadow:var(--shadow) }
+
 /* faq */
 .faq-list{ max-width:720px; margin:0 auto; display:grid; gap:10px }
 .faq{ background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden }
@@ -511,6 +565,31 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
     <div class="wrap">
       <h2 class="sec-h">${esc(c.stepsTitle)}</h2>
       <ol class="steps">${stepItems}</ol>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2 class="sec-h">${esc(c.shotsTitle)}</h2>
+      <p class="sec-lead">${esc(c.shotsLead)}</p>
+      <div class="shots">
+        <figure class="shot"><img src="/shots/shot-home.png" width="400" height="870" loading="lazy" alt="${esc(c.altHome)}"></figure>
+        <figure class="shot"><img src="/shots/shot-cards.png" width="400" height="870" loading="lazy" alt="${esc(c.altCards)}"></figure>
+        <figure class="shot"><img src="/shots/shot-sheet.png" width="385" height="700" loading="lazy" alt="${esc(c.altSheet)}"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="widget-sec">
+        <div class="widget-txt">
+          <h2 class="sec-h">${esc(c.widgetTitle)}</h2>
+          <p class="widget-lead">${esc(c.widgetLead)}</p>
+          <ol class="wsteps">${c.widgetSteps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
+        </div>
+        <figure class="widget-img"><img src="/shots/shot-widget.png" width="520" height="420" loading="lazy" alt="${esc(c.widgetImgAlt)}"></figure>
+      </div>
     </div>
   </section>
 

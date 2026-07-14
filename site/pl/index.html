@@ -32,7 +32,7 @@
 <meta name="twitter:title" content="Wynajem mieszkań w Polsce bez pośredników — bot Kwadrat PL">
 <meta name="twitter:description" content="Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.">
 <meta name="twitter:image" content="https://kwadratpl.pl/og.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://kwadratpl.pl/#website","url":"https://kwadratpl.pl/","name":"Kwadrat PL","inLanguage":"pl","publisher":{"@id":"https://kwadratpl.pl/#org"}},{"@type":"Organization","@id":"https://kwadratpl.pl/#org","name":"Kwadrat PL","url":"https://kwadratpl.pl/","logo":"https://kwadratpl.pl/icon-512.png","sameAs":["https://t.me/KwadratPLBot"]},{"@type":"SoftwareApplication","name":"Kwadrat PL","applicationCategory":"LifestyleApplication","operatingSystem":"Telegram","url":"https://kwadratpl.pl/pl/","inLanguage":["ru","uk","pl","en"],"description":"Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.","offers":{"@type":"Offer","price":"0","priceCurrency":"PLN"}},{"@type":"FAQPage","@id":"https://kwadratpl.pl/pl/#faq","inLanguage":"pl","mainEntity":[{"@type":"Question","name":"Czy to jest za darmo?","acceptedAnswer":{"@type":"Answer","text":"Tak, w pełni. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji."}},{"@type":"Question","name":"Skąd pochodzą ogłoszenia?","acceptedAnswer":{"@type":"Answer","text":"Zbieramy publiczne ogłoszenia z OLX, Otodom i Morizon i odświeżamy je co kilka minut. Te same oferty z różnych serwisów są łączone."}},{"@type":"Question","name":"Czym jest analiza AI?","acceptedAnswer":{"@type":"Answer","text":"Przycisk w ogłoszeniu: tłumaczy treść na Twój język, tworzy krótkie streszczenie i ocenia ryzyko oszustwa na podstawie opisu."}},{"@type":"Question","name":"W jakich językach działa?","acceptedAnswer":{"@type":"Answer","text":"Polski, ukraiński, rosyjski i angielski. Język przełączysz bezpośrednio w aplikacji."}},{"@type":"Question","name":"Jak poznać, że cena jest uczciwa?","acceptedAnswer":{"@type":"Answer","text":"Bot liczy medianę ceny za m² według dzielnicy i typu lokum z własnych danych i pokazuje, o ile ogłoszenie jest tańsze lub droższe od rynku."}},{"@type":"Question","name":"Czy trzeba instalować aplikację?","acceptedAnswer":{"@type":"Answer","text":"Nie. Kwadrat PL działa wewnątrz Telegrama jako Mini App — niczego nie instalujesz."}}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://kwadratpl.pl/#website","url":"https://kwadratpl.pl/","name":"Kwadrat PL","inLanguage":"pl","publisher":{"@id":"https://kwadratpl.pl/#org"}},{"@type":"Organization","@id":"https://kwadratpl.pl/#org","name":"Kwadrat PL","url":"https://kwadratpl.pl/","logo":"https://kwadratpl.pl/icon-512.png","sameAs":["https://t.me/KwadratPLBot"]},{"@type":"SoftwareApplication","name":"Kwadrat PL","applicationCategory":"LifestyleApplication","operatingSystem":"Telegram","url":"https://kwadratpl.pl/pl/","inLanguage":["ru","uk","pl","en"],"description":"Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.","screenshot":["https://kwadratpl.pl/shots/shot-home.png","https://kwadratpl.pl/shots/shot-cards.png","https://kwadratpl.pl/shots/shot-sheet.png","https://kwadratpl.pl/shots/shot-widget.png"],"offers":{"@type":"Offer","price":"0","priceCurrency":"PLN"}},{"@type":"FAQPage","@id":"https://kwadratpl.pl/pl/#faq","inLanguage":"pl","mainEntity":[{"@type":"Question","name":"Czy to jest za darmo?","acceptedAnswer":{"@type":"Answer","text":"Tak, w pełni. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji."}},{"@type":"Question","name":"Skąd pochodzą ogłoszenia?","acceptedAnswer":{"@type":"Answer","text":"Zbieramy publiczne ogłoszenia z OLX, Otodom i Morizon i odświeżamy je co kilka minut. Te same oferty z różnych serwisów są łączone."}},{"@type":"Question","name":"Czym jest analiza AI?","acceptedAnswer":{"@type":"Answer","text":"Przycisk w ogłoszeniu: tłumaczy treść na Twój język, tworzy krótkie streszczenie i ocenia ryzyko oszustwa na podstawie opisu."}},{"@type":"Question","name":"W jakich językach działa?","acceptedAnswer":{"@type":"Answer","text":"Polski, ukraiński, rosyjski i angielski. Język przełączysz bezpośrednio w aplikacji."}},{"@type":"Question","name":"Jak poznać, że cena jest uczciwa?","acceptedAnswer":{"@type":"Answer","text":"Bot liczy medianę ceny za m² według dzielnicy i typu lokum z własnych danych i pokazuje, o ile ogłoszenie jest tańsze lub droższe od rynku."}},{"@type":"Question","name":"Czy trzeba instalować aplikację?","acceptedAnswer":{"@type":"Answer","text":"Nie. Kwadrat PL działa wewnątrz Telegrama jako Mini App — niczego nie instalujesz."}}]}]}</script>
 <style>
 :root{
   --bg:#ffffff; --bg2:#f5f8fb; --card:#ffffff; --border:#e4eaf0;
@@ -124,6 +124,22 @@ section{ padding:52px 0 }
 .chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px }
 .chip{ font-weight:700; font-size:15px; background:var(--card); border:1px solid var(--border);
   padding:10px 18px; border-radius:12px }
+
+/* screenshots */
+.shots{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap }
+.shot{ margin:0; flex:0 1 240px; max-width:250px }
+.shot img{ width:100%; height:auto; display:block; border-radius:20px;
+  border:1px solid var(--border); box-shadow:var(--shadow); background:var(--card) }
+
+/* widget */
+.widget-sec{ display:flex; gap:32px; align-items:center; flex-wrap:wrap; justify-content:center }
+.widget-txt{ flex:1 1 300px; max-width:460px }
+.widget-txt .sec-h{ text-align:left }
+.widget-lead{ color:var(--muted); margin:12px 0 18px }
+.wsteps{ margin:0; padding-left:22px; display:grid; gap:9px; font-size:15px }
+.wsteps li{ padding-left:3px }
+.widget-img{ flex:0 1 440px; margin:0; max-width:100% }
+.widget-img img{ width:100%; height:auto; display:block; border-radius:20px; box-shadow:var(--shadow) }
 
 /* faq */
 .faq-list{ max-width:720px; margin:0 auto; display:grid; gap:10px }
@@ -233,6 +249,31 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
         <div class="step-n">3</div>
         <div><h3>Miej nowe jako pierwszy</h3><p>Zasubskrybuj — świeże ogłoszenia będą trafiać na czat, zanim inni je rozchwytają.</p></div>
       </li></ol>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2 class="sec-h">Jak to wygląda</h2>
+      <p class="sec-lead">Wyszukiwanie, uczciwa cena i pełny koszt wejścia — wszystko w Telegramie.</p>
+      <div class="shots">
+        <figure class="shot"><img src="/shots/shot-home.png" width="400" height="870" loading="lazy" alt="Ekran główny Kwadrat PL: wyszukiwanie wynajmu w 6 miastach w Polsce"></figure>
+        <figure class="shot"><img src="/shots/shot-cards.png" width="400" height="870" loading="lazy" alt="Lista mieszkań na wynajem ze zdjęciem, ceną i znacznikiem „poniżej rynku”"></figure>
+        <figure class="shot"><img src="/shots/shot-sheet.png" width="385" height="700" loading="lazy" alt="Ogłoszenie: koszt wejścia — najem i kaucja — oraz źródło"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="widget-sec">
+        <div class="widget-txt">
+          <h2 class="sec-h">Widżet na ekran główny iPhone'a</h2>
+          <p class="widget-lead">Ile pasujących mieszkań i świeże ceny — prosto na ekranie, bez otwierania Telegrama. Przez darmową aplikację Scriptable, bez opłat App Store i konta developera.</p>
+          <ol class="wsteps"><li>Zainstaluj darmowy Scriptable z App Store</li><li>Napisz do bota komendę /widget i odbierz osobisty kod</li><li>Dodaj widżet na ekran — nowe mieszkania zawsze na widoku</li></ol>
+        </div>
+        <figure class="widget-img"><img src="/shots/shot-widget.png" width="520" height="420" loading="lazy" alt="Widżet Kwadrat PL na ekranie iPhone'a: liczba pasujących mieszkań i ceny najmu"></figure>
+      </div>
     </div>
   </section>
 

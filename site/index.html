@@ -32,7 +32,7 @@
 <meta name="twitter:title" content="Аренда жилья в Польше без посредников — бот Kwadrat PL">
 <meta name="twitter:description" content="Поиск аренды квартир и комнат в Польше: OLX, Otodom и Morizon в одном Telegram-боте. Мгновенные уведомления, справедливая цена, AI-разбор. Бесплатно.">
 <meta name="twitter:image" content="https://kwadratpl.pl/og.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://kwadratpl.pl/#website","url":"https://kwadratpl.pl/","name":"Kwadrat PL","inLanguage":"ru","publisher":{"@id":"https://kwadratpl.pl/#org"}},{"@type":"Organization","@id":"https://kwadratpl.pl/#org","name":"Kwadrat PL","url":"https://kwadratpl.pl/","logo":"https://kwadratpl.pl/icon-512.png","sameAs":["https://t.me/KwadratPLBot"]},{"@type":"SoftwareApplication","name":"Kwadrat PL","applicationCategory":"LifestyleApplication","operatingSystem":"Telegram","url":"https://kwadratpl.pl/","inLanguage":["ru","uk","pl","en"],"description":"Поиск аренды квартир и комнат в Польше: OLX, Otodom и Morizon в одном Telegram-боте. Мгновенные уведомления, справедливая цена, AI-разбор. Бесплатно.","offers":{"@type":"Offer","price":"0","priceCurrency":"PLN"}},{"@type":"FAQPage","@id":"https://kwadratpl.pl/#faq","inLanguage":"ru","mainEntity":[{"@type":"Question","name":"Это бесплатно?","acceptedAnswer":{"@type":"Answer","text":"Да, полностью. Поиск, уведомления, гайды и калькулятор — без платы и без регистрации."}},{"@type":"Question","name":"Откуда объявления?","acceptedAnswer":{"@type":"Answer","text":"Мы собираем публичные объявления с OLX, Otodom и Morizon и обновляем их каждые несколько минут. Одинаковые лоты с разных сайтов объединяются."}},{"@type":"Question","name":"Что такое AI-разбор?","acceptedAnswer":{"@type":"Answer","text":"Кнопка в карточке объявления: переводит текст на ваш язык, делает короткую выжимку и оценивает риск мошенничества по описанию."}},{"@type":"Question","name":"На каких языках работает?","acceptedAnswer":{"@type":"Answer","text":"Русский, украинский, польский и английский. Язык переключается прямо в приложении."}},{"@type":"Question","name":"Как понять, что цена справедливая?","acceptedAnswer":{"@type":"Answer","text":"Бот считает медианную цену за м² по району и типу жилья из своих данных и показывает, насколько объявление дешевле или дороже рынка."}},{"@type":"Question","name":"Нужно ли устанавливать приложение?","acceptedAnswer":{"@type":"Answer","text":"Нет. Kwadrat PL работает внутри Telegram как Mini App — ничего ставить не нужно."}}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://kwadratpl.pl/#website","url":"https://kwadratpl.pl/","name":"Kwadrat PL","inLanguage":"ru","publisher":{"@id":"https://kwadratpl.pl/#org"}},{"@type":"Organization","@id":"https://kwadratpl.pl/#org","name":"Kwadrat PL","url":"https://kwadratpl.pl/","logo":"https://kwadratpl.pl/icon-512.png","sameAs":["https://t.me/KwadratPLBot"]},{"@type":"SoftwareApplication","name":"Kwadrat PL","applicationCategory":"LifestyleApplication","operatingSystem":"Telegram","url":"https://kwadratpl.pl/","inLanguage":["ru","uk","pl","en"],"description":"Поиск аренды квартир и комнат в Польше: OLX, Otodom и Morizon в одном Telegram-боте. Мгновенные уведомления, справедливая цена, AI-разбор. Бесплатно.","screenshot":["https://kwadratpl.pl/shots/shot-home.png","https://kwadratpl.pl/shots/shot-cards.png","https://kwadratpl.pl/shots/shot-sheet.png","https://kwadratpl.pl/shots/shot-widget.png"],"offers":{"@type":"Offer","price":"0","priceCurrency":"PLN"}},{"@type":"FAQPage","@id":"https://kwadratpl.pl/#faq","inLanguage":"ru","mainEntity":[{"@type":"Question","name":"Это бесплатно?","acceptedAnswer":{"@type":"Answer","text":"Да, полностью. Поиск, уведомления, гайды и калькулятор — без платы и без регистрации."}},{"@type":"Question","name":"Откуда объявления?","acceptedAnswer":{"@type":"Answer","text":"Мы собираем публичные объявления с OLX, Otodom и Morizon и обновляем их каждые несколько минут. Одинаковые лоты с разных сайтов объединяются."}},{"@type":"Question","name":"Что такое AI-разбор?","acceptedAnswer":{"@type":"Answer","text":"Кнопка в карточке объявления: переводит текст на ваш язык, делает короткую выжимку и оценивает риск мошенничества по описанию."}},{"@type":"Question","name":"На каких языках работает?","acceptedAnswer":{"@type":"Answer","text":"Русский, украинский, польский и английский. Язык переключается прямо в приложении."}},{"@type":"Question","name":"Как понять, что цена справедливая?","acceptedAnswer":{"@type":"Answer","text":"Бот считает медианную цену за м² по району и типу жилья из своих данных и показывает, насколько объявление дешевле или дороже рынка."}},{"@type":"Question","name":"Нужно ли устанавливать приложение?","acceptedAnswer":{"@type":"Answer","text":"Нет. Kwadrat PL работает внутри Telegram как Mini App — ничего ставить не нужно."}}]}]}</script>
 <style>
 :root{
   --bg:#ffffff; --bg2:#f5f8fb; --card:#ffffff; --border:#e4eaf0;
@@ -124,6 +124,22 @@ section{ padding:52px 0 }
 .chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px }
 .chip{ font-weight:700; font-size:15px; background:var(--card); border:1px solid var(--border);
   padding:10px 18px; border-radius:12px }
+
+/* screenshots */
+.shots{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap }
+.shot{ margin:0; flex:0 1 240px; max-width:250px }
+.shot img{ width:100%; height:auto; display:block; border-radius:20px;
+  border:1px solid var(--border); box-shadow:var(--shadow); background:var(--card) }
+
+/* widget */
+.widget-sec{ display:flex; gap:32px; align-items:center; flex-wrap:wrap; justify-content:center }
+.widget-txt{ flex:1 1 300px; max-width:460px }
+.widget-txt .sec-h{ text-align:left }
+.widget-lead{ color:var(--muted); margin:12px 0 18px }
+.wsteps{ margin:0; padding-left:22px; display:grid; gap:9px; font-size:15px }
+.wsteps li{ padding-left:3px }
+.widget-img{ flex:0 1 440px; margin:0; max-width:100% }
+.widget-img img{ width:100%; height:auto; display:block; border-radius:20px; box-shadow:var(--shadow) }
 
 /* faq */
 .faq-list{ max-width:720px; margin:0 auto; display:grid; gap:10px }
@@ -233,6 +249,31 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
         <div class="step-n">3</div>
         <div><h3>Получайте новое первыми</h3><p>Подпишитесь — и свежие объявления будут приходить в чат раньше, чем их разберут.</p></div>
       </li></ol>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2 class="sec-h">Как это выглядит</h2>
+      <p class="sec-lead">Поиск, справедливая цена и полная стоимость входа — всё внутри Telegram.</p>
+      <div class="shots">
+        <figure class="shot"><img src="/shots/shot-home.png" width="400" height="870" loading="lazy" alt="Главный экран Kwadrat PL: поиск аренды жилья в 6 городах Польши"></figure>
+        <figure class="shot"><img src="/shots/shot-cards.png" width="400" height="870" loading="lazy" alt="Список квартир на аренду с фото, ценой и бейджем «ниже рынка»"></figure>
+        <figure class="shot"><img src="/shots/shot-sheet.png" width="385" height="700" loading="lazy" alt="Карточка объявления: стоимость входа — аренда и кауция — и источник"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="widget-sec">
+        <div class="widget-txt">
+          <h2 class="sec-h">Виджет на домашний экран iPhone</h2>
+          <p class="widget-lead">Сколько подходящих квартир и свежие цены — прямо на экране, не открывая Telegram. Через бесплатное приложение Scriptable, без App Store-платежей и аккаунта разработчика.</p>
+          <ol class="wsteps"><li>Установите бесплатный Scriptable из App Store</li><li>Напишите боту команду /widget и получите личный код</li><li>Добавьте виджет на экран — новые квартиры всегда на виду</li></ol>
+        </div>
+        <figure class="widget-img"><img src="/shots/shot-widget.png" width="520" height="420" loading="lazy" alt="Виджет Kwadrat PL на домашнем экране iPhone: число подходящих квартир и цены аренды"></figure>
+      </div>
     </div>
   </section>
 
