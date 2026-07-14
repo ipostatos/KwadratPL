@@ -4,8 +4,16 @@
 // © Lucide Contributors, ISC License (https://lucide.dev).
 //   Icons.svg("search")            → строка <svg>…</svg>
 //   data-icon="search" + Icons.hydrate() → авто-замена по атрибуту
+// UMD: в браузере кладётся как window.Icons, в Node/сборке frontend/ —
+// импортируется как CommonJS: const Icons = require("../../webapp/icons.js")
+// (Icons.P — «сырые» пути для React-компонента <Icon>).
 // ===========================================================================
-(function (global) {
+(function (root, factory) {
+  "use strict";
+  var api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  else root.Icons = api;
+})(typeof self !== "undefined" ? self : this, function () {
   "use strict";
 
   var P = {
@@ -57,13 +65,14 @@
       body + "</svg>";
   }
 
-  global.Icons = {
+  return {
     svg: svg,
     set: function (el, name) { if (el) el.innerHTML = svg(name); },
     hydrate: function (root) {
       (root || document).querySelectorAll("[data-icon]").forEach(function (el) {
         el.innerHTML = svg(el.getAttribute("data-icon"));
       });
-    }
+    },
+    P: P
   };
-})(window);
+});
