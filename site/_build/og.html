@@ -10,10 +10,10 @@
     background:radial-gradient(1200px 700px at 80% -10%, #23394d 0%, #17212b 55%, #0e1621 100%);
     color:#e7edf3; padding:76px 84px; display:flex; flex-direction:column; justify-content:space-between;
   }
-  .top{ display:flex; align-items:center; gap:20px }
-  .mark{ width:96px; height:96px; border-radius:24px; display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(135deg,#2AABEE,#1b8ec2); box-shadow:0 12px 40px rgba(42,171,238,.35) }
-  .mark svg{ width:58px; height:58px }
+  .top{ display:flex; align-items:center; gap:24px }
+  .mark{ width:132px; height:132px; display:flex; align-items:center; justify-content:center;
+    filter:drop-shadow(0 12px 40px rgba(0,0,0,.35)) }
+  .mark img{ width:132px; height:132px }
   .brand{ font-size:52px; font-weight:850; letter-spacing:-.02em }
   h1{ font-size:70px; font-weight:850; line-height:1.05; letter-spacing:-.03em; max-width:1000px }
   h1 .hl{ color:#54baea }
@@ -27,14 +27,7 @@
 </head>
 <body>
   <div class="top">
-    <div class="mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
-        <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
-        <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
-        <path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>
-      </svg>
-    </div>
+    <div class="mark"><img src="../logo.png" alt="Kwadrat PL"></div>
     <div class="brand">Kwadrat PL</div>
   </div>
 

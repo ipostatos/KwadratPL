@@ -60,9 +60,7 @@ p{ margin:0 }
   backdrop-filter:saturate(1.4) blur(10px); border-bottom:1px solid var(--border) }
 .top .wrap{ display:flex; align-items:center; gap:16px; height:60px }
 .brand{ display:flex; align-items:center; gap:9px; font-weight:800; font-size:18px; letter-spacing:-.01em }
-.brand .mark{ display:inline-flex; width:30px; height:30px; border-radius:8px; color:#fff;
-  background:linear-gradient(135deg,var(--accent),var(--accent2)); align-items:center; justify-content:center }
-.brand .mark svg{ width:18px; height:18px }
+.brand .mark{ width:34px; height:34px; border-radius:50%; display:inline-block; object-fit:contain }
 .langs{ margin-left:auto; display:flex; gap:2px }
 .lang{ font-size:13px; font-weight:700; color:var(--muted); padding:6px 9px; border-radius:8px }
 .lang:hover{ color:var(--text); background:var(--bg2) }
@@ -81,7 +79,9 @@ p{ margin:0 }
 .btn.ghost:hover{ background:var(--card) }
 
 /* hero */
-.hero{ text-align:center; padding:72px 0 40px }
+.hero{ text-align:center; padding:56px 0 40px }
+.hero-logo{ width:112px; height:112px; display:block; margin:0 auto 22px;
+  filter:drop-shadow(0 10px 30px rgba(34,158,217,.25)) }
 .eyebrow{ display:inline-block; font-size:13px; font-weight:700; letter-spacing:.02em;
   color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent);
   padding:6px 13px; border-radius:999px; margin-bottom:20px }
@@ -175,7 +175,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 <header class="top">
   <div class="wrap">
     <a class="brand" href="https://kwadratpl.pl/ua/" aria-label="Kwadrat PL">
-      <span class="mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span> Kwadrat PL
+      <img class="mark" src="/logo.png" alt="" width="34" height="34"> Kwadrat PL
     </a>
     <nav class="langs" aria-label="Мова"><a class="lang" href="https://kwadratpl.pl/" hreflang="ru">RU</a><span class="lang on" aria-current="true">UA</span><a class="lang" href="https://kwadratpl.pl/pl/" hreflang="pl">PL</a><a class="lang" href="https://kwadratpl.pl/en/" hreflang="en">EN</a></nav>
     <a class="btn sm cta" href="https://t.me/KwadratPLBot" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg> Telegram</a>
@@ -185,6 +185,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 <main>
   <section class="hero">
     <div class="wrap">
+      <img class="hero-logo" src="/logo.png" alt="Kwadrat PL" width="112" height="112">
       <span class="eyebrow">Telegram-бот для оренди в Польщі</span>
       <h1>Оренда житла в Польщі — без посередників і переплат</h1>
       <p class="lead">Kwadrat PL збирає свіжі оголошення з OLX, Otodom і Morizon в один Telegram-бот. Підпишіться на пошук — нові квартири й кімнати надійдуть просто в чат, раніше за інших.</p>
@@ -331,7 +332,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
   <div class="wrap">
     <div class="foot-grid">
       <div class="foot-about">
-        <div class="brand"><span class="mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span> Kwadrat PL</div>
+        <div class="brand"><img class="mark" src="/logo.png" alt="" width="34" height="34"> Kwadrat PL</div>
         <p>Kwadrat PL — пошук оренди житла в Польщі для російсько- та україномовних. OLX, Otodom, Morizon в одному боті.</p>
       </div>
       <div>

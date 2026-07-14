@@ -418,9 +418,7 @@ p{ margin:0 }
   backdrop-filter:saturate(1.4) blur(10px); border-bottom:1px solid var(--border) }
 .top .wrap{ display:flex; align-items:center; gap:16px; height:60px }
 .brand{ display:flex; align-items:center; gap:9px; font-weight:800; font-size:18px; letter-spacing:-.01em }
-.brand .mark{ display:inline-flex; width:30px; height:30px; border-radius:8px; color:#fff;
-  background:linear-gradient(135deg,var(--accent),var(--accent2)); align-items:center; justify-content:center }
-.brand .mark svg{ width:18px; height:18px }
+.brand .mark{ width:34px; height:34px; border-radius:50%; display:inline-block; object-fit:contain }
 .langs{ margin-left:auto; display:flex; gap:2px }
 .lang{ font-size:13px; font-weight:700; color:var(--muted); padding:6px 9px; border-radius:8px }
 .lang:hover{ color:var(--text); background:var(--bg2) }
@@ -439,7 +437,9 @@ p{ margin:0 }
 .btn.ghost:hover{ background:var(--card) }
 
 /* hero */
-.hero{ text-align:center; padding:72px 0 40px }
+.hero{ text-align:center; padding:56px 0 40px }
+.hero-logo{ width:112px; height:112px; display:block; margin:0 auto 22px;
+  filter:drop-shadow(0 10px 30px rgba(34,158,217,.25)) }
 .eyebrow{ display:inline-block; font-size:13px; font-weight:700; letter-spacing:.02em;
   color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent);
   padding:6px 13px; border-radius:999px; margin-bottom:20px }
@@ -533,7 +533,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 <header class="top">
   <div class="wrap">
     <a class="brand" href="${url(meta.path)}" aria-label="${esc(SITE.name)}">
-      <span class="mark">${Icons.svg("building")}</span> ${esc(SITE.name)}
+      <img class="mark" src="/logo.png" alt="" width="34" height="34"> ${esc(SITE.name)}
     </a>
     <nav class="langs" aria-label="${esc(c.footLang)}">${langSwitcher(lang)}</nav>
     <a class="btn sm cta" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} Telegram</a>
@@ -543,6 +543,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 <main>
   <section class="hero">
     <div class="wrap">
+      <img class="hero-logo" src="/logo.png" alt="${esc(SITE.name)}" width="112" height="112">
       <span class="eyebrow">${esc(c.eyebrow)}</span>
       <h1>${esc(c.h1)}</h1>
       <p class="lead">${esc(c.lead)}</p>
@@ -623,7 +624,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
   <div class="wrap">
     <div class="foot-grid">
       <div class="foot-about">
-        <div class="brand"><span class="mark">${Icons.svg("building")}</span> ${esc(SITE.name)}</div>
+        <div class="brand"><img class="mark" src="/logo.png" alt="" width="34" height="34"> ${esc(SITE.name)}</div>
         <p>${esc(c.footAbout)}</p>
       </div>
       <div>
