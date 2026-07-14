@@ -66,7 +66,7 @@ AI_BUDGET_USD = float(os.environ.get("AI_BUDGET_USD", "0"))
 ADMIN_IDS = {int(x) for x in os.environ.get("ADMIN_IDS", "").replace(" ", "").split(",") if x.isdigit()}
 LISTINGS_PATH = Path(os.environ.get(
     "LISTINGS_PATH", str(BASE.parent / "webapp" / "data" / "listings.json")))
-DB_PATH = BASE / "state.db"
+DB_PATH = Path(os.environ.get("STATE_DB", str(BASE / "state.db")))
 MAX_NOTIFY_PER_USER = 5   # за один инжест, чтобы не заспамить чат
 
 # ── БД ──────────────────────────────────────────────────────────────────────

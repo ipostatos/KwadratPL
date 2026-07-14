@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install deps
+        run: pip install -r backend/requirements-dev.txt
+      - name: Run pytest
+        working-directory: backend
+        run: pytest
+
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Syntax-check webapp JS
+        run: |
+          for f in webapp/app.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
+            node --check "$f"
+          done
+      - name: Build landing (generator must not throw)
+        run: node site/_build/generate.mjs
