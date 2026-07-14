@@ -826,6 +826,84 @@ async def analyze(request: Request, authorization: str = Header("")):
     return {"cached": False, **data}
 
 
+# ── шейрабельный AI-разбор: отправить в чат rich-сообщением для пересылки ─────
+_AI_SCAM_LBL = {
+    "high":   {"ru": "🚨 Высокий риск мошенничества", "pl": "🚨 Wysokie ryzyko oszustwa",
+               "ua": "🚨 Високий ризик шахрайства", "en": "🚨 High scam risk"},
+    "medium": {"ru": "⚠️ Средний риск", "pl": "⚠️ Średnie ryzyko",
+               "ua": "⚠️ Середній ризик", "en": "⚠️ Medium risk"},
+    "low":    {"ru": "✅ Риск низкий", "pl": "✅ Niskie ryzyko",
+               "ua": "✅ Ризик низький", "en": "✅ Low risk"},
+}
+_SHARE_HDR = {"ru": "AI-разбор объявления", "pl": "Analiza AI ogłoszenia",
+              "ua": "AI-розбір оголошення", "en": "AI listing breakdown"}
+_SHARE_FOOT = {"ru": "Проверено ботом Kwadrat PL — аренда в Польше без посредников",
+               "pl": "Sprawdzone przez Kwadrat PL — wynajem w Polsce bez pośredników",
+               "ua": "Перевірено ботом Kwadrat PL — оренда в Польщі без посередників",
+               "en": "Checked with Kwadrat PL — renting in Poland without agents"}
+_SHARE_BTN = {"ru": "Открыть Kwadrat PL", "pl": "Otwórz Kwadrat PL",
+              "ua": "Відкрити Kwadrat PL", "en": "Open Kwadrat PL"}
+
+
+def fmt_share(l: dict, data: dict, lang: str) -> str:
+    unit = T["unit_short" if l.get("type") == "short" else "unit_long"][lang]
+    try:
+        price = int(l.get("price") or 0)
+    except (TypeError, ValueError):
+        price = 0
+    city = CITY.get(l.get("city"), {}).get(lang, str(l.get("city", "")))
+    place = city + (f", {l['district']}" if l.get("district") else "")
+    title = html.escape(str(data.get("title") or l.get("title") or "")[:100])
+    summary = [html.escape(str(s)) for s in (data.get("summary") or []) if s][:6]
+    scam = _AI_SCAM_LBL.get(data.get("scam_level"), _AI_SCAM_LBL["low"])[lang]
+    flags = [html.escape(str(f)) for f in (data.get("scam_flags") or []) if f][:4]
+    lines = [f"✨ <b>{html.escape(_SHARE_HDR[lang])}</b>", ""]
+    if title:
+        lines.append(f"<b>{title}</b>")
+    lines.append(f"{price:,}".replace(",", " ") + f" {unit} · " + html.escape(place))
+    if summary:
+        lines.append("")
+        lines += ["• " + s for s in summary]
+    lines += ["", scam]
+    if flags:
+        lines.append("• " + "\n• ".join(flags))
+    lines += ["", f"<i>{html.escape(_SHARE_FOOT[lang])}</i>"]
+    return "\n".join(lines)
+
+
+@app.post("/api/analyze/share")
+async def analyze_share(request: Request, authorization: str = Header("")):
+    """Отправляет готовый (из кэша) AI-разбор rich-сообщением в чат пользователя,
+    чтобы он переслал его друзьям/в группы. На сообщении кнопка → бот."""
+    user = _auth_user(authorization)
+    uid = user["id"]
+    body = await request.json()
+    l = body.get("listing")
+    if not isinstance(l, dict) or not str(l.get("id") or ""):
+        raise HTTPException(422, "listing with id required")
+    lang = body.get("lang") if body.get("lang") in AI_LANG_NAME else lang_of(user.get("language_code"))
+    with db() as c:
+        row = c.execute("SELECT data FROM ai_cache WHERE id=? AND lang=?",
+                        (str(l["id"]), lang)).fetchone()
+    if not row:
+        raise HTTPException(409, "run analysis first")
+    text = fmt_share(l, json.loads(row["data"]), lang)
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=_SHARE_BTN[lang], url="https://t.me/KwadratPLBot")]])
+    ph = l.get("photo")
+    photo = ph if isinstance(ph, str) and ph.startswith("https://") else None
+    try:
+        if photo and len(text) <= 1024:
+            await bot.send_photo(uid, photo=photo, caption=text, parse_mode="HTML", reply_markup=kb)
+        else:
+            await bot.send_message(uid, text, parse_mode="HTML", reply_markup=kb,
+                                   link_preview_options=LinkPreviewOptions(is_disabled=True))
+    except Exception as e:
+        log.warning("share failed for %s: %s", uid, e)
+        raise HTTPException(502, "send failed")
+    return {"sent": True}
+
+
 def _ai_stats() -> dict:
     """Расход AI: токены и оценка $ по цене модели. Остаток — только если задан
     AI_BUDGET_USD (точного баланса Anthropic в API нет, он в Console → Billing)."""

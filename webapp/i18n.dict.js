@@ -130,6 +130,8 @@
     aiLoading: { ru: "AI читает объявление…", pl: "AI czyta ogłoszenie…", ua: "AI читає оголошення…", en: "AI is reading the listing…" },
     aiError:  { ru: "Не удалось разобрать. Попробуйте позже.", pl: "Nie udało się przeanalizować. Spróbuj później.", ua: "Не вдалося розібрати. Спробуйте пізніше.", en: "Analysis failed. Try again later." },
     aiLimit:  { ru: "Лимит AI-разборов на сегодня исчерпан.", pl: "Dzienny limit analiz AI wyczerpany.", ua: "Ліміт AI-розборів на сьогодні вичерпано.", en: "Daily AI limit reached." },
+    aiShare:  { ru: "↗ Поделиться разбором", pl: "↗ Udostępnij analizę", ua: "↗ Поділитися розбором", en: "↗ Share the breakdown" },
+    aiShared: { ru: "Отправлено в чат — закройте приложение и перешлите", pl: "Wysłano na czat — zamknij aplikację i prześlij dalej", ua: "Надіслано в чат — закрийте застосунок і перешліть", en: "Sent to your chat — close the app and forward it" },
     aiSummary: { ru: "Кратко", pl: "W skrócie", ua: "Коротко", en: "Summary" },
     aiScamHigh: { ru: "⚠️ Высокий риск мошенничества", pl: "⚠️ Wysokie ryzyko oszustwa", ua: "⚠️ Високий ризик шахрайства", en: "⚠️ High scam risk" },
     aiScamMed:  { ru: "⚠️ Есть настораживающие признаки", pl: "⚠️ Są niepokojące sygnały", ua: "⚠️ Є насторожливі ознаки", en: "⚠️ Some warning signs" },

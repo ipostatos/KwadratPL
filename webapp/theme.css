@@ -295,4 +295,5 @@ select:focus, input:focus{ border-color:var(--accent) }
 .ai-scam.medium{ background:color-mix(in srgb,#c5850c 16%,transparent); color:#a8730b }
 .ai-scam.low{ background:color-mix(in srgb,#1f9d63 14%,transparent); color:#1a8a56 }
 .ai-scam .flags{ font-weight:400; font-size:var(--fs-xs); margin-top:4px; color:var(--text) }
+.ai-share{ margin-top:10px }
 .ai-load{ color:var(--hint); font-size:var(--fs-sm); margin-top:10px }

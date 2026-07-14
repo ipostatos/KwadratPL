@@ -372,6 +372,18 @@
       return r.json();
     });
   }
+  // отправить готовый разбор rich-сообщением в чат (для пересылки друзьям)
+  function shareAnalysis(l) {
+    var init = tgInitData();
+    return fetch("/api/analyze/share", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "tma " + init },
+      body: JSON.stringify({ listing: l, lang: (global.I18N && global.I18N.lang) || "ru" })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    });
+  }
   // кнопка «AI-разбор» + рендер результата в контейнер box (общий для шторок)
   function mountAiButton(container, l) {
     if (!aiAvailable()) return;
@@ -398,6 +410,21 @@
           "<ul>" + (d.summary || []).map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ul>" +
           '<div class="ai-scam ' + scamCls + '">' + esc(scamTxt) +
           (flags.length ? '<div class="flags">• ' + flags.map(esc).join("<br>• ") + "</div>" : "") + "</div>";
+        // «Поделиться» — отправить разбор в чат для пересылки друзьям
+        var share = document.createElement("button");
+        share.className = "btn ghost ai-share";
+        share.innerHTML = esc(I18N.t("aiShare"));
+        box.appendChild(share);
+        share.onclick = function () {
+          share.disabled = true;
+          if (typeof haptic === "function") haptic("light");
+          shareAnalysis(l).then(function () {
+            toast(I18N.t("aiShared"));
+          }).catch(function () {
+            share.disabled = false;
+            toast(I18N.t("aiError"));
+          });
+        };
       }).catch(function (e) {
         btn.disabled = false;
         box.innerHTML = '<div class="ai-load">' +

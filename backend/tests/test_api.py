@@ -215,6 +215,34 @@ async def test_ai_cache_hit_from_db(client, auth):
     assert r.status_code == 200 and r.json()["cached"] is True and r.json()["title"] == "Cached"
 
 
+async def test_analyze_share(client, auth, monkeypatch):
+    sent = []
+
+    async def fake_photo(uid, **kw):
+        sent.append(("photo", kw.get("caption")))
+
+    async def fake_msg(uid, text=None, **kw):
+        sent.append(("msg", text))
+
+    monkeypatch.setattr(backend.bot, "send_photo", fake_photo)
+    monkeypatch.setattr(backend.bot, "send_message", fake_msg)
+    import json as _json
+    with backend.db() as c:
+        c.execute("INSERT INTO ai_cache(id, lang, data, ts) VALUES(?,?,?,?)",
+                  ("olx-5", "ru", _json.dumps(
+                      {"title": "Nice", "summary": ["Рядом метро", "Мебель есть"],
+                       "scam_level": "low", "scam_flags": []}), int(time.time())))
+    l = {"id": "olx-5", "city": "warszawa", "type": "long", "price": 3000,
+         "district": "Wola", "photo": "https://cdn/x.jpg"}
+    r = await client.post("/api/analyze/share", headers=auth, json={"listing": l, "lang": "ru"})
+    assert r.status_code == 200 and r.json()["sent"] is True
+    assert sent and sent[0][0] == "photo" and "AI-разбор" in sent[0][1] and "Рядом метро" in sent[0][1]
+    # без кэша → 409 (сначала сделай разбор)
+    r2 = await client.post("/api/analyze/share", headers=auth, json={
+        "listing": {"id": "nope", "city": "warszawa", "type": "long", "price": 1}, "lang": "ru"})
+    assert r2.status_code == 409
+
+
 async def test_ai_daily_limit_from_db(client, auth):
     # достигнут суточный лимит (в БД) → 429 (до вызова Claude)
     from datetime import datetime
