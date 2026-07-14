@@ -294,6 +294,7 @@ _FEAT_LBL = {
     "balcony": {"ru": "балкон", "pl": "balkon", "ua": "балкон", "en": "balcony"},
 }
 _ROOM_LBL = {"ru": "комн.", "pl": "pok.", "ua": "кімн.", "en": "rooms"}
+_FLOOR_LBL = {"ru": "эт.", "pl": "p.", "ua": "пов.", "en": "fl."}
 _ALERT_HDR = {"ru": "по поиску", "pl": "wyszukiwanie", "ua": "за пошуком", "en": "your search"}
 
 
@@ -337,19 +338,33 @@ def fmt_listing(l: dict, lang: str, sub: dict | None = None) -> str:
         price = int(l.get("price") or 0)
     except (TypeError, ValueError):
         price = 0
-    bits = [f"{price:,}".replace(",", " ") + f" {unit}"]
+    head = "<b>" + f"{price:,}".replace(",", " ") + f" {unit}</b>"
+    title = str(l.get("title") or "").strip()
+    if title:
+        head += " · " + html.escape(title[:90])
+    # «таблица» характеристик — набор с эмодзи-метками
+    specs = []
     if l.get("rooms"):
-        bits.append(html.escape(f"{l['rooms']} pok."))
+        specs.append("🛏 " + html.escape(f"{l['rooms']} {_ROOM_LBL[lang]}"))
     if l.get("area"):
-        bits.append(html.escape(f"{l['area']} m²"))
+        specs.append("📐 " + html.escape(f"{l['area']} m²"))
+    if l.get("floor") is not None:
+        specs.append("🏢 " + html.escape(f"{l['floor']} {_FLOOR_LBL[lang]}"))
     city = CITY.get(l.get("city"), {}).get(lang, str(l.get("city", "")))
     place = city + (f", {l['district']}" if l.get("district") else "")
-    title = str(l.get("title") or "").strip()
-    lines = [f"🔔 <b>{T['new'][lang]}</b>"]
-    if title:
-        lines.append(html.escape(title[:120]))
-    lines.append(" · ".join(bits))
+    tags = []
+    if l.get("source"):
+        tags.append(str(l["source"]))
+    if l.get("agency") is True:
+        tags.append(_OWNER_LBL["agency"][lang])
+    elif l.get("agency") is False:
+        tags.append(_OWNER_LBL["private"][lang])
+    lines = [f"🔔 <b>{T['new'][lang]}</b>", "", head]
+    if specs:
+        lines.append(" · ".join(specs))
     lines.append("📍 " + html.escape(place))
+    if tags:
+        lines.append("🏷 " + html.escape(" · ".join(tags)))
     if sub:
         lines.append(f"🔎 <i>{html.escape(_ALERT_HDR[lang])}: {sub_label(sub, lang)}</i>")
     return "\n".join(lines)
@@ -467,18 +482,10 @@ async def on_widget(m: Message):
                    link_preview_options=LinkPreviewOptions(is_disabled=True))
 
 
-def _preview(l: dict) -> LinkPreviewOptions:
-    """Минимальное превью — маленький thumbnail фото объявления сбоку.
-    Нет фото или не https — превью выключаем (текст без растянутой картинки)."""
-    photo = l.get("photo")
-    if isinstance(photo, str) and photo.startswith("https://"):
-        return LinkPreviewOptions(url=photo, prefer_small_media=True)
-    return LinkPreviewOptions(is_disabled=True)
-
-
 async def notify_user(user_id: int, lang: str, hits: list):
     # hits: список пар (объявление, подписка-которая-совпала) для explainability;
-    # допускаем и «голое» объявление (digest шлёт без подписки)
+    # допускаем и «голое» объявление (digest шлёт без подписки).
+    # Есть фото — шлём sendPhoto (фото + «таблица» в подписи), иначе текстом.
     for item in hits[:MAX_NOTIFY_PER_USER]:
         l, sub = item if isinstance(item, tuple) else (item, None)
         url = safe_listing_url(l.get("url"))
@@ -486,13 +493,20 @@ async def notify_user(user_id: int, lang: str, hits: list):
         if url:
             kb = InlineKeyboardMarkup(inline_keyboard=[[
                 InlineKeyboardButton(text=T["open"][lang], url=url)]])
+        text = fmt_listing(l, lang, sub)
+        ph = l.get("photo")
+        photo = ph if isinstance(ph, str) and ph.startswith("https://") else None
         # терминально только «пользователь заблокировал бота»; флуд-контроль —
-        # подождать и повторить; прочие ошибки не должны терять остальные хиты
+        # подождать и повторить; не смогли отправить фото — фолбэк на текст
         for attempt in (1, 2):
             try:
-                await bot.send_message(
-                    user_id, fmt_listing(l, lang, sub), parse_mode="HTML", reply_markup=kb,
-                    link_preview_options=_preview(l))
+                if photo:
+                    await bot.send_photo(user_id, photo=photo, caption=text,
+                                         parse_mode="HTML", reply_markup=kb)
+                else:
+                    await bot.send_message(
+                        user_id, text, parse_mode="HTML", reply_markup=kb,
+                        link_preview_options=LinkPreviewOptions(is_disabled=True))
                 await asyncio.sleep(0.05)
                 break
             except TelegramRetryAfter as e:
@@ -504,6 +518,10 @@ async def notify_user(user_id: int, lang: str, hits: list):
                 log.info("notify %s: bot blocked", user_id)
                 return
             except Exception as e:
+                if photo:                      # Telegram не смог загрузить фото → текстом
+                    log.info("notify %s: photo failed, fallback to text: %s", user_id, e)
+                    photo = None
+                    continue
                 log.warning("notify %s failed on %s: %s", user_id, l.get("id"), e)
                 break  # к следующему объявлению
     if len(hits) > MAX_NOTIFY_PER_USER:

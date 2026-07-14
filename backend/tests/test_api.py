@@ -164,12 +164,36 @@ async def test_widget_flow(client, auth, ingest_headers):
     assert (await client.get("/api/widget/state", headers=wh)).status_code == 401
 
 
-def test_preview_options():
-    # есть https-фото → маленькое превью; иначе выключено
-    p = backend._preview({"photo": "https://cdn.example.com/a.jpg"})
-    assert p.is_disabled is not True and p.url.endswith("a.jpg") and p.prefer_small_media is True
-    assert backend._preview({}).is_disabled is True
-    assert backend._preview({"photo": "http://insecure/a.jpg"}).is_disabled is True
+def test_fmt_listing_rich():
+    l = {"city": "warszawa", "type": "long", "price": 3200, "rooms": 2, "area": 40,
+         "floor": 3, "district": "Wola", "source": "Otodom", "agency": False, "title": "Ładne"}
+    msg = backend.fmt_listing(l, "ru", {"city": "warszawa", "type": "long"})
+    assert "3 200" in msg and "🛏" in msg and "📐 40 m²" in msg and "🏢 3" in msg
+    assert "📍 Варшава, Wola" in msg and "Otodom" in msg and "🔎" in msg
+
+
+async def test_notify_photo_vs_text(monkeypatch):
+    calls = []
+
+    async def fake_photo(uid, **kw):
+        calls.append(("photo", kw.get("caption")))
+
+    async def fake_msg(uid, text=None, **kw):
+        calls.append(("msg", text))
+
+    monkeypatch.setattr(backend.bot, "send_photo", fake_photo)
+    monkeypatch.setattr(backend.bot, "send_message", fake_msg)
+    sub = {"city": "warszawa", "type": "long"}
+    # есть фото → sendPhoto
+    await backend.notify_user(999, "ru", [(
+        {"id": "a", "city": "warszawa", "type": "long", "price": 3000,
+         "photo": "https://cdn/x.jpg"}, sub)])
+    assert calls and calls[0][0] == "photo"
+    # нет фото → sendMessage
+    calls.clear()
+    await backend.notify_user(999, "ru", [(
+        {"id": "b", "city": "warszawa", "type": "long", "price": 3000}, sub)])
+    assert calls and calls[0][0] == "msg"
 
 
 async def test_ai_stats_auth(client, ingest_headers):
