@@ -40,7 +40,12 @@
       "Śródmieście", "Bałuty", "Górna", "Polesie", "Widzew"] },
     zakopane: { districts: [
       "Centrum", "Krupówki", "Olcza", "Bystre", "Harenda",
-      "Chramcówki", "Kasprusie", "Antałówka", "Pardałówka", "Cyrhla"] }
+      "Chramcówki", "Kasprusie", "Antałówka", "Pardałówka", "Cyrhla"] },
+    bialystok: { districts: [
+      "Centrum", "Sienkiewicza", "Bojary", "Piaski", "Przydworcowe",
+      "Białostoczek", "Antoniuk", "Wygoda", "Skorupy", "Mickiewicza",
+      "Dziesięciny", "Zielone Wzgórza", "Leśna Dolina", "Słoneczny Stok",
+      "Starosielce", "Dojlidy", "Bacieczki"] }
   };
 
   var STREETS = ["ul. Marszałkowska", "ul. Puławska", "ul. Grzybowska", "al. Jana Pawła II",

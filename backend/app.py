@@ -213,6 +213,7 @@ CITY = {
     "poznan": {"ru": "Познань", "pl": "Poznań", "ua": "Познань", "en": "Poznań"},
     "lodz": {"ru": "Лодзь", "pl": "Łódź", "ua": "Лодзь", "en": "Łódź"},
     "zakopane": {"ru": "Закопане", "pl": "Zakopane", "ua": "Закопане", "en": "Zakopane"},
+    "bialystok": {"ru": "Белосток", "pl": "Białystok", "ua": "Білосток", "en": "Białystok"},
 }
 T = {
     "new": {"ru": "Новое объявление по вашей подписке",
