@@ -176,3 +176,28 @@ async def test_ai_stats_auth(client, ingest_headers):
     ok = await client.get("/api/ai-stats", headers=ingest_headers)
     assert ok.status_code == 200 and ok.json()["model"]
     assert (await client.get("/api/ai-stats", headers={"X-Ingest-Token": "wrong"})).status_code == 401
+
+
+async def test_ai_cache_hit_from_db(client, auth):
+    # кэш в БД → analyze отдаёт cached БЕЗ обращения к Claude
+    import json as _json
+    with backend.db() as c:
+        c.execute("INSERT INTO ai_cache(id, lang, data, ts) VALUES(?,?,?,?)",
+                  ("olx-9", "ru", _json.dumps(
+                      {"title": "Cached", "summary": [], "scam_level": "low", "scam_flags": []}),
+                   int(time.time())))
+    r = await client.post("/api/analyze", headers=auth,
+                          json={"listing": {"id": "olx-9"}, "lang": "ru"})
+    assert r.status_code == 200 and r.json()["cached"] is True and r.json()["title"] == "Cached"
+
+
+async def test_ai_daily_limit_from_db(client, auth):
+    # достигнут суточный лимит (в БД) → 429 (до вызова Claude)
+    from datetime import datetime
+    today = datetime.now(backend.TZ).strftime("%Y-%m-%d")
+    with backend.db() as c:
+        c.execute("INSERT INTO ai_user_day(user_id, day, count) VALUES(?,?,?)",
+                  (1001, today, backend.AI_DAILY_LIMIT))
+    r = await client.post("/api/analyze", headers=auth,
+                          json={"listing": {"id": "uncached"}, "lang": "ru"})
+    assert r.status_code == 429

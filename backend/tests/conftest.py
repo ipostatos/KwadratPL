@@ -21,6 +21,9 @@ os.environ["INGEST_TOKEN"] = "test-ingest-token"
 os.environ["STATE_DB"] = str(_TMP / "state.db")
 os.environ["LISTINGS_PATH"] = str(_TMP / "listings.json")
 os.environ.setdefault("AI_BUDGET_USD", "5")
+# фейковый ключ → AI_ENABLED=True (тесты кэша/лимита возвращаются ДО вызова Claude,
+# реальный API не дёргается)
+os.environ.setdefault("ANTHROPIC_API_KEY", "sk-ant-test-fake")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import app as backend  # noqa: E402

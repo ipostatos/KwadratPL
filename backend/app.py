@@ -128,6 +128,21 @@ def init_db():
             in_tok INTEGER DEFAULT 0,
             out_tok INTEGER DEFAULT 0
         )""")
+        # кэш AI-разборов (было в памяти процесса — терялось на рестарте), TTL 1 день
+        c.execute("""CREATE TABLE IF NOT EXISTS ai_cache(
+            id TEXT NOT NULL,
+            lang TEXT NOT NULL,
+            data TEXT NOT NULL,
+            ts INTEGER,
+            PRIMARY KEY (id, lang)
+        )""")
+        # суточный лимит разборов на пользователя (тоже в БД, а не в памяти)
+        c.execute("""CREATE TABLE IF NOT EXISTS ai_user_day(
+            user_id INTEGER NOT NULL,
+            day TEXT NOT NULL,
+            count INTEGER DEFAULT 0,
+            PRIMARY KEY (user_id, day)
+        )""")
         # токены для iOS-виджета (Scriptable/WidgetKit): читают state по своему
         # токену, БЕЗ Telegram initData и БЕЗ bot-токена. Один активный на юзера.
         c.execute("""CREATE TABLE IF NOT EXISTS widget_tokens(
@@ -677,9 +692,9 @@ def widget_disconnect(authorization: str = Header("")):
 
 
 # ── AI-разбор объявления: перевод + выжимка + скам-скоринг одним вызовом ──────
+# Кэш и суточные лимиты — в SQLite (ai_cache/ai_user_day), а не в памяти процесса:
+# переживают рестарт и не разъезжаются при нескольких воркерах.
 _ai_client = None            # ленивое создание клиента Anthropic
-_ai_cache = {}               # (listing_id, lang) -> результат (в памяти, TTL 1 день)
-_ai_usage = {}               # user_id -> (day, count) — суточный лимит на пользователя
 
 ANALYZE_SCHEMA = {
     "type": "object",
@@ -710,12 +725,8 @@ async def analyze(request: Request, authorization: str = Header("")):
         raise HTTPException(503, "AI analysis is not configured")
     user = _auth_user(authorization)
     uid = user["id"]
-
-    # суточный лимит на пользователя — защита бюджета
     today = datetime.now(TZ).strftime("%Y-%m-%d")
-    day, cnt = _ai_usage.get(uid, (today, 0))
-    if day != today:
-        day, cnt = today, 0
+    now = int(time.time())
 
     body = await request.json()
     l = body.get("listing")
@@ -724,14 +735,19 @@ async def analyze(request: Request, authorization: str = Header("")):
     lang = body.get("lang") if body.get("lang") in AI_LANG_NAME else lang_of(user.get("language_code"))
     lid = str(l.get("id") or "")
 
-    # кэш: одно и то же объявление на одном языке не переспрашиваем
-    ck = (lid, lang)
-    if lid and ck in _ai_cache:
-        val, ts = _ai_cache[ck]
-        if time.time() - ts < 86400:
-            return {"cached": True, **val}
+    # кэш в БД (переживает рестарт), TTL 1 день: не переспрашиваем один лот на языке
+    if lid:
+        with db() as c:
+            row = c.execute("SELECT data, ts FROM ai_cache WHERE id=? AND lang=?",
+                            (lid, lang)).fetchone()
+        if row and now - (row["ts"] or 0) < 86400:
+            return {"cached": True, **json.loads(row["data"])}
 
-    if cnt >= AI_DAILY_LIMIT:
+    # суточный лимит на пользователя (в БД) — защита бюджета
+    with db() as c:
+        r = c.execute("SELECT count FROM ai_user_day WHERE user_id=? AND day=?",
+                      (uid, today)).fetchone()
+    if (r["count"] if r else 0) >= AI_DAILY_LIMIT:
         raise HTTPException(429, "daily AI limit reached")
 
     # ценовой контекст для скам-скоринга не считаем на сервере — просто отдаём
@@ -768,22 +784,26 @@ async def analyze(request: Request, authorization: str = Header("")):
         log.warning("AI analyze failed for %s: %s", lid, e)
         raise HTTPException(502, "AI analysis failed")
 
-    _ai_usage[uid] = (day, cnt + 1)
     # учёт токенов (кэш-хиты сюда не попадают — они не идут в API)
     u = getattr(resp, "usage", None)
     it, ot = int(getattr(u, "input_tokens", 0) or 0), int(getattr(u, "output_tokens", 0) or 0)
     try:
         with db() as c:
-            c.execute(
+            c.execute(  # +1 к суточному счётчику пользователя
+                "INSERT INTO ai_user_day(user_id, day, count) VALUES(?,?,1) "
+                "ON CONFLICT(user_id, day) DO UPDATE SET count=count+1", (uid, today))
+            c.execute(  # агрегат токенов для /stats
                 "INSERT INTO ai_usage(day, calls, in_tok, out_tok) VALUES(?,1,?,?) "
                 "ON CONFLICT(day) DO UPDATE SET calls=calls+1, in_tok=in_tok+?, out_tok=out_tok+?",
                 (today, it, ot, it, ot))
+            if lid:  # кэш + TTL-eviction устаревших ключей
+                c.execute(
+                    "INSERT INTO ai_cache(id, lang, data, ts) VALUES(?,?,?,?) "
+                    "ON CONFLICT(id, lang) DO UPDATE SET data=excluded.data, ts=excluded.ts",
+                    (lid, lang, json.dumps(data, ensure_ascii=False), now))
+                c.execute("DELETE FROM ai_cache WHERE ts < ?", (now - 86400,))
     except Exception as e:
-        log.warning("ai_usage log failed: %s", e)
-    if lid:
-        _ai_cache[ck] = (data, time.time())
-        if len(_ai_cache) > 2000:            # грубая защита от роста памяти
-            _ai_cache.clear()
+        log.warning("ai bookkeeping failed: %s", e)
     return {"cached": False, **data}
 
 

@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-# Деплой на VPS: https://kwadratpl-46-224-220-94.sslip.io
-# - webapp/  → статика (Caddy, /opt/kwadratpl/webapp)
-# - tools/   → сборщик OLX (используется CI-фетчером, на VPS лежит для истории)
+# Деплой на VPS. Хост задаётся через env KWADRAT_VPS (напр. user@host), чтобы не
+# хардкодить прод-адрес и root-доступ в репозитории.
+#   KWADRAT_VPS=deploy@example.com ./deploy-vps.sh
+# - webapp/  → статика (Caddy)
+# - tools/   → сборщик OLX (боевой в CI-фетчере, тут для истории)
 # - backend/ → FastAPI+aiogram (systemd kwadratpl-api, 127.0.0.1:4200)
-# Данные обновляет GitHub Actions (fetch-listings.yml) через POST /api/listings.
+# Данные обновляет GitHub Actions через POST /api/listings — webapp/data НЕ копируем.
 set -e
 cd "$(dirname "$0")"
-# ВАЖНО: webapp/data НЕ копируем — прод-данные обновляет CI через /api/listings,
-# локальный снапшот их бы перезатёр устаревшим
-scp webapp/*.html webapp/*.css webapp/*.js root@46.224.220.94:/opt/kwadratpl/webapp/
-scp -r tools root@46.224.220.94:/opt/kwadratpl/
-scp backend/app.py backend/requirements.txt root@46.224.220.94:/opt/kwadratpl/backend/
-ssh root@46.224.220.94 "systemctl restart kwadratpl-api 2>/dev/null || echo 'kwadratpl-api не установлен (первичная настройка — см. README)'"
-echo "OK: https://kwadratpl-46-224-220-94.sslip.io"
+: "${KWADRAT_VPS:?задайте KWADRAT_VPS=user@host (напр. export KWADRAT_VPS=deploy@host)}"
+REMOTE="$KWADRAT_VPS"
+DEST="${KWADRAT_DEST:-/opt/kwadratpl}"
+
+scp webapp/*.html webapp/*.css webapp/*.js webapp/*.png "$REMOTE:$DEST/webapp/"
+scp -r tools "$REMOTE:$DEST/"
+scp backend/app.py backend/requirements.txt "$REMOTE:$DEST/backend/"
+ssh "$REMOTE" "systemctl restart kwadratpl-api 2>/dev/null || echo 'kwadratpl-api не установлен (см. README)'"
+echo "OK deployed to $REMOTE"
