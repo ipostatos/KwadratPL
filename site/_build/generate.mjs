@@ -44,7 +44,7 @@ const C = {
     h1: "Аренда жилья в Польше — без посредников и переплат",
     lead: "Kwadrat PL собирает свежие объявления с OLX, Otodom и Morizon в один Telegram-бот. Подпишитесь на поиск — новые квартиры и комнаты придут прямо в чат, раньше других.",
     ctaPrimary: "Открыть бота в Telegram",
-    ctaNote: "Бесплатно · 4 языка · без регистрации",
+    ctaNote: "Без регистрации · 4 языка · внутри Telegram",
     trust: ["Бесплатно", "Прямые объявления, без агентств", "Обновление ~5 минут", "AI-разбор + анти-скам"],
     featuresTitle: "Почему Kwadrat PL",
     features: [
@@ -65,7 +65,7 @@ const C = {
     citiesLead: "Аренда квартир и комнат в шести крупнейших городах:",
     faqTitle: "Частые вопросы",
     faq: [
-      { q: "Это бесплатно?", a: "Да, пользоваться ботом бесплатно. Поиск, уведомления, гайды и калькулятор — без платы и без регистрации." },
+      { q: "Это бесплатно?", a: "Да, полностью. Поиск, уведомления, гайды и калькулятор — без платы и без регистрации." },
       { q: "Откуда объявления?", a: "Мы собираем публичные объявления с OLX, Otodom и Morizon и обновляем их каждые несколько минут. Одинаковые лоты с разных сайтов объединяются." },
       { q: "Что такое AI-разбор?", a: "Кнопка в карточке объявления: переводит текст на ваш язык, делает короткую выжимку и оценивает риск мошенничества по описанию." },
       { q: "На каких языках работает?", a: "Русский, украинский, польский и английский. Язык переключается прямо в приложении." },
@@ -86,7 +86,7 @@ const C = {
     h1: "Оренда житла в Польщі — без посередників і переплат",
     lead: "Kwadrat PL збирає свіжі оголошення з OLX, Otodom і Morizon в один Telegram-бот. Підпишіться на пошук — нові квартири й кімнати надійдуть просто в чат, раніше за інших.",
     ctaPrimary: "Відкрити бота в Telegram",
-    ctaNote: "Безкоштовно · 4 мови · без реєстрації",
+    ctaNote: "Без реєстрації · 4 мови · всередині Telegram",
     trust: ["Безкоштовно", "Прямі оголошення, без агентств", "Оновлення ~5 хвилин", "AI-розбір + анти-скам"],
     featuresTitle: "Чому Kwadrat PL",
     features: [
@@ -107,7 +107,7 @@ const C = {
     citiesLead: "Оренда квартир і кімнат у шести найбільших містах:",
     faqTitle: "Часті запитання",
     faq: [
-      { q: "Це безкоштовно?", a: "Так, користуватися ботом безкоштовно. Пошук, сповіщення, гайди та калькулятор — без плати й без реєстрації." },
+      { q: "Це безкоштовно?", a: "Так, повністю. Пошук, сповіщення, гайди та калькулятор — без плати й без реєстрації." },
       { q: "Звідки оголошення?", a: "Ми збираємо публічні оголошення з OLX, Otodom і Morizon та оновлюємо їх кожні кілька хвилин. Однакові лоти з різних сайтів об'єднуються." },
       { q: "Що таке AI-розбір?", a: "Кнопка в картці оголошення: перекладає текст вашою мовою, робить коротку вижимку й оцінює ризик шахрайства за описом." },
       { q: "Якими мовами працює?", a: "Українська, російська, польська та англійська. Мова перемикається просто в застосунку." },
@@ -128,7 +128,7 @@ const C = {
     h1: "Wynajem mieszkań w Polsce — bez pośredników i przepłacania",
     lead: "Kwadrat PL zbiera świeże ogłoszenia z OLX, Otodom i Morizon w jednym bocie Telegram. Zasubskrybuj wyszukiwanie — nowe mieszkania i pokoje trafią prosto na czat, szybciej niż do innych.",
     ctaPrimary: "Otwórz bota w Telegramie",
-    ctaNote: "Za darmo · 4 języki · bez rejestracji",
+    ctaNote: "Bez rejestracji · 4 języki · w Telegramie",
     trust: ["Za darmo", "Ogłoszenia wprost, bez agencji", "Odświeżanie ~5 minut", "Analiza AI + anti-scam"],
     featuresTitle: "Dlaczego Kwadrat PL",
     features: [
@@ -149,7 +149,7 @@ const C = {
     citiesLead: "Wynajem mieszkań i pokoi w sześciu największych miastach:",
     faqTitle: "Najczęstsze pytania",
     faq: [
-      { q: "Czy to jest za darmo?", a: "Tak, korzystanie z bota jest darmowe. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji." },
+      { q: "Czy to jest za darmo?", a: "Tak, w pełni. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji." },
       { q: "Skąd pochodzą ogłoszenia?", a: "Zbieramy publiczne ogłoszenia z OLX, Otodom i Morizon i odświeżamy je co kilka minut. Te same oferty z różnych serwisów są łączone." },
       { q: "Czym jest analiza AI?", a: "Przycisk w ogłoszeniu: tłumaczy treść na Twój język, tworzy krótkie streszczenie i ocenia ryzyko oszustwa na podstawie opisu." },
       { q: "W jakich językach działa?", a: "Polski, ukraiński, rosyjski i angielski. Język przełączysz bezpośrednio w aplikacji." },
@@ -170,7 +170,7 @@ const C = {
     h1: "Rent a home in Poland — no agents, no overpaying",
     lead: "Kwadrat PL gathers fresh listings from OLX, Otodom and Morizon into one Telegram bot. Subscribe to a search and new flats and rooms land right in your chat, before everyone else.",
     ctaPrimary: "Open the bot in Telegram",
-    ctaNote: "Free · 4 languages · no sign-up",
+    ctaNote: "No sign-up · 4 languages · inside Telegram",
     trust: ["Free", "Listings direct, no agencies", "Refreshed ~5 min", "AI breakdown + anti-scam"],
     featuresTitle: "Why Kwadrat PL",
     features: [
@@ -191,7 +191,7 @@ const C = {
     citiesLead: "Flats and rooms for rent in the six largest cities:",
     faqTitle: "FAQ",
     faq: [
-      { q: "Is it free?", a: "Yes, the bot is free to use. Search, alerts, guides and the calculator — no fees and no sign-up." },
+      { q: "Is it free?", a: "Yes, fully. Search, alerts, guides and the calculator — no fees and no sign-up." },
       { q: "Where do listings come from?", a: "We gather public listings from OLX, Otodom and Morizon and refresh them every few minutes. The same offer across sites is merged." },
       { q: "What is the AI breakdown?", a: "A button on each listing: it translates the text into your language, writes a short summary and scores the scam risk from the description." },
       { q: "Which languages are supported?", a: "English, Polish, Ukrainian and Russian. You switch the language right inside the app." },
