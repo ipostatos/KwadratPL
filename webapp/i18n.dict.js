@@ -214,6 +214,8 @@
 
     /* ── раздел «Полезное» ── */
     secUseful:   { ru: "Полезное", pl: "Przydatne", ua: "Корисне", en: "Useful" },
+    usefulSub:   { ru: "Гайды и инструменты против главных болей аренды", pl: "Poradniki i narzędzia na główne bóle najmu", ua: "Гайди та інструменти проти головних болів оренди", en: "Guides and tools for the main rental pains" },
+    cellUsefulD: { ru: "Кауция, договор, документы, чек-лист, фразы, калькулятор заезда", pl: "Kaucja, umowa, dokumenty, checklista, wiadomości, kalkulator", ua: "Кауція, договір, документи, чек-лист, фрази, калькулятор заїзду", en: "Deposit, contract, documents, checklist, messages, calculator" },
     cellKaucjaT: { ru: "Как вернуть кауцию", pl: "Jak odzyskać kaucję", ua: "Як повернути кауцію", en: "Get your deposit back" },
     cellKaucjaD: { ru: "Ультимативный гайд: закон, протокол, шаблон претензии, суд", pl: "Kompletny przewodnik: prawo, protokół, wzór wezwania, sąd", ua: "Повний гайд: закон, протокол, шаблон претензії, суд", en: "The ultimate guide: law, protocol, demand letter, court" },
     cellUmowaT:  { ru: "Договор аренды: разбор", pl: "Umowa najmu: przewodnik", ua: "Договір оренди: розбір", en: "Rental contract guide" },

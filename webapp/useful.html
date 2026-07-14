@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Полезное — Kwadrat PL</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<style>
+  /* сетка разделов — те же стили, что и на главной */
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-2) }
+  .cell{ display:flex; flex-direction:column; gap:var(--sp-1);
+    text-decoration:none; color:var(--text); background:var(--card);
+    border:1px solid var(--border); border-radius:var(--r-md);
+    padding:var(--sp-3) var(--sp-4); min-height:84px; transition:transform .12s }
+  .cell:active{ transform:scale(.98) }
+  .cell .t{ font-size:var(--fs-body); font-weight:700 }
+  .cell .d{ color:var(--hint); font-size:var(--fs-xs); line-height:1.35 }
+  .cell.wide{ grid-column:1 / -1; flex-direction:row; align-items:center; gap:var(--sp-3); min-height:0 }
+  .cell.wide .body{ flex:1 } .cell.wide .chev{ color:var(--hint) }
+</style>
+</head>
+<body>
+  <h1><span class="emi" data-icon="book-open"></span><span data-i18n="secUseful"></span></h1>
+  <p class="sub" data-i18n="usefulSub"></p>
+
+  <div class="grid">
+    <a class="cell wide" href="kaucja.html">
+      <div class="ic-tile gold" data-icon="wallet"></div>
+      <div class="body">
+        <div class="t" data-i18n="cellKaucjaT"></div>
+        <div class="d" data-i18n="cellKaucjaD"></div>
+      </div>
+      <div class="chev">›</div>
+    </a>
+    <a class="cell wide" href="najem.html">
+      <div class="ic-tile amber" data-icon="shield-check"></div>
+      <div class="body">
+        <div class="t" data-i18n="cellNajemT"></div>
+        <div class="d" data-i18n="cellNajemD"></div>
+      </div>
+      <div class="chev">›</div>
+    </a>
+    <a class="cell" href="umowa.html">
+      <div class="ic-tile cyan" data-icon="file-text"></div>
+      <div class="t" data-i18n="cellUmowaT"></div>
+      <div class="d" data-i18n="cellUmowaD"></div>
+    </a>
+    <a class="cell" href="checklist.html">
+      <div class="ic-tile green" data-icon="check-square"></div>
+      <div class="t" data-i18n="cellCheckT"></div>
+      <div class="d" data-i18n="cellCheckD"></div>
+    </a>
+    <a class="cell" href="phrases.html">
+      <div class="ic-tile blue" data-icon="message-circle"></div>
+      <div class="t" data-i18n="cellPhrasesT"></div>
+      <div class="d" data-i18n="cellPhrasesD"></div>
+    </a>
+    <a class="cell" href="koszty.html">
+      <div class="ic-tile violet" data-icon="calculator"></div>
+      <div class="t" data-i18n="cellKosztyT"></div>
+      <div class="d" data-i18n="cellKosztyD"></div>
+    </a>
+  </div>
+
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-4)" data-i18n="backHome"></a>
+
+<script>
+"use strict";
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+</script>
+</body>
+</html>
