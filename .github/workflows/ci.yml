@@ -34,5 +34,35 @@ jobs:
           for f in webapp/app.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
             node --check "$f"
           done
+      - name: Check i18n dictionary + icons integrity
+        run: node webapp/_test/check-i18n.mjs
       - name: Build landing (generator must not throw)
         run: node site/_build/generate.mjs
+
+  deploy:
+    name: Deploy to VPS
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup SSH
+        env:
+          KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS: ${{ secrets.VPS_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${VPS#*@}" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Deploy webapp + backend + tools, restart service
+        env:
+          VPS: ${{ secrets.VPS_HOST }}
+        run: |
+          SSH="ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+          SCP="scp -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes"
+          # webapp/data НЕ трогаем — прод-данные обновляет фетчер через /api/listings
+          $SCP webapp/*.html webapp/*.css webapp/*.js webapp/*.png "$VPS:/opt/kwadratpl/webapp/"
+          $SCP backend/app.py backend/requirements.txt "$VPS:/opt/kwadratpl/backend/"
+          $SCP -r tools "$VPS:/opt/kwadratpl/"
+          $SSH "$VPS" "systemctl restart kwadratpl-api && sleep 2 && systemctl is-active kwadratpl-api"
