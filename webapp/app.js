@@ -308,11 +308,19 @@
   }
 
   // наружу открываем только http(s) — url приходит из данных объявлений
+  // домены объявлений — тот же whitelist, что и на бэкенде (safe_listing_url).
+  // Даже если listings.json когда-то подменят/ошибутся, фронт не откроет чужой хост.
+  var ALLOWED_HOSTS = ["olx.pl", "otodom.pl", "morizon.pl"];
   function openListingUrl(url) {
-    if (!/^https?:\/\//i.test(String(url || ""))) return;
+    var u = String(url || "");
+    if (!/^https:\/\//i.test(u)) return;          // только https
+    var host;
+    try { host = new URL(u).hostname.toLowerCase(); } catch (e) { return; }
+    var ok = ALLOWED_HOSTS.some(function (h) { return host === h || host.endsWith("." + h); });
+    if (!ok) return;
     var tg = window.Telegram && window.Telegram.WebApp;
-    if (tg && tg.openLink) tg.openLink(url);
-    else window.open(url, "_blank", "noopener");
+    if (tg && tg.openLink) tg.openLink(u);
+    else window.open(u, "_blank", "noopener");
   }
 
   // ── AI-разбор объявления (перевод + выжимка + скам) ──
