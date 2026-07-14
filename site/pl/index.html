@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wynajem mieszkań w Polsce bez pośredników — bot Kwadrat PL</title>
+<meta name="description" content="Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.">
+<link rel="canonical" href="https://kwadratpl.pl/pl/">
+<link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/">
+<link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/">
+<link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/">
+<link rel="alternate" hreflang="en" href="https://kwadratpl.pl/en/">
+<link rel="alternate" hreflang="x-default" href="https://kwadratpl.pl/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#229ED9">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-512.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Kwadrat PL">
+<meta property="og:title" content="Wynajem mieszkań w Polsce bez pośredników — bot Kwadrat PL">
+<meta property="og:description" content="Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.">
+<meta property="og:url" content="https://kwadratpl.pl/pl/">
+<meta property="og:image" content="https://kwadratpl.pl/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="pl_PL">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Wynajem mieszkań w Polsce bez pośredników — bot Kwadrat PL">
+<meta name="twitter:description" content="Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.">
+<meta name="twitter:image" content="https://kwadratpl.pl/og.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://kwadratpl.pl/#website","url":"https://kwadratpl.pl/","name":"Kwadrat PL","inLanguage":"pl","publisher":{"@id":"https://kwadratpl.pl/#org"}},{"@type":"Organization","@id":"https://kwadratpl.pl/#org","name":"Kwadrat PL","url":"https://kwadratpl.pl/","logo":"https://kwadratpl.pl/icon-512.png","sameAs":["https://t.me/KwadratPLBot"]},{"@type":"SoftwareApplication","name":"Kwadrat PL","applicationCategory":"LifestyleApplication","operatingSystem":"Telegram","url":"https://kwadratpl.pl/pl/","inLanguage":["ru","uk","pl","en"],"description":"Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.","offers":{"@type":"Offer","price":"0","priceCurrency":"PLN"}},{"@type":"FAQPage","@id":"https://kwadratpl.pl/pl/#faq","inLanguage":"pl","mainEntity":[{"@type":"Question","name":"Czy to jest za darmo?","acceptedAnswer":{"@type":"Answer","text":"Tak, korzystanie z bota jest darmowe. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji."}},{"@type":"Question","name":"Skąd pochodzą ogłoszenia?","acceptedAnswer":{"@type":"Answer","text":"Zbieramy publiczne ogłoszenia z OLX, Otodom i Morizon i odświeżamy je co kilka minut. Te same oferty z różnych serwisów są łączone."}},{"@type":"Question","name":"Czym jest analiza AI?","acceptedAnswer":{"@type":"Answer","text":"Przycisk w ogłoszeniu: tłumaczy treść na Twój język, tworzy krótkie streszczenie i ocenia ryzyko oszustwa na podstawie opisu."}},{"@type":"Question","name":"W jakich językach działa?","acceptedAnswer":{"@type":"Answer","text":"Polski, ukraiński, rosyjski i angielski. Język przełączysz bezpośrednio w aplikacji."}},{"@type":"Question","name":"Jak poznać, że cena jest uczciwa?","acceptedAnswer":{"@type":"Answer","text":"Bot liczy medianę ceny za m² według dzielnicy i typu lokum z własnych danych i pokazuje, o ile ogłoszenie jest tańsze lub droższe od rynku."}},{"@type":"Question","name":"Czy trzeba instalować aplikację?","acceptedAnswer":{"@type":"Answer","text":"Nie. Kwadrat PL działa wewnątrz Telegrama jako Mini App — niczego nie instalujesz."}}]}]}</script>
+<style>
+:root{
+  --bg:#ffffff; --bg2:#f5f8fb; --card:#ffffff; --border:#e4eaf0;
+  --text:#0e1621; --muted:#5b6b7b; --accent:#229ED9; --accent2:#1b8ec2;
+  --radius:16px; --maxw:1040px; --shadow:0 1px 2px rgba(16,32,48,.04),0 8px 24px rgba(16,32,48,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e1621; --bg2:#131f2b; --card:#17212b; --border:#26313d;
+    --text:#e7edf3; --muted:#93a4b4; --accent:#3aaee0; --accent2:#54baea;
+    --shadow:0 1px 2px rgba(0,0,0,.2),0 10px 30px rgba(0,0,0,.35); }
+}
+*,*::before,*::after{ box-sizing:border-box }
+html{ scroll-behavior:smooth; -webkit-text-size-adjust:100% }
+body{ margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility }
+a{ color:inherit; text-decoration:none }
+h1,h2,h3{ line-height:1.2; text-wrap:balance; margin:0 }
+p{ margin:0 }
+.wrap{ max-width:var(--maxw); margin:0 auto; padding:0 20px }
+.ico{ width:22px; height:22px; stroke-width:2 }
+
+/* header */
+.top{ position:sticky; top:0; z-index:10; background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(1.4) blur(10px); border-bottom:1px solid var(--border) }
+.top .wrap{ display:flex; align-items:center; gap:16px; height:60px }
+.brand{ display:flex; align-items:center; gap:9px; font-weight:800; font-size:18px; letter-spacing:-.01em }
+.brand .mark{ display:inline-flex; width:30px; height:30px; border-radius:8px; color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent2)); align-items:center; justify-content:center }
+.brand .mark svg{ width:18px; height:18px }
+.langs{ margin-left:auto; display:flex; gap:2px }
+.lang{ font-size:13px; font-weight:700; color:var(--muted); padding:6px 9px; border-radius:8px }
+.lang:hover{ color:var(--text); background:var(--bg2) }
+.lang.on{ color:var(--accent) }
+.top .cta{ display:none }
+@media(min-width:720px){ .top .cta{ display:inline-flex } }
+
+/* buttons */
+.btn{ display:inline-flex; align-items:center; gap:9px; font-weight:700; font-size:16px;
+  padding:13px 22px; border-radius:12px; background:var(--accent); color:#fff;
+  transition:transform .12s ease, background .12s ease; white-space:nowrap }
+.btn:hover{ background:var(--accent2); transform:translateY(-1px) }
+.btn svg{ width:20px; height:20px }
+.btn.sm{ font-size:14px; padding:9px 15px }
+.btn.ghost{ background:var(--bg2); color:var(--text); border:1px solid var(--border) }
+.btn.ghost:hover{ background:var(--card) }
+
+/* hero */
+.hero{ text-align:center; padding:72px 0 40px }
+.eyebrow{ display:inline-block; font-size:13px; font-weight:700; letter-spacing:.02em;
+  color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent);
+  padding:6px 13px; border-radius:999px; margin-bottom:20px }
+.hero h1{ font-size:clamp(30px,5.2vw,50px); font-weight:850; letter-spacing:-.02em }
+.hero .lead{ max-width:620px; margin:20px auto 0; font-size:clamp(16px,2.2vw,19px); color:var(--muted) }
+.hero .actions{ margin-top:30px; display:flex; flex-direction:column; align-items:center; gap:12px }
+.hero .note{ font-size:13px; color:var(--muted) }
+.trust{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px 10px; margin-top:34px }
+.trust span{ font-size:13px; font-weight:600; color:var(--muted); background:var(--bg2);
+  border:1px solid var(--border); padding:7px 13px; border-radius:999px }
+
+/* sections */
+section{ padding:52px 0 }
+.sec-h{ text-align:center; font-size:clamp(23px,3.4vw,32px); font-weight:820; letter-spacing:-.01em; margin-bottom:8px }
+.sec-lead{ text-align:center; color:var(--muted); max-width:560px; margin:0 auto 34px }
+.alt{ background:var(--bg2) }
+
+/* features */
+.grid{ display:grid; grid-template-columns:1fr; gap:16px }
+@media(min-width:600px){ .grid{ grid-template-columns:1fr 1fr } }
+@media(min-width:900px){ .grid{ grid-template-columns:1fr 1fr 1fr } }
+.card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:24px; box-shadow:var(--shadow) }
+.ico-wrap{ display:inline-flex; width:44px; height:44px; border-radius:11px; align-items:center; justify-content:center;
+  color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent); margin-bottom:14px }
+.card h3{ font-size:17px; font-weight:750; margin-bottom:6px }
+.card p{ font-size:14.5px; color:var(--muted) }
+
+/* steps */
+.steps{ list-style:none; padding:0; margin:0; display:grid; gap:16px; max-width:720px; margin:0 auto }
+@media(min-width:760px){ .steps{ grid-template-columns:1fr 1fr 1fr } }
+.step{ display:flex; gap:14px; align-items:flex-start; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius); padding:20px }
+.step-n{ flex:none; width:32px; height:32px; border-radius:9px; font-weight:800; color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center }
+.step h3{ font-size:16px; font-weight:750; margin-bottom:4px }
+.step p{ font-size:14px; color:var(--muted) }
+
+/* cities */
+.chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px }
+.chip{ font-weight:700; font-size:15px; background:var(--card); border:1px solid var(--border);
+  padding:10px 18px; border-radius:12px }
+
+/* faq */
+.faq-list{ max-width:720px; margin:0 auto; display:grid; gap:10px }
+.faq{ background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden }
+.faq summary{ cursor:pointer; padding:16px 20px; font-weight:700; font-size:16px; list-style:none;
+  display:flex; justify-content:space-between; align-items:center; gap:12px }
+.faq summary::-webkit-details-marker{ display:none }
+.faq summary::after{ content:"+"; color:var(--accent); font-size:22px; font-weight:400; line-height:1 }
+.faq[open] summary::after{ content:"\2013" }
+.faq-a{ padding:0 20px 18px; color:var(--muted); font-size:14.5px }
+
+/* final cta */
+.final{ text-align:center }
+.final .box{ background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;
+  border-radius:24px; padding:52px 28px }
+.final h2{ font-size:clamp(24px,4vw,36px); font-weight:850; color:#fff }
+.final p{ max-width:520px; margin:12px auto 26px; color:rgba(255,255,255,.92) }
+.final .btn{ background:#fff; color:var(--accent2) }
+.final .btn:hover{ background:#f0f6fa }
+
+/* footer */
+footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
+.foot-grid{ display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; align-items:flex-start }
+.foot-about{ max-width:420px; color:var(--muted); font-size:14px }
+.foot-about .brand{ margin-bottom:10px; color:var(--text) }
+.foot-langs{ display:flex; gap:6px; flex-wrap:wrap }
+.foot-langs .lang{ border:1px solid var(--border) }
+.foot-legal{ margin-top:26px; color:var(--muted); font-size:12.5px; border-top:1px solid var(--border); padding-top:18px }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="https://kwadratpl.pl/pl/" aria-label="Kwadrat PL">
+      <span class="mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span> Kwadrat PL
+    </a>
+    <nav class="langs" aria-label="Język"><a class="lang" href="https://kwadratpl.pl/" hreflang="ru">RU</a><a class="lang" href="https://kwadratpl.pl/ua/" hreflang="uk">UA</a><span class="lang on" aria-current="true">PL</span><a class="lang" href="https://kwadratpl.pl/en/" hreflang="en">EN</a></nav>
+    <a class="btn sm cta" href="https://t.me/KwadratPLBot" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg> Telegram</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">Bot Telegram do wynajmu w Polsce</span>
+      <h1>Wynajem mieszkań w Polsce — bez pośredników i przepłacania</h1>
+      <p class="lead">Kwadrat PL zbiera świeże ogłoszenia z OLX, Otodom i Morizon w jednym bocie Telegram. Zasubskrybuj wyszukiwanie — nowe mieszkania i pokoje trafią prosto na czat, szybciej niż do innych.</p>
+      <div class="actions">
+        <a class="btn" href="https://t.me/KwadratPLBot" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg> Otwórz bota w Telegramie</a>
+        <span class="note">Za darmo · 4 języki · bez rejestracji</span>
+      </div>
+      <div class="trust"><span>Za darmo</span><span>Ogłoszenia wprost, bez agencji</span><span>Odświeżanie ~5 minut</span><span>Analiza AI + anti-scam</span></div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2 class="sec-h">Dlaczego Kwadrat PL</h2>
+      <div class="grid">
+      <article class="card">
+        <div class="ico-wrap"><svg class="ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+        <h3>Wyszukiwanie na 3 portalach naraz</h3>
+        <p>Mieszkania, pokoje i noclegi z OLX, Otodom i Morizon. Te same ogłoszenia z różnych serwisów są łączone — bez duplikatów na liście.</p>
+      </article>
+      <article class="card">
+        <div class="ico-wrap"><svg class="ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+        <h3>Natychmiastowe powiadomienia</h3>
+        <p>Zasubskrybuj swoje wyszukiwanie — nowe pasujące lokum trafia na czat w kilka minut. Cisza nocna i pauza komendą /off.</p>
+      </article>
+      <article class="card">
+        <div class="ico-wrap"><svg class="ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>Uczciwa cena i anti-scam</h3>
+        <p>Znacznik „poniżej/powyżej rynku dzielnicy” z naszych danych i ostrzeżenie o podejrzanie tanich ogłoszeniach — typowej przynęcie oszustów.</p>
+      </article>
+      <article class="card">
+        <div class="ico-wrap"><svg class="ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg></div>
+        <h3>Analiza AI ogłoszenia</h3>
+        <p>Jeden przycisk: tłumaczenie ogłoszenia na Twój język, streszczenie najważniejszego i ocena ryzyka oszustwa na podstawie treści.</p>
+      </article>
+      <article class="card">
+        <div class="ico-wrap"><svg class="ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg></div>
+        <h3>Kalkulator wprowadzki</h3>
+        <p>Ile pieniędzy potrzeba na start: najem, czynsz, media, kaucja i prowizja — liczymy wszystko naraz, bez niespodzianek.</p>
+      </article>
+      <article class="card">
+        <div class="ico-wrap"><svg class="ico" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <h3>Poradniki dla najemcy</h3>
+        <p>Jak odzyskać kaucję (z gotowym wzorem wezwania), umowa bez pułapek, checklista oględzin i gotowe wiadomości do właściciela.</p>
+      </article></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2 class="sec-h">Jak to działa</h2>
+      <ol class="steps">
+      <li class="step">
+        <div class="step-n">1</div>
+        <div><h3>Otwórz bota</h3><p>Kliknij przycisk i uruchom Kwadrat PL w Telegramie — aplikacja otworzy się prosto na czacie.</p></div>
+      </li>
+      <li class="step">
+        <div class="step-n">2</div>
+        <div><h3>Ustaw wyszukiwanie</h3><p>Wybierz miasto, typ najmu, cenę i filtry. Wynik odświeża się natychmiast.</p></div>
+      </li>
+      <li class="step">
+        <div class="step-n">3</div>
+        <div><h3>Miej nowe jako pierwszy</h3><p>Zasubskrybuj — świeże ogłoszenia będą trafiać na czat, zanim inni je rozchwytają.</p></div>
+      </li></ol>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2 class="sec-h">Miasta w Polsce</h2>
+      <p class="sec-lead">Wynajem mieszkań i pokoi w sześciu największych miastach:</p>
+      <div class="chips"><span class="chip">Warszawa</span><span class="chip">Kraków</span><span class="chip">Wrocław</span><span class="chip">Gdańsk</span><span class="chip">Poznań</span><span class="chip">Łódź</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2 class="sec-h">Najczęstsze pytania</h2>
+      <div class="faq-list">
+      <details class="faq">
+        <summary>Czy to jest za darmo?</summary>
+        <div class="faq-a">Tak, korzystanie z bota jest darmowe. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji.</div>
+      </details>
+      <details class="faq">
+        <summary>Skąd pochodzą ogłoszenia?</summary>
+        <div class="faq-a">Zbieramy publiczne ogłoszenia z OLX, Otodom i Morizon i odświeżamy je co kilka minut. Te same oferty z różnych serwisów są łączone.</div>
+      </details>
+      <details class="faq">
+        <summary>Czym jest analiza AI?</summary>
+        <div class="faq-a">Przycisk w ogłoszeniu: tłumaczy treść na Twój język, tworzy krótkie streszczenie i ocenia ryzyko oszustwa na podstawie opisu.</div>
+      </details>
+      <details class="faq">
+        <summary>W jakich językach działa?</summary>
+        <div class="faq-a">Polski, ukraiński, rosyjski i angielski. Język przełączysz bezpośrednio w aplikacji.</div>
+      </details>
+      <details class="faq">
+        <summary>Jak poznać, że cena jest uczciwa?</summary>
+        <div class="faq-a">Bot liczy medianę ceny za m² według dzielnicy i typu lokum z własnych danych i pokazuje, o ile ogłoszenie jest tańsze lub droższe od rynku.</div>
+      </details>
+      <details class="faq">
+        <summary>Czy trzeba instalować aplikację?</summary>
+        <div class="faq-a">Nie. Kwadrat PL działa wewnątrz Telegrama jako Mini App — niczego nie instalujesz.</div>
+      </details></div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <div class="box">
+        <h2>Niech dom się znajdzie!</h2>
+        <p>Otwórz Kwadrat PL i zasubskrybuj swoje wyszukiwanie — nowe lokum przyjdzie samo.</p>
+        <a class="btn" href="https://t.me/KwadratPLBot" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg> Otwórz bota w Telegramie</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-about">
+        <div class="brand"><span class="mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></span> Kwadrat PL</div>
+        <p>Kwadrat PL — wyszukiwanie mieszkań na wynajem w Polsce. OLX, Otodom i Morizon w jednym bocie Telegram.</p>
+      </div>
+      <div>
+        <div style="font-weight:700;margin-bottom:10px">Język</div>
+        <div class="foot-langs"><a class="lang" href="https://kwadratpl.pl/" hreflang="ru">RU</a><a class="lang" href="https://kwadratpl.pl/ua/" hreflang="uk">UA</a><span class="lang on" aria-current="true">PL</span><a class="lang" href="https://kwadratpl.pl/en/" hreflang="en">EN</a></div>
+      </div>
+    </div>
+    <div class="foot-legal">© Kwadrat PL · To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł.</div>
+  </div>
+</footer>
+
+</body>
+</html>

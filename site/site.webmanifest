@@ -1,0 +1,13 @@
+{
+  "name": "Kwadrat PL — аренда жилья в Польше",
+  "short_name": "Kwadrat PL",
+  "description": "Поиск аренды квартир и комнат в Польше: OLX, Otodom и Morizon в одном Telegram-боте.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1621",
+  "theme_color": "#229ED9",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

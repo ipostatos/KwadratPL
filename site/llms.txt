@@ -1,0 +1,22 @@
+# Kwadrat PL
+
+> Free Telegram Mini App for finding rental housing (flats and rooms) in Poland. It gathers fresh, direct listings from OLX, Otodom and Morizon into one bot, merges duplicates across portals, and pushes instant alerts. Built for Russian-, Ukrainian-, Polish- and English-speaking renters — especially migrants — who want to rent directly, without agencies or middlemen.
+
+## What it does
+- Aggregated search across OLX, Otodom and Morizon; the same listing across sites is merged (no duplicates).
+- Instant chat alerts when a new matching flat or room appears (typically within minutes).
+- Fair-price check: a below/above district-market badge computed from the bot's own data.
+- Anti-scam warning on suspiciously cheap listings.
+- AI listing breakdown: translates a listing, summarises it and scores scam risk (powered by Claude).
+- Move-in cost calculator (rent, czynsz, utilities, deposit, agent fee).
+- Renter guides: deposit refund (with a demand-letter template), contract red flags, viewing checklist, ready-made Polish messages to landlords.
+
+## Key facts
+- Price: free, no sign-up, runs inside Telegram (no app to install).
+- Cities: Warszawa, Kraków, Wrocław, Gdańsk, Poznań, Łódź.
+- Languages: Russian, Ukrainian, Polish, English.
+- Not a real-estate agency; listings belong to their original sources.
+
+## Links
+- Bot: https://t.me/KwadratPLBot
+- Website: https://kwadratpl.pl
