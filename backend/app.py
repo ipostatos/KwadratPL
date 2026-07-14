@@ -262,7 +262,58 @@ def lang_of(code: str | None) -> str:
     return "en"
 
 
-def fmt_listing(l: dict, lang: str) -> str:
+# ── alert explainability: описание подписки, по которой сработал пуш ──────────
+_TYPE_LBL = {
+    "long":  {"ru": "долгосрочная", "pl": "długoterminowy", "ua": "довгострокова", "en": "long-term"},
+    "short": {"ru": "посуточно", "pl": "na doby", "ua": "подобово", "en": "short-stay"},
+    "room":  {"ru": "комната", "pl": "pokój", "ua": "кімната", "en": "room"},
+}
+_OWNER_LBL = {
+    "private": {"ru": "частник", "pl": "prywatne", "ua": "приватник", "en": "private"},
+    "agency":  {"ru": "агентство", "pl": "biuro", "ua": "агентство", "en": "agency"},
+}
+_FEAT_LBL = {
+    "pets":    {"ru": "с животными", "pl": "ze zwierzętami", "ua": "з тваринами", "en": "pets"},
+    "parking": {"ru": "паркинг", "pl": "parking", "ua": "паркінг", "en": "parking"},
+    "balcony": {"ru": "балкон", "pl": "balkon", "ua": "балкон", "en": "balcony"},
+}
+_ROOM_LBL = {"ru": "комн.", "pl": "pok.", "ua": "кімн.", "en": "rooms"}
+_ALERT_HDR = {"ru": "по поиску", "pl": "wyszukiwanie", "ua": "за пошуком", "en": "your search"}
+
+
+def _num(n: int) -> str:
+    return f"{int(n):,}".replace(",", " ")
+
+
+def sub_label(s: dict, lang: str) -> str:
+    """Человекочитаемое описание подписки — «почему сработал этот алерт».
+    Символы ≤ ≥ – вместо слов, чтобы не плодить переводы для цены/площади."""
+    parts = [CITY.get(s.get("city"), {}).get(lang, str(s.get("city", "")))]
+    if s.get("type") in _TYPE_LBL:
+        parts.append(_TYPE_LBL[s["type"]][lang])
+    if s.get("district"):
+        parts.append(str(s["district"]))
+    pmin, pmax = s.get("priceMin"), s.get("priceMax")
+    if pmin and pmax:
+        parts.append(f"{_num(pmin)}–{_num(pmax)} zł")
+    elif pmax:
+        parts.append(f"≤{_num(pmax)} zł")
+    elif pmin:
+        parts.append(f"≥{_num(pmin)} zł")
+    if s.get("areaMin"):
+        parts.append(f"≥{s['areaMin']} m²")
+    if s.get("rooms"):
+        r = s["rooms"]
+        parts.append((f"{r}+ " if r == 4 else f"{r} ") + _ROOM_LBL[lang])
+    if s.get("owner") in _OWNER_LBL:
+        parts.append(_OWNER_LBL[s["owner"]][lang])
+    for f in ("pets", "parking", "balcony"):
+        if s.get(f):
+            parts.append(_FEAT_LBL[f][lang])
+    return " · ".join(html.escape(str(p)) for p in parts)
+
+
+def fmt_listing(l: dict, lang: str, sub: dict | None = None) -> str:
     # ВСЁ из данных объявления экранируем: parse_mode=HTML, а title/district
     # исходно пишут авторы объявлений на OLX (символ '<' валил бы send_message)
     unit = T["unit_short" if l.get("type") == "short" else "unit_long"][lang]
@@ -283,6 +334,8 @@ def fmt_listing(l: dict, lang: str) -> str:
         lines.append(html.escape(title[:120]))
     lines.append(" · ".join(bits))
     lines.append("📍 " + html.escape(place))
+    if sub:
+        lines.append(f"🔎 <i>{html.escape(_ALERT_HDR[lang])}: {sub_label(sub, lang)}</i>")
     return "\n".join(lines)
 
 
@@ -398,8 +451,11 @@ async def on_widget(m: Message):
                    link_preview_options=LinkPreviewOptions(is_disabled=True))
 
 
-async def notify_user(user_id: int, lang: str, hits: list[dict]):
-    for l in hits[:MAX_NOTIFY_PER_USER]:
+async def notify_user(user_id: int, lang: str, hits: list):
+    # hits: список пар (объявление, подписка-которая-совпала) для explainability;
+    # допускаем и «голое» объявление (digest шлёт без подписки)
+    for item in hits[:MAX_NOTIFY_PER_USER]:
+        l, sub = item if isinstance(item, tuple) else (item, None)
         url = safe_listing_url(l.get("url"))
         kb = None
         if url:
@@ -410,7 +466,7 @@ async def notify_user(user_id: int, lang: str, hits: list[dict]):
         for attempt in (1, 2):
             try:
                 await bot.send_message(
-                    user_id, fmt_listing(l, lang), parse_mode="HTML", reply_markup=kb,
+                    user_id, fmt_listing(l, lang, sub), parse_mode="HTML", reply_markup=kb,
                     link_preview_options=LinkPreviewOptions(is_disabled=True))
                 await asyncio.sleep(0.05)
                 break
@@ -839,27 +895,31 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
 
     notified = 0
     if not first_run and fresh and rows:
-        per_user: dict[int, tuple[str, bool, list]] = {}
+        # uid -> {lang, quiet, hits: {listing_id: (listing, matched_sub)}}
+        per_user: dict[int, dict] = {}
         for r in rows:
             # битая подписка (старые строки до валидации) не должна ронять
             # весь пайплайн уведомлений
             try:
                 sub = json.loads(r["data"])
                 quiet = in_quiet(r["quiet_from"], r["quiet_to"])
+                u = per_user.setdefault(
+                    r["user_id"], {"lang": r["lang"], "quiet": quiet, "hits": {}})
                 for l in fresh:
                     if matches(l, sub):
-                        per_user.setdefault(r["user_id"], (r["lang"], quiet, []))[2].append(l)
+                        # один лот может подойти под две подписки — дедуп по id,
+                        # для explainability запоминаем первую совпавшую подписку
+                        u["hits"].setdefault(str(l["id"]), (l, sub))
             except Exception as e:
                 log.warning("bad sub for user %s skipped: %s", r["user_id"], e)
         buffered = []
-        for uid, (lang, quiet, hits) in per_user.items():
-            # один и тот же лот может подойти под две подписки — дедуп
-            uniq = list({l["id"]: l for l in hits}.values())
-            if quiet:
+        for uid, u in per_user.items():
+            pairs = list(u["hits"].values())   # [(listing, matched_sub), ...]
+            if u["quiet"]:
                 # тихие часы: копим в буфер, утром уйдёт одной сводкой
-                buffered.extend((uid, l["id"], now) for l in uniq)
+                buffered.extend((uid, l["id"], now) for l, _s in pairs)
             else:
-                _spawn(notify_user(uid, lang or "ru", uniq))
+                _spawn(notify_user(uid, u["lang"] or "ru", pairs))
                 notified += 1
         if buffered:
             with db() as c:
