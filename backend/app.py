@@ -754,3 +754,18 @@ async def put_subs(request: Request, authorization: str = Header("")):
               1 if s.get("notify") else 0)
              for i, s in enumerate(subs) if isinstance(s, dict)])
     return {"saved": len(subs)}
+
+
+@app.delete("/api/subs")
+def delete_me(authorization: str = Header("")):
+    """Право на удаление (RODO/GDPR): стирает подписки, буфер уведомлений и
+    учётную запись пользователя по его initData. Локальные данные (localStorage:
+    избранное, сохранённые поиски) очищает клиент на своей стороне."""
+    user = _auth_user(authorization)
+    uid = user["id"]
+    with db() as c:
+        c.execute("DELETE FROM subs WHERE user_id=?", (uid,))
+        c.execute("DELETE FROM pending WHERE user_id=?", (uid,))
+        c.execute("DELETE FROM users WHERE id=?", (uid,))
+    log.info("user %s deleted own data on request", uid)
+    return {"deleted": True}

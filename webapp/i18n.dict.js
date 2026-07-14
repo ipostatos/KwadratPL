@@ -115,6 +115,14 @@
     /* ── полная стоимость въезда ── */
     allInNote: { ru: "Цена может не включать czynsz administracyjny и media. Уточните полную сумму у владельца.", pl: "Cena może nie zawierać czynszu administracyjnego i mediów. Dopytaj właściciela o pełną kwotę.", ua: "Ціна може не включати czynsz administracyjny і media. Уточніть повну суму у власника.", en: "The price may exclude the building fee (czynsz) and utilities. Ask the owner for the full amount." },
     allInBtn: { ru: "Прикинуть полную стоимость", pl: "Oblicz pełny koszt", ua: "Прикинути повну вартість", en: "Estimate full cost" },
+    /* ── trust-слой + стоимость входа ── */
+    tbDrop: { ru: "снижение цены", pl: "obniżka ceny", ua: "зниження ціни", en: "price drop" },
+    miTitle: { ru: "Сколько нужно на въезд", pl: "Ile potrzeba na wejście", ua: "Скільки треба на в'їзд", en: "What you need to move in" },
+    miFirst: { ru: "Первый месяц (аренда)", pl: "Pierwszy miesiąc (najem)", ua: "Перший місяць (оренда)", en: "First month (rent)" },
+    miDeposit: { ru: "Кауция (≈1 мес)", pl: "Kaucja (≈1 mies.)", ua: "Кауція (≈1 міс)", en: "Deposit (≈1 mo)" },
+    miCommission: { ru: "Комиссия агентства (≈1 мес)", pl: "Prowizja biura (≈1 mies.)", ua: "Комісія агентства (≈1 міс)", en: "Agency fee (≈1 mo)" },
+    miTotal: { ru: "Итого на старте", pl: "Razem na start", ua: "Разом на старті", en: "Total upfront" },
+    miNote: { ru: "Плюс czynsz administracyjny и media — уточните у владельца.", pl: "Plus czynsz administracyjny i media — dopytaj właściciela.", ua: "Плюс czynsz administracyjny і media — уточніть у власника.", en: "Plus building fee (czynsz) and utilities — ask the owner." },
     /* ── AI-разбор объявления ── */
     aiBtn:    { ru: "✨ AI-разбор объявления", pl: "✨ Analiza AI ogłoszenia", ua: "✨ AI-розбір оголошення", en: "✨ AI listing breakdown" },
     aiLoading: { ru: "AI читает объявление…", pl: "AI czyta ogłoszenie…", ua: "AI читає оголошення…", en: "AI is reading the listing…" },
@@ -152,6 +160,14 @@
     notifyOn:   { ru: "Уведомления включены", pl: "Powiadomienia włączone", ua: "Сповіщення увімкнено", en: "Notifications on" },
     notifyOff:  { ru: "Уведомления выключены", pl: "Powiadomienia wyłączone", ua: "Сповіщення вимкнено", en: "Notifications off" },
     footSaved:  { ru: "Подписки синхронизируются с ботом.\nНовые подходящие объявления придут прямо в чат.", pl: "Subskrypcje synchronizują się z botem.\nNowe pasujące ogłoszenia trafią prosto na czat.", ua: "Підписки синхронізуються з ботом.\nНові відповідні оголошення надійдуть просто в чат.", en: "Alerts sync with the bot.\nNew matching listings will arrive right in the chat." },
+    /* ── приватность и удаление данных ── */
+    privacyT:    { ru: "Конфиденциальность", pl: "Prywatność", ua: "Конфіденційність", en: "Privacy" },
+    privacyLink: { ru: "Политика конфиденциальности", pl: "Polityka prywatności", ua: "Політика конфіденційності", en: "Privacy policy" },
+    delDataT:    { ru: "Удалить мои данные", pl: "Usuń moje dane", ua: "Видалити мої дані", en: "Delete my data" },
+    delDataD:    { ru: "Стереть подписки и учётную запись с сервера и очистить это устройство", pl: "Usuń subskrypcje i konto z serwera oraz wyczyść to urządzenie", ua: "Стерти підписки й обліковий запис із сервера та очистити цей пристрій", en: "Erase your alerts and account from the server and clear this device" },
+    delConfirm:  { ru: "Удалить все ваши данные? Подписки, избранное и настройки будут стёрты. Отменить нельзя.", pl: "Usunąć wszystkie Twoje dane? Subskrypcje, ulubione i ustawienia zostaną skasowane. Nie można cofnąć.", ua: "Видалити всі ваші дані? Підписки, обране й налаштування буде стерто. Скасувати не можна.", en: "Delete all your data? Alerts, favourites and settings will be erased. This can't be undone." },
+    delDone:     { ru: "Данные удалены", pl: "Dane usunięte", ua: "Дані видалено", en: "Data deleted" },
+    delFail:     { ru: "Не удалось удалить. Попробуйте позже.", pl: "Nie udało się usunąć. Spróbuj później.", ua: "Не вдалося видалити. Спробуйте пізніше.", en: "Couldn't delete. Try again later." },
 
     /* ── о сервисе ── */
     aboutSub:   { ru: "Kwadrat PL — поиск аренды жилья в Польше", pl: "Kwadrat PL — wyszukiwarka najmu w Polsce", ua: "Kwadrat PL — пошук оренди житла в Польщі", en: "Kwadrat PL — rental search in Poland" },
@@ -207,6 +223,8 @@
     cellPhrasesD: { ru: "Готовые сообщения на польском — просто скопируйте", pl: "Gotowe wiadomości po polsku — po prostu skopiuj", ua: "Готові повідомлення польською — просто скопіюйте", en: "Ready-made Polish messages — just copy" },
     cellKosztyT: { ru: "Калькулятор заезда", pl: "Kalkulator wprowadzki", ua: "Калькулятор заїзду", en: "Move-in calculator" },
     cellKosztyD: { ru: "Сколько денег нужно на старте аренды", pl: "Ile pieniędzy potrzeba na start najmu", ua: "Скільки грошей треба на старті оренди", en: "How much cash you need upfront" },
+    cellNajemT: { ru: "Договор и документы", pl: "Umowa i dokumenty", ua: "Договір і документи", en: "Contract & documents" },
+    cellNajemD: { ru: "Najem okazjonalny, meldunek и карта побыту простыми словами", pl: "Najem okazjonalny, meldunek i karta pobytu po ludzku", ua: "Najem okazjonalny, meldunek і карта побиту простими словами", en: "Najem okazjonalny, meldunek & residence card, explained" },
     copyBtn:   { ru: "Скопировать", pl: "Skopiuj", ua: "Скопіювати", en: "Copy" },
     copiedT:   { ru: "Скопировано", pl: "Skopiowano", ua: "Скопійовано", en: "Copied" },
     resetBtn:  { ru: "Сбросить", pl: "Wyczyść", ua: "Скинути", en: "Reset" },

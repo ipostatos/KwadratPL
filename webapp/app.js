@@ -166,6 +166,26 @@
     var tg = window.Telegram && window.Telegram.WebApp;
     return tg && tg.initData ? tg.initData : null;
   }
+  // право на удаление: стереть серверную учётку (DELETE /api/subs) + локальные данные
+  function deleteAccount() {
+    var init = tgInitData();
+    var wipeLocal = function () {
+      try {
+        ["kw_saved", "kw_favs", "kw_quiet", "kw_src_fb"].forEach(function (k) {
+          localStorage.removeItem(k);
+        });
+      } catch (e) {}
+      saved.length = 0; favs.length = 0;
+    };
+    if (!init) { wipeLocal(); return Promise.resolve({ local: true }); }
+    return fetch("/api/subs", {
+      method: "DELETE",
+      headers: { "Authorization": "tma " + init }
+    }).then(
+      function (r) { wipeLocal(); return { deleted: r.ok }; },
+      function () { wipeLocal(); return { deleted: false }; }
+    );
+  }
   var _syncTimer = null;
   var _syncDirty = false;
   function doSync() {
@@ -450,9 +470,42 @@
     return ' <span class="pv above">↑ ' + esc(I18N.t("pvAbove", { n: pct })) + "</span>";
   }
 
-  // блок в шторке: сравнение с рынком, анти-скам-плашка, all-in напоминание
+  // ряд trust-чипов: источник, частник/агентство, снижение цены, анти-скам
+  function trustBadges(l) {
+    var chips = [];
+    if (l.source) chips.push('<span class="tb src">' + esc(String(l.source)) + "</span>");
+    if (l.agency === true) chips.push('<span class="tb agency">' + esc(I18N.t("ownerAgency")) + "</span>");
+    else if (l.agency === false) chips.push('<span class="tb private">' + esc(I18N.t("ownerPrivate")) + "</span>");
+    if (l.oldPrice && l.price && +l.oldPrice > +l.price)
+      chips.push('<span class="tb drop">↓ ' + esc(I18N.t("tbDrop")) + "</span>");
+    var v = priceVerdict(l);
+    if (v && v.level === "scam")
+      chips.push('<span class="tb warn">⚠ ' + esc(I18N.t("pvScamBadge")) + "</span>");
+    return chips.length ? '<div class="tb-row">' + chips.join("") + "</div>" : "";
+  }
+
+  // «сколько нужно на въезд»: аренда + кауция(≈1мес) + комиссия(если агентство).
+  // czynsz/media на объявление обычно неизвестны — помечаем как «уточнить».
+  function moveInCost(l) {
+    var p = +l.price || 0;
+    var calc = ' <a href="koszty.html?czynsz=' + encodeURIComponent(p) +
+      '" style="color:var(--accent); white-space:nowrap">' + esc(I18N.t("allInBtn")) + " →</a>";
+    if (!p || l.type === "short")
+      return '<div class="allin">💡 ' + esc(I18N.t("allInNote")) + calc + "</div>";
+    var zl = function (n) { return n.toLocaleString() + " zł"; };
+    var deposit = p, commission = l.agency === true ? p : 0, total = p + deposit + commission;
+    var rows =
+      '<div class="mi-row"><span>' + esc(I18N.t("miFirst")) + "</span><b>" + zl(p) + "</b></div>" +
+      '<div class="mi-row"><span>' + esc(I18N.t("miDeposit")) + "</span><b>" + zl(deposit) + "</b></div>" +
+      (commission ? '<div class="mi-row"><span>' + esc(I18N.t("miCommission")) + "</span><b>" + zl(commission) + "</b></div>" : "") +
+      '<div class="mi-row total"><span>' + esc(I18N.t("miTotal")) + "</span><b>≈ " + zl(total) + "</b></div>";
+    return '<div class="movein"><div class="mi-h">💰 ' + esc(I18N.t("miTitle")) + "</div>" + rows +
+      '<div class="mi-note">' + esc(I18N.t("miNote")) + calc + "</div></div>";
+  }
+
+  // блок в шторке: trust-слой + сравнение с рынком + анти-скам + стоимость входа
   function priceInsight(l) {
-    var out = "", v = priceVerdict(l);
+    var out = trustBadges(l), v = priceVerdict(l);
     if (v && v.level !== "fair") {
       var pct = Math.round(Math.abs(v.pct) * 100);
       var scope = I18N.t(v.scope === "district" ? "pvVsDistrict" : "pvVsCity");
@@ -465,9 +518,7 @@
       out += '<div class="scam-warn"><span class="ic">🚨</span><div><b>' +
         esc(I18N.t("pvScamTitle")) + "</b>" + esc(I18N.t("pvScamText")) + "</div></div>";
     }
-    out += '<div class="allin">💡 ' + esc(I18N.t("allInNote")) +
-      ' <a href="koszty.html?czynsz=' + encodeURIComponent(l.price) +
-      '" style="color:var(--accent); white-space:nowrap">' + esc(I18N.t("allInBtn")) + " →</a></div>";
+    out += moveInCost(l);
     return out;
   }
 
@@ -484,6 +535,8 @@
     toast: toast, timeAgo: timeAgo, esc: esc,
     safePhotoUrl: safePhotoUrl, openListingUrl: openListingUrl,
     priceVerdict: priceVerdict, priceBadge: priceBadge, priceInsight: priceInsight,
+    trustBadges: trustBadges, moveInCost: moveInCost,
+    deleteAccount: deleteAccount,
     aiAvailable: aiAvailable, analyzeListing: analyzeListing, mountAiButton: mountAiButton,
     priceUnit: function (type) { return I18N.t(type === "short" ? "perDay" : "perMonth"); },
     cityName: function (key) { return I18N.cityName(key); },

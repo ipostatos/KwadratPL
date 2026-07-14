@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Договор и документы — Kwadrat PL</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="guide.js"></script>
+</head>
+<body>
+  <h1><span class="emi" data-icon="shield-check"></span><span id="ttl"></span></h1>
+  <p class="sub"></p>
+  <div id="art"></div>
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-2)" data-i18n="backHome"></a>
+
+<script>
+"use strict";
+
+// Список вопросов владельцу — по-польски, чтобы отправить как есть (для всех языков).
+var QUESTIONS = "Dzień dobry,\njestem zainteresowany/a najmem tego mieszkania. Zanim umówimy się na oglądanie, chciałbym/chciałabym dopytać:\n\n1. Jaki rodzaj umowy Państwo proponują — zwykły najem czy najem okazjonalny?\n2. Jaka jest wysokość kaucji oraz czynszu administracyjnego (do wspólnoty/spółdzielni)?\n3. Czy media (prąd, gaz, woda, internet) są wliczone, czy płatne osobno?\n4. Czy przy przekazaniu mieszkania będzie protokół zdawczo-odbiorczy?\n5. Czy mogę się zameldować pod tym adresem — potrzebne do karty pobytu i spraw urzędowych?\n\nDziękuję i pozdrawiam.";
+
+var GUIDE = {
+ru: {
+  sub: "najem okazjonalny, meldunek, karta pobytu — что это, что попросят при подписании и чего не стоит бояться. Особенно если снимаете как иностранец.",
+  sections: [
+  { h: "Три вида договора найma", p: ["Тип договора влияет на документы при подписании и на размер кауции — спросите заранее."], list: [
+    "<b>Zwykły najem</b> (обычный) — максимум защиты арендатора, выселить сложно. Чаще всего это ваш вариант.",
+    "<b>Najem okazjonalny</b> — для владельцев-физлиц; выселить проще, поэтому требуется нотариальное приложение. Кауция — до 6 месячных czynsz.",
+    "<b>Najem instytucjonalny</b> — когда сдаёт фирма или арендный оператор." ] },
+  { h: "Najem okazjonalny: что это и почему просят", p: ["Это обычная аренда <b>плюс</b> нотариальное приложение, которое упрощает выселение неплательщика. Для честного арендатора это не добавляет рисков, и согласиться — нормально."], list: [
+    "Нотариальное заявление о добровольном подчинении исполнению (<i>oświadczenie o poddaniu się egzekucji</i>) — подписывается у нотариуса.",
+    "Указание другого адреса, где вы сможете жить в случае выселения (альтернативный адрес).",
+    "Согласие собственника того адреса на ваше проживание там." ], num: true,
+    warn: "Нотариус платный (обычно около 1/10 минимальной зарплаты + VAT) — уточните, кто платит. Альтернативный адрес — самая частая сложность у иностранцев: подойдёт адрес друга или родственника с их письменным согласием." },
+  { h: "Meldunek: регистрация по адресу", p: ["<b>Meldunek</b> (zameldowanie) — регистрация проживания. Бесплатно, делается в ужонде (urząd gminy/miasta), можно на pobyt czasowy."], list: [
+    "Нужен документ, подтверждающий право проживать (<b>договор найма</b>), либо подтверждение владельца на бланке.",
+    "Владелец не «прописывает вас к себе» в старом смысле и не теряет прав на квартиру — meldunek это только учёт проживания.",
+    "Meldunek часто нужен для karty pobytu, банка, школы, врача, PESEL." ],
+    warn: "При наличии договора найма зарегистрироваться — ваше право. Страх «владелец против прописки» чаще всего основан на мифе." },
+  { h: "Документы для karty pobytu и легализации", list: [
+    "Для вида на жительство (<b>karta pobytu</b>) обычно просят подтверждение места проживания: договор найма или заявление о предоставлении жилья.",
+    "Держите подписанный договор и, по возможности, meldunek — вместе они закрывают сразу несколько процедур.",
+    "Договор на польском — норма. Попросите копию заранее и переведите ключевые пункты (поможет кнопка «AI-разбор» в объявлении)." ] },
+  { h: "Что должно быть в договоре", list: [
+    "Стороны, адрес квартиры, срок (określony/nieokreślony) и срок уведомления о расторжении (<i>okres wypowiedzenia</i>).",
+    "Czynsz najmu (аренда) + czynsz administracyjny (в кооператив/сообщество) + как оплачиваются media.",
+    "Размер кауции и условия её возврата; <b>protokół zdawczo-odbiorczy</b> как приложение.",
+    "Кто отвечает за мелкий ремонт; правила по животным; число проживающих.",
+    "Штрафы/пени и условия досрочного расторжения." ] },
+  { h: "Красные флаги и чего НЕ бояться", list: [
+    "🚩 Требуют предоплату или кауцию <b>до просмотра и подписания</b> — стоп, это классическая схема обмана.",
+    "🚩 Нет письменного договора, «всё на доверии» — нет ни защиты кауции, ни права на meldunek.",
+    "🚩 Владелец против любого meldunek и протокола — повод насторожиться.",
+    "✅ najem okazjonalny и нотариус — это нормальная законная практика, а не развод.",
+    "✅ Просьба показать документы или доход — обычная проверка, а не оскорбление." ],
+    tpl: { label: "Вопросы владельцу перед просмотром (по-польски — отправьте как есть)", text: QUESTIONS } }
+]},
+pl: {
+  sub: "najem okazjonalny, meldunek, karta pobytu — co to jest, o co poproszą przy podpisaniu i czego nie trzeba się bać. Zwłaszcza gdy wynajmujesz jako obcokrajowiec.",
+  sections: [
+  { h: "Trzy rodzaje umowy najmu", p: ["Rodzaj umowy wpływa na dokumenty przy podpisaniu i na wysokość kaucji — dopytaj wcześniej."], list: [
+    "<b>Zwykły najem</b> — maksymalna ochrona najemcy, trudno wypowiedzieć. Najczęściej to Twój wariant.",
+    "<b>Najem okazjonalny</b> — dla właścicieli będących osobami fizycznymi; łatwiej eksmitować, dlatego wymaga załącznika notarialnego. Kaucja do 6-krotności czynszu.",
+    "<b>Najem instytucjonalny</b> — gdy wynajmuje firma lub operator najmu." ] },
+  { h: "Najem okazjonalny: co to i czemu o niego proszą", p: ["To zwykły najem <b>plus</b> załącznik notarialny, który ułatwia eksmisję osoby niepłacącej. Uczciwemu najemcy nie dodaje ryzyka — zgoda jest OK."], list: [
+    "Notarialne oświadczenie o poddaniu się egzekucji — podpisywane u notariusza.",
+    "Wskazanie innego adresu, pod którym zamieszkasz w razie eksmisji (adres alternatywny).",
+    "Zgoda właściciela tego adresu na Twoje zamieszkanie." ], num: true,
+    warn: "Notariusz jest płatny (zwykle ok. 1/10 minimalnego wynagrodzenia + VAT) — ustal, kto płaci. Adres alternatywny to najczęstszy problem obcokrajowców: wystarczy adres znajomego lub rodziny z ich pisemną zgodą." },
+  { h: "Meldunek: rejestracja pod adresem", p: ["<b>Meldunek</b> (zameldowanie) to rejestracja pobytu. Bezpłatny, w urzędzie gminy/miasta, można na pobyt czasowy."], list: [
+    "Potrzebny dokument potwierdzający tytuł do lokalu (<b>umowa najmu</b>) albo potwierdzenie właściciela na formularzu.",
+    "Właściciel nie „melduje Cię u siebie” w dawnym sensie i nie traci praw do mieszkania — to tylko ewidencja pobytu.",
+    "Meldunek bywa potrzebny do karty pobytu, banku, szkoły, lekarza, PESEL." ],
+    warn: "Mając umowę najmu, masz prawo się zameldować. Strach „właściciel jest przeciw meldunkowi” najczęściej opiera się na micie." },
+  { h: "Dokumenty do karty pobytu i legalizacji", list: [
+    "Do <b>karty pobytu</b> zwykle wymagane jest potwierdzenie miejsca zamieszkania: umowa najmu lub oświadczenie o zapewnieniu lokum.",
+    "Trzymaj podpisaną umowę i, jeśli się da, meldunek — razem załatwiają kilka spraw naraz.",
+    "Umowa po polsku to norma. Poproś o kopię wcześniej i przetłumacz kluczowe punkty (pomoże „Analiza AI” w ogłoszeniu)." ] },
+  { h: "Co powinno być w umowie", list: [
+    "Strony, adres mieszkania, czas (określony/nieokreślony) i okres wypowiedzenia.",
+    "Czynsz najmu + czynsz administracyjny (do wspólnoty/spółdzielni) + zasady opłat za media.",
+    "Wysokość kaucji i warunki zwrotu; <b>protokół zdawczo-odbiorczy</b> jako załącznik.",
+    "Kto odpowiada za drobne naprawy; zasady co do zwierząt; liczba mieszkańców.",
+    "Kary umowne i warunki wcześniejszego wypowiedzenia." ] },
+  { h: "Czerwone flagi i czego NIE trzeba się bać", list: [
+    "🚩 Żądają zaliczki lub kaucji <b>przed oglądaniem i podpisaniem</b> — stop, to klasyczny scam.",
+    "🚩 Brak pisemnej umowy, „wszystko na słowo” — brak ochrony kaucji i prawa do meldunku.",
+    "🚩 Właściciel przeciw jakiemukolwiek meldunkowi i protokołowi — warto się zastanowić.",
+    "✅ najem okazjonalny i notariusz — to zgodna z prawem praktyka, nie oszustwo.",
+    "✅ Prośba o dokumenty lub dochód — normalna weryfikacja, nie obraza." ],
+    tpl: { label: "Pytania do właściciela przed oglądaniem — wyślij jak jest", text: QUESTIONS } }
+]},
+ua: {
+  sub: "najem okazjonalny, meldunek, karta pobytu — що це, що попросять при підписанні й чого не варто боятися. Особливо якщо орендуєте як іноземець.",
+  sections: [
+  { h: "Три види договору найму", p: ["Тип договору впливає на документи при підписанні й на розмір кауції — спитайте заздалегідь."], list: [
+    "<b>Zwykły najem</b> (звичайний) — максимум захисту орендаря, виселити складно. Найчастіше це ваш варіант.",
+    "<b>Najem okazjonalny</b> — для власників-фізосіб; виселити простіше, тому потрібен нотаріальний додаток. Кауція — до 6 місячних czynsz.",
+    "<b>Najem instytucjonalny</b> — коли здає фірма або орендний оператор." ] },
+  { h: "Najem okazjonalny: що це й чому просять", p: ["Це звичайна оренда <b>плюс</b> нотаріальний додаток, який спрощує виселення неплатника. Чесному орендарю ризиків не додає — погодитися нормально."], list: [
+    "Нотаріальна заява про добровільне підпорядкування виконанню (<i>oświadczenie o poddaniu się egzekucji</i>) — підписується у нотаріуса.",
+    "Вказання іншої адреси, де ви зможете жити в разі виселення (альтернативна адреса).",
+    "Згода власника тієї адреси на ваше проживання там." ], num: true,
+    warn: "Нотаріус платний (зазвичай близько 1/10 мінімальної зарплати + VAT) — уточніть, хто платить. Альтернативна адреса — найчастіша складність в іноземців: підійде адреса друга чи родича з їхньою письмовою згодою." },
+  { h: "Meldunek: реєстрація за адресою", p: ["<b>Meldunek</b> (zameldowanie) — реєстрація проживання. Безкоштовно, в ужонді (urząd gminy/miasta), можна на pobyt czasowy."], list: [
+    "Потрібен документ, що підтверджує право проживати (<b>договір найму</b>), або підтвердження власника на бланку.",
+    "Власник не «прописує вас до себе» у старому сенсі й не втрачає прав на квартиру — meldunek це лише облік проживання.",
+    "Meldunek часто потрібен для karty pobytu, банку, школи, лікаря, PESEL." ],
+    warn: "За наявності договору найму зареєструватися — ваше право. Страх «власник проти прописки» найчастіше ґрунтується на міфі." },
+  { h: "Документи для karty pobytu й легалізації", list: [
+    "Для <b>karty pobytu</b> зазвичай просять підтвердження місця проживання: договір найму або заяву про надання житла.",
+    "Тримайте підписаний договір і, за можливості, meldunek — разом вони закривають кілька процедур одразу.",
+    "Договір польською — норма. Попросіть копію заздалегідь і перекладіть ключові пункти (допоможе «AI-розбір» в оголошенні)." ] },
+  { h: "Що має бути в договорі", list: [
+    "Сторони, адреса квартири, строк (określony/nieokreślony) і строк повідомлення про розірвання (<i>okres wypowiedzenia</i>).",
+    "Czynsz najmu (оренда) + czynsz administracyjny (у кооператив/спільноту) + як оплачуються media.",
+    "Розмір кауції й умови її повернення; <b>protokół zdawczo-odbiorczy</b> як додаток.",
+    "Хто відповідає за дрібний ремонт; правила щодо тварин; кількість мешканців.",
+    "Штрафи/пені й умови дострокового розірвання." ] },
+  { h: "Червоні прапорці й чого НЕ боятися", list: [
+    "🚩 Вимагають передоплату чи кауцію <b>до перегляду й підписання</b> — стоп, це класична схема обману.",
+    "🚩 Немає письмового договору, «все на довірі» — немає ні захисту кауції, ні права на meldunek.",
+    "🚩 Власник проти будь-якого meldunek і протоколу — привід насторожитися.",
+    "✅ najem okazjonalny і нотаріус — це нормальна законна практика, а не розвод.",
+    "✅ Прохання показати документи чи дохід — звичайна перевірка, а не образа." ],
+    tpl: { label: "Питання власнику перед переглядом (польською — надішліть як є)", text: QUESTIONS } }
+]},
+en: {
+  sub: "najem okazjonalny, meldunek, residence card — what they are, what you'll be asked to sign and what not to fear. Especially if you rent as a foreigner.",
+  sections: [
+  { h: "Three types of rental contract", p: ["The contract type affects the paperwork at signing and the deposit size — ask upfront."], list: [
+    "<b>Zwykły najem</b> (standard) — maximum tenant protection, hard to terminate. Usually your case.",
+    "<b>Najem okazjonalny</b> (occasional) — for private (individual) landlords; easier to evict, so it needs a notarial annex. Deposit up to 6 months' rent.",
+    "<b>Najem instytucjonalny</b> — when a company or rental operator lets the flat." ] },
+  { h: "Najem okazjonalny: what it is and why they ask", p: ["It's a normal lease <b>plus</b> a notarial annex that makes evicting a non-payer easier. For an honest tenant it adds no risk — agreeing is fine."], list: [
+    "A notarial declaration of voluntary submission to enforcement (<i>oświadczenie o poddaniu się egzekucji</i>), signed at a notary.",
+    "Naming another address where you could live if evicted (an alternative address).",
+    "The consent of that address's owner to host you there." ], num: true,
+    warn: "The notary is paid (usually about 1/10 of the minimum wage + VAT) — agree who pays. The alternative address is the most common snag for foreigners: a friend's or relative's address with their written consent works." },
+  { h: "Meldunek: registering at an address", p: ["<b>Meldunek</b> (zameldowanie) is residence registration. Free, done at the city/gmina office, available for temporary stay."], list: [
+    "You need a document proving your right to the flat (the <b>lease</b>), or the owner's confirmation on the form.",
+    "The owner doesn't «register you into their home» in the old sense and loses no rights to the flat — it's just a record of residence.",
+    "Meldunek is often needed for the residence card, a bank, school, doctor, PESEL." ],
+    warn: "With a lease, registering is your right. The «landlord is against meldunek» fear is usually a myth." },
+  { h: "Documents for the residence card & legalisation", list: [
+    "For a <b>residence card (karta pobytu)</b> you're usually asked to prove your place of stay: the lease or a statement providing accommodation.",
+    "Keep the signed lease and, if possible, meldunek — together they cover several procedures at once.",
+    "A Polish-language contract is normal. Ask for a copy early and translate the key clauses (the listing's «AI breakdown» button helps)." ] },
+  { h: "What the contract should contain", list: [
+    "Parties, flat address, term (fixed/open-ended) and the notice period (<i>okres wypowiedzenia</i>).",
+    "Rent (czynsz najmu) + building fee (czynsz administracyjny) + how utilities are paid.",
+    "Deposit amount and refund terms; a <b>handover protocol</b> (protokół zdawczo-odbiorczy) as an annex.",
+    "Who covers minor repairs; pet rules; number of occupants.",
+    "Penalties and early-termination terms." ] },
+  { h: "Red flags and what NOT to fear", list: [
+    "🚩 They demand a prepayment or deposit <b>before viewing and signing</b> — stop, a classic scam.",
+    "🚩 No written contract, «all on trust» — no deposit protection and no right to meldunek.",
+    "🚩 The owner is against any meldunek or protocol — a reason to be cautious.",
+    "✅ najem okazjonalny and a notary — a lawful practice, not a scam.",
+    "✅ A request for documents or income — a normal check, not an insult." ],
+    tpl: { label: "Questions for the owner before a viewing (in Polish — send as is)", text: QUESTIONS } }
+]}
+};
+
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.getElementById("ttl").textContent = I18N.t("cellNajemT");
+document.title = I18N.t("cellNajemT") + " — Kwadrat PL";
+Guide.renderArticle("#art", GUIDE);
+</script>
+</body>
+</html>

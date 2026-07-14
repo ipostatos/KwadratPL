@@ -262,6 +262,26 @@ select:focus, input:focus{ border-color:var(--accent) }
 /* all-in подсказка */
 .allin{ margin-top:12px; font-size:var(--fs-sm); color:var(--hint); line-height:1.5 }
 
+/* ── единый trust-слой ── */
+.tb-row{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 2px }
+.tb{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:var(--r-pill);
+  background:var(--bg); border:1px solid var(--border); color:var(--hint) }
+.tb.agency{ color:#a8730b; border-color:color-mix(in srgb,#c5850c 40%,var(--border)) }
+.tb.private{ color:#1a8a56; border-color:color-mix(in srgb,#1f9d63 40%,var(--border)) }
+.tb.drop{ color:#1a8a56; background:color-mix(in srgb,#1f9d63 12%,transparent); border-color:transparent }
+.tb.warn{ color:#c33; background:color-mix(in srgb,#d1495b 14%,transparent); border-color:transparent }
+
+/* ── стоимость входа ── */
+.movein{ margin-top:12px; background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:12px 14px }
+.movein .mi-h{ font-weight:800; font-size:var(--fs-sm); margin-bottom:8px }
+.mi-row{ display:flex; justify-content:space-between; gap:12px; font-size:var(--fs-sm);
+  padding:4px 0; color:var(--hint) }
+.mi-row b{ color:var(--text); font-variant-numeric:tabular-nums }
+.mi-row.total{ border-top:1px solid var(--border); margin-top:4px; padding-top:8px; color:var(--text) }
+.mi-row.total b{ font-size:var(--fs-body); font-weight:800 }
+.mi-note{ font-size:var(--fs-xs); color:var(--hint); margin-top:8px; line-height:1.5 }
+
 /* ── AI-разбор объявления ── */
 .ai-btn{ margin-top:12px }
 .ai-box{ margin-top:12px; background:var(--card); border:1px solid var(--border);
