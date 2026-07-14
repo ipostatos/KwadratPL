@@ -54,6 +54,14 @@ WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://kwadratpl-46-224-220-94.sslip
 AI_ENABLED = bool(os.environ.get("ANTHROPIC_API_KEY"))
 ANALYZE_MODEL = os.environ.get("ANALYZE_MODEL", "claude-haiku-4-5")
 AI_DAILY_LIMIT = int(os.environ.get("AI_DAILY_LIMIT", "40"))  # на пользователя, чтобы не жечь бюджет
+# цена модели за 1M токенов (дефолт — Claude Haiku 4.5: $1 вход / $5 выход)
+ANALYZE_PRICE_IN = float(os.environ.get("ANALYZE_PRICE_IN", "1.0"))
+ANALYZE_PRICE_OUT = float(os.environ.get("ANALYZE_PRICE_OUT", "5.0"))
+# сколько пополнено кредитов ($). Точного остатка у Anthropic нет в API — считаем
+# «остаток ≈ бюджет − потрачено». 0 = не задан, тогда остаток не показываем.
+AI_BUDGET_USD = float(os.environ.get("AI_BUDGET_USD", "0"))
+# кому доступна команда /stats (Telegram id через запятую)
+ADMIN_IDS = {int(x) for x in os.environ.get("ADMIN_IDS", "").replace(" ", "").split(",") if x.isdigit()}
 LISTINGS_PATH = Path(os.environ.get(
     "LISTINGS_PATH", str(BASE.parent / "webapp" / "data" / "listings.json")))
 DB_PATH = BASE / "state.db"
@@ -110,6 +118,13 @@ def init_db():
             listing_id TEXT NOT NULL,
             ts INTEGER,
             PRIMARY KEY (user_id, listing_id)
+        )""")
+        # учёт расхода AI по дням: сколько разборов и токенов потрачено
+        c.execute("""CREATE TABLE IF NOT EXISTS ai_usage(
+            day TEXT PRIMARY KEY,
+            calls INTEGER DEFAULT 0,
+            in_tok INTEGER DEFAULT 0,
+            out_tok INTEGER DEFAULT 0
         )""")
 
 
@@ -329,6 +344,31 @@ async def on_on(m: Message):
     await m.answer(T["unmuted"][lang])
 
 
+@dp.message(Command("stats"))
+async def on_stats(m: Message):
+    uid = m.from_user.id if m.from_user else 0
+    if uid not in ADMIN_IDS:
+        # не палим статистику, но помогаем узнать свой id для настройки
+        await m.answer(f"Ваш Telegram id: {uid}\nДобавьте его в ADMIN_IDS, чтобы включить /stats.")
+        return
+    s = _ai_stats()
+    tt = s["today"]; tot = s["total"]
+    lines = [
+        f"🤖 Модель: {s['model']}",
+        f"💵 Цена: ${s['pricing_usd_per_mtok']['input']}/1M вход · "
+        f"${s['pricing_usd_per_mtok']['output']}/1M выход",
+        "",
+        f"Сегодня: {tt['calls']} разб. · {tt['input_tokens'] + tt['output_tokens']} ток · ${tt['cost_usd']}",
+        f"Всего: {tot['calls']} разб. · {tot['input_tokens']} in / {tot['output_tokens']} out · ${tot['cost_usd']}",
+        f"Лимит: {s['daily_limit_per_user']} разборов/юзер в сутки",
+    ]
+    if "budget_usd" in s:
+        lines += ["", f"💰 Бюджет ${s['budget_usd']} · потрачено ${s['spent_usd']} · "
+                      f"осталось ≈ ${s['remaining_usd']}"]
+    lines += ["", "Точный баланс: console.anthropic.com → Billing"]
+    await m.answer("\n".join(lines))
+
+
 async def notify_user(user_id: int, lang: str, hits: list[dict]):
     for l in hits[:MAX_NOTIFY_PER_USER]:
         url = safe_listing_url(l.get("url"))
@@ -437,7 +477,15 @@ def health():
     except Exception:
         meta = {"count": 0, "generated_at": None}
     # ai: показывать ли кнопку «AI-разбор» в Mini App
-    return {"ok": True, "ai": AI_ENABLED, **meta}
+    return {"ok": True, "ai": AI_ENABLED, "model": ANALYZE_MODEL if AI_ENABLED else None, **meta}
+
+
+@app.get("/api/ai-stats")
+def ai_stats(x_ingest_token: str = Header("")):
+    """Счётчик расхода AI (админ, по ingest-токену)."""
+    if not hmac.compare_digest(x_ingest_token, INGEST_TOKEN):
+        raise HTTPException(401, "bad token")
+    return _ai_stats()
 
 
 # ── AI-разбор объявления: перевод + выжимка + скам-скоринг одним вызовом ──────
@@ -533,11 +581,52 @@ async def analyze(request: Request, authorization: str = Header("")):
         raise HTTPException(502, "AI analysis failed")
 
     _ai_usage[uid] = (day, cnt + 1)
+    # учёт токенов (кэш-хиты сюда не попадают — они не идут в API)
+    u = getattr(resp, "usage", None)
+    it, ot = int(getattr(u, "input_tokens", 0) or 0), int(getattr(u, "output_tokens", 0) or 0)
+    try:
+        with db() as c:
+            c.execute(
+                "INSERT INTO ai_usage(day, calls, in_tok, out_tok) VALUES(?,1,?,?) "
+                "ON CONFLICT(day) DO UPDATE SET calls=calls+1, in_tok=in_tok+?, out_tok=out_tok+?",
+                (today, it, ot, it, ot))
+    except Exception as e:
+        log.warning("ai_usage log failed: %s", e)
     if lid:
         _ai_cache[ck] = (data, time.time())
         if len(_ai_cache) > 2000:            # грубая защита от роста памяти
             _ai_cache.clear()
     return {"cached": False, **data}
+
+
+def _ai_stats() -> dict:
+    """Расход AI: токены и оценка $ по цене модели. Остаток — только если задан
+    AI_BUDGET_USD (точного баланса Anthropic в API нет, он в Console → Billing)."""
+    today = datetime.now(TZ).strftime("%Y-%m-%d")
+    with db() as c:
+        t = c.execute("SELECT COALESCE(SUM(calls),0) c, COALESCE(SUM(in_tok),0) i, "
+                      "COALESCE(SUM(out_tok),0) o FROM ai_usage").fetchone()
+        d = c.execute("SELECT calls, in_tok, out_tok FROM ai_usage WHERE day=?", (today,)).fetchone()
+
+    def cost(i, o):
+        return round(i / 1e6 * ANALYZE_PRICE_IN + o / 1e6 * ANALYZE_PRICE_OUT, 4)
+    d_calls, d_in, d_out = (d["calls"], d["in_tok"], d["out_tok"]) if d else (0, 0, 0)
+    total_cost = cost(t["i"], t["o"])
+    out = {
+        "model": ANALYZE_MODEL,
+        "enabled": AI_ENABLED,
+        "pricing_usd_per_mtok": {"input": ANALYZE_PRICE_IN, "output": ANALYZE_PRICE_OUT},
+        "daily_limit_per_user": AI_DAILY_LIMIT,
+        "today": {"calls": d_calls, "input_tokens": d_in, "output_tokens": d_out,
+                  "cost_usd": cost(d_in, d_out)},
+        "total": {"calls": t["c"], "input_tokens": t["i"], "output_tokens": t["o"],
+                  "cost_usd": total_cost},
+    }
+    if AI_BUDGET_USD > 0:
+        out["budget_usd"] = AI_BUDGET_USD
+        out["spent_usd"] = total_cost
+        out["remaining_usd"] = round(AI_BUDGET_USD - total_cost, 4)
+    return out
 
 
 _ingest_lock = asyncio.Lock()          # два параллельных инжеста = двойные пуши
