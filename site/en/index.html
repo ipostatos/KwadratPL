@@ -32,7 +32,7 @@
 <meta name="twitter:title" content="Rent a home in Poland without agents — Kwadrat PL bot">
 <meta name="twitter:description" content="Find flats and rooms for rent in Poland: OLX, Otodom and Morizon in one Telegram bot. Instant alerts, fair-price check, AI breakdown. Free to use.">
 <meta name="twitter:image" content="https://kwadratpl.pl/og.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://kwadratpl.pl/#website","url":"https://kwadratpl.pl/","name":"Kwadrat PL","inLanguage":"en","publisher":{"@id":"https://kwadratpl.pl/#org"}},{"@type":"Organization","@id":"https://kwadratpl.pl/#org","name":"Kwadrat PL","url":"https://kwadratpl.pl/","logo":"https://kwadratpl.pl/icon-512.png","sameAs":["https://t.me/KwadratPLBot"]},{"@type":"SoftwareApplication","name":"Kwadrat PL","applicationCategory":"LifestyleApplication","operatingSystem":"Telegram","url":"https://kwadratpl.pl/en/","inLanguage":["ru","uk","pl","en"],"description":"Find flats and rooms for rent in Poland: OLX, Otodom and Morizon in one Telegram bot. Instant alerts, fair-price check, AI breakdown. Free to use.","screenshot":["https://kwadratpl.pl/shots/shot-home.png","https://kwadratpl.pl/shots/shot-cards.png","https://kwadratpl.pl/shots/shot-sheet.png","https://kwadratpl.pl/shots/shot-widget.png"],"offers":{"@type":"Offer","price":"0","priceCurrency":"PLN"}},{"@type":"FAQPage","@id":"https://kwadratpl.pl/en/#faq","inLanguage":"en","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes, fully. Search, alerts, guides and the calculator — no fees and no sign-up."}},{"@type":"Question","name":"Where do listings come from?","acceptedAnswer":{"@type":"Answer","text":"We gather public listings from OLX, Otodom and Morizon and refresh them every few minutes. The same offer across sites is merged."}},{"@type":"Question","name":"What is the AI breakdown?","acceptedAnswer":{"@type":"Answer","text":"A button on each listing: it translates the text into your language, writes a short summary and scores the scam risk from the description."}},{"@type":"Question","name":"Which languages are supported?","acceptedAnswer":{"@type":"Answer","text":"English, Polish, Ukrainian and Russian. You switch the language right inside the app."}},{"@type":"Question","name":"How do I know the price is fair?","acceptedAnswer":{"@type":"Answer","text":"The bot computes the median price per m² by district and home type from its own data and shows how far a listing sits below or above the market."}},{"@type":"Question","name":"Do I need to install an app?","acceptedAnswer":{"@type":"Answer","text":"No. Kwadrat PL runs inside Telegram as a Mini App — nothing to install."}}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://kwadratpl.pl/#website","url":"https://kwadratpl.pl/","name":"Kwadrat PL","inLanguage":"en","publisher":{"@id":"https://kwadratpl.pl/#org"}},{"@type":"Organization","@id":"https://kwadratpl.pl/#org","name":"Kwadrat PL","url":"https://kwadratpl.pl/","logo":"https://kwadratpl.pl/icon-512.png","sameAs":["https://t.me/KwadratPLBot"]},{"@type":"SoftwareApplication","name":"Kwadrat PL","applicationCategory":"LifestyleApplication","operatingSystem":"Telegram","url":"https://kwadratpl.pl/en/","inLanguage":["ru","uk","pl","en"],"description":"Find flats and rooms for rent in Poland: OLX, Otodom and Morizon in one Telegram bot. Instant alerts, fair-price check, AI breakdown. Free to use.","screenshot":["https://kwadratpl.pl/shots/shot-home.png","https://kwadratpl.pl/shots/shot-cards.png","https://kwadratpl.pl/shots/shot-sheet.png","https://kwadratpl.pl/shots/shot-widget.png"],"offers":{"@type":"Offer","price":"0","priceCurrency":"PLN"}},{"@type":"FAQPage","@id":"https://kwadratpl.pl/en/#faq","inLanguage":"en","mainEntity":[{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes, fully. Search, alerts, guides and the calculator — no fees and no sign-up."}},{"@type":"Question","name":"Where do listings come from?","acceptedAnswer":{"@type":"Answer","text":"We gather public listings from OLX, Otodom and Morizon and refresh them every few minutes. The same offer across sites is merged."}},{"@type":"Question","name":"What is the AI breakdown?","acceptedAnswer":{"@type":"Answer","text":"A button on each listing: it translates the text into your language, writes a short summary and scores the scam risk from the description."}},{"@type":"Question","name":"Which languages are supported?","acceptedAnswer":{"@type":"Answer","text":"English, Polish, Ukrainian and Russian. You switch the language right inside the app."}},{"@type":"Question","name":"How do I know the price is fair?","acceptedAnswer":{"@type":"Answer","text":"The bot computes the median price per m² by district and home type from its own data and shows how far a listing sits below or above the market."}},{"@type":"Question","name":"Do I need to install an app?","acceptedAnswer":{"@type":"Answer","text":"No. Kwadrat PL runs inside Telegram as a Mini App — nothing to install."}},{"@type":"Question","name":"Is there an iPhone widget?","acceptedAnswer":{"@type":"Answer","text":"Yes. Via the free Scriptable app you can add a home-screen widget showing the number of matching flats and the latest prices — no App Store payments. Step-by-step guide above."}}]}]}</script>
 <style>
 :root{
   --bg:#ffffff; --bg2:#f5f8fb; --card:#ffffff; --border:#e4eaf0;
@@ -140,6 +140,19 @@ section{ padding:52px 0 }
 .wsteps li{ padding-left:3px }
 .widget-img{ flex:0 1 440px; margin:0; max-width:100% }
 .widget-img img{ width:100%; height:auto; display:block; border-radius:20px; box-shadow:var(--shadow) }
+.widget-guide{ max-width:720px; margin:28px auto 0 }
+.wg-h{ font-size:18px; font-weight:750; margin:22px 0 10px }
+.wuse{ margin:0; padding-left:20px; display:grid; gap:8px; color:var(--muted); font-size:15px }
+.wcode{ margin-top:6px; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden }
+.wcode summary{ cursor:pointer; padding:14px 18px; font-weight:700; color:var(--accent); list-style:none }
+.wcode summary::-webkit-details-marker{ display:none }
+.wcode-inner{ position:relative; border-top:1px solid var(--border) }
+.wcopy{ position:absolute; top:10px; right:10px; z-index:1; font-size:12px; font-weight:700;
+  padding:6px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg2);
+  color:var(--text); cursor:pointer }
+.wcode pre{ margin:0; padding:16px; overflow-x:auto; background:transparent }
+.wcode code{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px;
+  line-height:1.5; color:var(--text); white-space:pre }
 
 /* faq */
 .faq-list{ max-width:720px; margin:0 auto; display:grid; gap:10px }
@@ -283,9 +296,135 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
         <div class="widget-txt">
           <h2 class="sec-h">iPhone home-screen widget</h2>
           <p class="widget-lead">How many matching flats and the latest prices — right on your screen, without opening Telegram. Via the free Scriptable app, no App Store payments and no developer account.</p>
-          <ol class="wsteps"><li>Install the free Scriptable app from the App Store</li><li>Message the bot the /widget command and get your personal code</li><li>Add the widget to your screen — new flats always in view</li></ol>
         </div>
         <figure class="widget-img"><img src="/shots/shot-widget.png" width="520" height="420" loading="lazy" alt="Kwadrat PL widget on an iPhone home screen: number of matching flats and rental prices"></figure>
+      </div>
+      <div class="widget-guide">
+        <h3 class="wg-h">How to install</h3>
+        <ol class="wsteps"><li>Install the free Scriptable app from the App Store.</li><li>Message our bot the /widget command — it sends your personal token.</li><li>In Scriptable tap “+”, clear the contents and paste the widget code (button below).</li><li>Put your token on the TOKEN line, replacing PASTE_TOKEN_HERE.</li><li>Tap ▶ at the bottom — a widget preview appears.</li><li>On the home screen: long-press → “+” → Scriptable → pick a size → add. Then long-press the widget → “Edit Widget” → in the Script field choose this script.</li></ol>
+        <details class="wcode">
+          <summary>Show widget code</summary>
+          <div class="wcode-inner">
+            <button type="button" class="wcopy" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.textContent='✓'">Copy code</button>
+            <pre><code>// ===========================================================================
+// Kwadrat PL — виджет для Scriptable (iOS). Настоящий виджет на домашнем экране
+// без App Store и Apple Developer. Данные берёт с нашего сервера по личному
+// виджет-токену (команда /widget в @KwadratPLBot).
+//
+// Установка:
+//   1. Поставьте бесплатное приложение Scriptable из App Store.
+//   2. Новый скрипт → вставьте весь этот файл.
+//   3. Впишите свой токен в TOKEN ниже (получить: /widget в боте).
+//   4. Домашний экран → виджет Scriptable (small или medium) → этот скрипт.
+// Поддерживает small, medium и экран блокировки. Тап открывает Mini App.
+// Примечание: код намеренно без логического &quot;или&quot; — некоторые iOS-вставки в
+// Scriptable теряют этот символ и ломают строку с config.widgetFamily.
+// ===========================================================================
+
+const TOKEN = &quot;PASTE_TOKEN_HERE&quot;;
+const STATE_URL = &quot;https://kwadratpl-46-224-220-94.sslip.io/api/widget/state&quot;;
+
+// ── брендовые цвета ──
+const BG = new Color(&quot;#17212b&quot;);
+const ACCENT = new Color(&quot;#3aaee0&quot;);
+const WHITE = new Color(&quot;#e7edf3&quot;);
+const MUTED = new Color(&quot;#93a4b4&quot;);
+
+function zl(n) {
+  if (!n &amp;&amp; n !== 0) return &quot;&quot;;
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, &quot; &quot;) + &quot; zł&quot;;
+}
+
+async function fetchState() {
+  const req = new Request(STATE_URL);
+  req.headers = { Authorization: &quot;Bearer &quot; + TOKEN };
+  req.timeoutInterval = 12;
+  return await req.loadJSON();
+}
+
+function header(w, s) {
+  const row = w.addStack();
+  row.centerAlignContent();
+  const t = row.addText(&quot;KWADRAT&quot;);
+  t.textColor = ACCENT;
+  t.font = Font.heavySystemFont(13);
+  row.addSpacer();
+  const c = row.addText(String(s.matchingListings));
+  c.textColor = WHITE;
+  c.font = Font.heavySystemFont(17);
+}
+
+function build(s) {
+  const w = new ListWidget();
+  w.backgroundColor = BG;
+  w.setPadding(14, 14, 14, 14);
+  const fam = config.widgetFamily ? config.widgetFamily : &quot;medium&quot;;
+
+  if (!s) {
+    const t = w.addText(&quot;KWADRAT&quot;);
+    t.textColor = ACCENT; t.font = Font.heavySystemFont(14);
+    w.addSpacer(6);
+    const e = w.addText(&quot;Нет связи или токен неверный. Обновите /widget в боте.&quot;);
+    e.textColor = MUTED; e.font = Font.systemFont(11);
+    e.lineLimit = 3;
+    return w;
+  }
+
+  header(w, s);
+  w.addSpacer(2);
+  const sub = w.addText(&quot;подходящих · &quot; + s.newMatching + &quot; новых за сутки&quot;);
+  sub.textColor = MUTED; sub.font = Font.systemFont(10);
+
+  if (fam !== &quot;small&quot;) {
+    w.addSpacer(9);
+    const all = s.topListings ? s.topListings : [];
+    const list = all.slice(0, fam === &quot;large&quot; ? 6 : 3);
+    if (list.length === 0) {
+      const e = w.addText(&quot;Нет подходящих объявлений. Настройте подписку в боте.&quot;);
+      e.textColor = MUTED; e.font = Font.systemFont(11); e.lineLimit = 2;
+    }
+    list.forEach(function (l) {
+      const row = w.addStack();
+      row.centerAlignContent();
+      const p = row.addText(zl(l.price));
+      p.textColor = WHITE; p.font = Font.mediumSystemFont(12);
+      row.addSpacer();
+      const place = l.district ? l.district : (l.city ? l.city : &quot;&quot;);
+      const d = row.addText(place);
+      d.textColor = MUTED; d.font = Font.systemFont(12);
+      w.addSpacer(4);
+    });
+  }
+
+  w.addSpacer();
+  const ts = s.lastUpdatedAt ? s.lastUpdatedAt : &quot;&quot;;
+  const upd = ts.replace(&quot;T&quot;, &quot; &quot;).slice(11, 16);
+  const foot = w.addText(upd ? &quot;обновлено &quot; + upd : &quot;Kwadrat PL&quot;);
+  foot.textColor = MUTED; foot.font = Font.systemFont(9);
+
+  let tapUrl = &quot;https://t.me/KwadratPLBot&quot;;
+  if (s.botUrl) tapUrl = s.botUrl;
+  if (s.openUrl) tapUrl = s.openUrl;
+  w.url = tapUrl;
+  w.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
+  return w;
+}
+
+let state = null;
+try { state = await fetchState(); } catch (e) { state = null; }
+const widget = build(state);
+
+if (config.runsInWidget) {
+  Script.setWidget(widget);
+} else {
+  await widget.presentMedium();
+}
+Script.complete();
+</code></pre>
+          </div>
+        </details>
+        <h3 class="wg-h">How to use it</h3>
+        <ul class="wuse"><li>Tapping the widget opens the app.</li><li>The widget refreshes on iOS's schedule (roughly every 15–30 minutes) — a limit of all widgets, not just ours.</li><li>Fresh flats still arrive instantly as a normal bot notification.</li></ul>
       </div>
     </div>
   </section>
@@ -293,7 +432,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
   <section class="alt">
     <div class="wrap">
       <h2 class="sec-h">Cities in Poland</h2>
-      <p class="sec-lead">Flats and rooms for rent in the eight largest cities:</p>
+      <p class="sec-lead">Flats and rooms for rent in 8 cities across Poland:</p>
       <div class="chips"><span class="chip">Warsaw</span><span class="chip">Kraków</span><span class="chip">Wrocław</span><span class="chip">Gdańsk</span><span class="chip">Poznań</span><span class="chip">Łódź</span><span class="chip">Zakopane</span><span class="chip">Białystok</span></div>
     </div>
   </section>
@@ -325,6 +464,10 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
       <details class="faq">
         <summary>Do I need to install an app?</summary>
         <div class="faq-a">No. Kwadrat PL runs inside Telegram as a Mini App — nothing to install.</div>
+      </details>
+      <details class="faq">
+        <summary>Is there an iPhone widget?</summary>
+        <div class="faq-a">Yes. Via the free Scriptable app you can add a home-screen widget showing the number of matching flats and the latest prices — no App Store payments. Step-by-step guide above.</div>
       </details></div>
     </div>
   </section>

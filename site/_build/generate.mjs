@@ -4,7 +4,7 @@
 // Запуск: node site/_build/generate.mjs  →  пишет site/index.html, site/pl|ua|en,
 // robots.txt, sitemap.xml. Контент правится здесь, потом перегенерировать.
 // ===========================================================================
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
@@ -16,6 +16,8 @@ const CITY = KW.CITY_NAMES;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "..");
+// код виджета берём из единого источника — repo/widget/kwadrat-widget.js
+const WIDGET_CODE = readFileSync(join(__dirname, "..", "..", "widget", "kwadrat-widget.js"), "utf8");
 
 // ── конфиг ────────────────────────────────────────────────────────────────
 const SITE = {
@@ -73,9 +75,25 @@ const C = {
     widgetTitle: "Виджет на домашний экран iPhone",
     widgetLead: "Сколько подходящих квартир и свежие цены — прямо на экране, не открывая Telegram. Через бесплатное приложение Scriptable, без App Store-платежей и аккаунта разработчика.",
     widgetImgAlt: "Виджет Kwadrat PL на домашнем экране iPhone: число подходящих квартир и цены аренды",
-    widgetSteps: ["Установите бесплатный Scriptable из App Store", "Напишите боту команду /widget и получите личный код", "Добавьте виджет на экран — новые квартиры всегда на виду"],
+    widgetStepsTitle: "Как установить",
+    widgetSteps: [
+      "Установите бесплатное приложение Scriptable из App Store.",
+      "Напишите нашему боту команду /widget — он пришлёт ваш личный токен.",
+      "В Scriptable нажмите «+», удалите содержимое и вставьте код виджета (кнопка ниже).",
+      "Впишите свой токен в строку TOKEN вместо PASTE_TOKEN_HERE.",
+      "Нажмите ▶ внизу — появится превью виджета.",
+      "На домашнем экране: долгий тап → «+» → Scriptable → выберите размер → добавьте. Затем долгий тап по виджету → «Изменить виджет» → в поле Script выберите этот скрипт.",
+    ],
+    widgetCodeShow: "Показать код виджета",
+    widgetCopy: "Скопировать код",
+    widgetUseTitle: "Как пользоваться",
+    widgetUse: [
+      "Тап по виджету открывает приложение.",
+      "Виджет обновляется по расписанию iOS (примерно раз в 15–30 минут) — это ограничение всех виджетов, не только нашего.",
+      "Свежие квартиры всё равно приходят мгновенно обычным уведомлением бота.",
+    ],
     citiesTitle: "Города Польши",
-    citiesLead: "Аренда квартир и комнат в восьми крупнейших городах:",
+    citiesLead: "Аренда квартир и комнат в 8 городах Польши:",
     faqTitle: "Частые вопросы",
     faq: [
       { q: "Это бесплатно?", a: "Да, полностью. Поиск, уведомления, гайды и калькулятор — без платы и без регистрации." },
@@ -84,6 +102,7 @@ const C = {
       { q: "На каких языках работает?", a: "Русский, украинский, польский и английский. Язык переключается прямо в приложении." },
       { q: "Как понять, что цена справедливая?", a: "Бот считает медианную цену за м² по району и типу жилья из своих данных и показывает, насколько объявление дешевле или дороже рынка." },
       { q: "Нужно ли устанавливать приложение?", a: "Нет. Kwadrat PL работает внутри Telegram как Mini App — ничего ставить не нужно." },
+      { q: "Есть ли виджет для iPhone?", a: "Да. Через бесплатное приложение Scriptable можно поставить на домашний экран виджет с числом подходящих квартир и свежими ценами — без App Store-платежей. Пошаговая инструкция выше." },
     ],
     finalTitle: "Пусть дом найдётся!",
     finalLead: "Откройте Kwadrat PL и подпишитесь на свой поиск — новое жильё придёт само.",
@@ -126,9 +145,25 @@ const C = {
     widgetTitle: "Віджет на домашній екран iPhone",
     widgetLead: "Скільки відповідних квартир і свіжі ціни — просто на екрані, не відкриваючи Telegram. Через безкоштовний застосунок Scriptable, без оплат App Store і акаунта розробника.",
     widgetImgAlt: "Віджет Kwadrat PL на домашньому екрані iPhone: число відповідних квартир і ціни оренди",
-    widgetSteps: ["Установіть безкоштовний Scriptable з App Store", "Напишіть боту команду /widget і отримайте особистий код", "Додайте віджет на екран — нові квартири завжди на очах"],
+    widgetStepsTitle: "Як встановити",
+    widgetSteps: [
+      "Установіть безкоштовний застосунок Scriptable з App Store.",
+      "Напишіть нашому боту команду /widget — він надішле ваш особистий токен.",
+      "У Scriptable натисніть «+», видаліть вміст і вставте код віджета (кнопка нижче).",
+      "Впишіть свій токен у рядок TOKEN замість PASTE_TOKEN_HERE.",
+      "Натисніть ▶ унизу — з'явиться превʼю віджета.",
+      "На домашньому екрані: довгий тап → «+» → Scriptable → виберіть розмір → додайте. Потім довгий тап по віджету → «Змінити віджет» → у полі Script виберіть цей скрипт.",
+    ],
+    widgetCodeShow: "Показати код віджета",
+    widgetCopy: "Скопіювати код",
+    widgetUseTitle: "Як користуватися",
+    widgetUse: [
+      "Тап по віджету відкриває застосунок.",
+      "Віджет оновлюється за розкладом iOS (приблизно раз на 15–30 хвилин) — це обмеження всіх віджетів, не тільки нашого.",
+      "Свіжі квартири все одно приходять миттєво звичайним сповіщенням бота.",
+    ],
     citiesTitle: "Міста Польщі",
-    citiesLead: "Оренда квартир і кімнат у восьми найбільших містах:",
+    citiesLead: "Оренда квартир і кімнат у 8 містах Польщі:",
     faqTitle: "Часті запитання",
     faq: [
       { q: "Це безкоштовно?", a: "Так, повністю. Пошук, сповіщення, гайди та калькулятор — без плати й без реєстрації." },
@@ -137,6 +172,7 @@ const C = {
       { q: "Якими мовами працює?", a: "Українська, російська, польська та англійська. Мова перемикається просто в застосунку." },
       { q: "Як зрозуміти, що ціна справедлива?", a: "Бот рахує медіанну ціну за м² по району й типу житла зі своїх даних і показує, наскільки оголошення дешевше або дорожче за ринок." },
       { q: "Чи потрібно встановлювати застосунок?", a: "Ні. Kwadrat PL працює всередині Telegram як Mini App — нічого ставити не потрібно." },
+      { q: "Чи є віджет для iPhone?", a: "Так. Через безкоштовний застосунок Scriptable можна поставити на домашній екран віджет із числом відповідних квартир і свіжими цінами — без оплат App Store. Покрокова інструкція вище." },
     ],
     finalTitle: "Хай дім знайдеться!",
     finalLead: "Відкрийте Kwadrat PL і підпишіться на свій пошук — нове житло надійде саме.",
@@ -179,9 +215,25 @@ const C = {
     widgetTitle: "Widżet na ekran główny iPhone'a",
     widgetLead: "Ile pasujących mieszkań i świeże ceny — prosto na ekranie, bez otwierania Telegrama. Przez darmową aplikację Scriptable, bez opłat App Store i konta developera.",
     widgetImgAlt: "Widżet Kwadrat PL na ekranie iPhone'a: liczba pasujących mieszkań i ceny najmu",
-    widgetSteps: ["Zainstaluj darmowy Scriptable z App Store", "Napisz do bota komendę /widget i odbierz osobisty kod", "Dodaj widżet na ekran — nowe mieszkania zawsze na widoku"],
+    widgetStepsTitle: "Jak zainstalować",
+    widgetSteps: [
+      "Zainstaluj darmową aplikację Scriptable z App Store.",
+      "Napisz do naszego bota komendę /widget — odeśle Twój osobisty token.",
+      "W Scriptable naciśnij „+”, usuń zawartość i wklej kod widżetu (przycisk poniżej).",
+      "Wpisz swój token w linii TOKEN zamiast PASTE_TOKEN_HERE.",
+      "Naciśnij ▶ na dole — pojawi się podgląd widżetu.",
+      "Na ekranie głównym: przytrzymaj → „+” → Scriptable → wybierz rozmiar → dodaj. Potem przytrzymaj widżet → „Edytuj widżet” → w polu Script wybierz ten skrypt.",
+    ],
+    widgetCodeShow: "Pokaż kod widżetu",
+    widgetCopy: "Skopiuj kod",
+    widgetUseTitle: "Jak korzystać",
+    widgetUse: [
+      "Dotknięcie widżetu otwiera aplikację.",
+      "Widżet odświeża się według harmonogramu iOS (mniej więcej co 15–30 minut) — to ograniczenie wszystkich widżetów, nie tylko naszego.",
+      "Świeże mieszkania i tak przychodzą natychmiast zwykłym powiadomieniem bota.",
+    ],
     citiesTitle: "Miasta w Polsce",
-    citiesLead: "Wynajem mieszkań i pokoi w ośmiu największych miastach:",
+    citiesLead: "Wynajem mieszkań i pokoi w 8 miastach w Polsce:",
     faqTitle: "Najczęstsze pytania",
     faq: [
       { q: "Czy to jest za darmo?", a: "Tak, w pełni. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji." },
@@ -190,6 +242,7 @@ const C = {
       { q: "W jakich językach działa?", a: "Polski, ukraiński, rosyjski i angielski. Język przełączysz bezpośrednio w aplikacji." },
       { q: "Jak poznać, że cena jest uczciwa?", a: "Bot liczy medianę ceny za m² według dzielnicy i typu lokum z własnych danych i pokazuje, o ile ogłoszenie jest tańsze lub droższe od rynku." },
       { q: "Czy trzeba instalować aplikację?", a: "Nie. Kwadrat PL działa wewnątrz Telegrama jako Mini App — niczego nie instalujesz." },
+      { q: "Czy jest widżet na iPhone'a?", a: "Tak. Przez darmową aplikację Scriptable można dodać na ekran główny widżet z liczbą pasujących mieszkań i świeżymi cenami — bez opłat App Store. Instrukcja krok po kroku powyżej." },
     ],
     finalTitle: "Niech dom się znajdzie!",
     finalLead: "Otwórz Kwadrat PL i zasubskrybuj swoje wyszukiwanie — nowe lokum przyjdzie samo.",
@@ -232,9 +285,25 @@ const C = {
     widgetTitle: "iPhone home-screen widget",
     widgetLead: "How many matching flats and the latest prices — right on your screen, without opening Telegram. Via the free Scriptable app, no App Store payments and no developer account.",
     widgetImgAlt: "Kwadrat PL widget on an iPhone home screen: number of matching flats and rental prices",
-    widgetSteps: ["Install the free Scriptable app from the App Store", "Message the bot the /widget command and get your personal code", "Add the widget to your screen — new flats always in view"],
+    widgetStepsTitle: "How to install",
+    widgetSteps: [
+      "Install the free Scriptable app from the App Store.",
+      "Message our bot the /widget command — it sends your personal token.",
+      "In Scriptable tap “+”, clear the contents and paste the widget code (button below).",
+      "Put your token on the TOKEN line, replacing PASTE_TOKEN_HERE.",
+      "Tap ▶ at the bottom — a widget preview appears.",
+      "On the home screen: long-press → “+” → Scriptable → pick a size → add. Then long-press the widget → “Edit Widget” → in the Script field choose this script.",
+    ],
+    widgetCodeShow: "Show widget code",
+    widgetCopy: "Copy code",
+    widgetUseTitle: "How to use it",
+    widgetUse: [
+      "Tapping the widget opens the app.",
+      "The widget refreshes on iOS's schedule (roughly every 15–30 minutes) — a limit of all widgets, not just ours.",
+      "Fresh flats still arrive instantly as a normal bot notification.",
+    ],
     citiesTitle: "Cities in Poland",
-    citiesLead: "Flats and rooms for rent in the eight largest cities:",
+    citiesLead: "Flats and rooms for rent in 8 cities across Poland:",
     faqTitle: "FAQ",
     faq: [
       { q: "Is it free?", a: "Yes, fully. Search, alerts, guides and the calculator — no fees and no sign-up." },
@@ -243,6 +312,7 @@ const C = {
       { q: "Which languages are supported?", a: "English, Polish, Ukrainian and Russian. You switch the language right inside the app." },
       { q: "How do I know the price is fair?", a: "The bot computes the median price per m² by district and home type from its own data and shows how far a listing sits below or above the market." },
       { q: "Do I need to install an app?", a: "No. Kwadrat PL runs inside Telegram as a Mini App — nothing to install." },
+      { q: "Is there an iPhone widget?", a: "Yes. Via the free Scriptable app you can add a home-screen widget showing the number of matching flats and the latest prices — no App Store payments. Step-by-step guide above." },
     ],
     finalTitle: "May your home find you!",
     finalLead: "Open Kwadrat PL and subscribe to your search — the right place will come to you.",
@@ -510,6 +580,19 @@ section{ padding:52px 0 }
 .wsteps li{ padding-left:3px }
 .widget-img{ flex:0 1 440px; margin:0; max-width:100% }
 .widget-img img{ width:100%; height:auto; display:block; border-radius:20px; box-shadow:var(--shadow) }
+.widget-guide{ max-width:720px; margin:28px auto 0 }
+.wg-h{ font-size:18px; font-weight:750; margin:22px 0 10px }
+.wuse{ margin:0; padding-left:20px; display:grid; gap:8px; color:var(--muted); font-size:15px }
+.wcode{ margin-top:6px; background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden }
+.wcode summary{ cursor:pointer; padding:14px 18px; font-weight:700; color:var(--accent); list-style:none }
+.wcode summary::-webkit-details-marker{ display:none }
+.wcode-inner{ position:relative; border-top:1px solid var(--border) }
+.wcopy{ position:absolute; top:10px; right:10px; z-index:1; font-size:12px; font-weight:700;
+  padding:6px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg2);
+  color:var(--text); cursor:pointer }
+.wcode pre{ margin:0; padding:16px; overflow-x:auto; background:transparent }
+.wcode code{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px;
+  line-height:1.5; color:var(--text); white-space:pre }
 
 /* faq */
 .faq-list{ max-width:720px; margin:0 auto; display:grid; gap:10px }
@@ -611,9 +694,21 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
         <div class="widget-txt">
           <h2 class="sec-h">${esc(c.widgetTitle)}</h2>
           <p class="widget-lead">${esc(c.widgetLead)}</p>
-          <ol class="wsteps">${c.widgetSteps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
         </div>
         <figure class="widget-img"><img src="/shots/shot-widget.png" width="520" height="420" loading="lazy" alt="${esc(c.widgetImgAlt)}"></figure>
+      </div>
+      <div class="widget-guide">
+        <h3 class="wg-h">${esc(c.widgetStepsTitle)}</h3>
+        <ol class="wsteps">${c.widgetSteps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
+        <details class="wcode">
+          <summary>${esc(c.widgetCodeShow)}</summary>
+          <div class="wcode-inner">
+            <button type="button" class="wcopy" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.textContent='✓'">${esc(c.widgetCopy)}</button>
+            <pre><code>${esc(WIDGET_CODE)}</code></pre>
+          </div>
+        </details>
+        <h3 class="wg-h">${esc(c.widgetUseTitle)}</h3>
+        <ul class="wuse">${c.widgetUse.map((u) => `<li>${esc(u)}</li>`).join("")}</ul>
       </div>
     </div>
   </section>
