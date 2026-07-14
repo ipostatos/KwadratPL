@@ -98,6 +98,12 @@ def init_db():
                 c.execute(f"ALTER TABLE users ADD COLUMN {col} INTEGER")
             except sqlite3.OperationalError:
                 pass
+        # миграция: последняя известная цена объявления (для истории снижений
+        # на своей стороне — Otodom/Morizon не отдают previous_value)
+        try:
+            c.execute("ALTER TABLE seen ADD COLUMN price INTEGER")
+        except sqlite3.OperationalError:
+            pass
         # буфер уведомлений, накопленных за тихие часы (утром уйдёт сводкой)
         c.execute("""CREATE TABLE IF NOT EXISTS pending(
             user_id INTEGER NOT NULL,
@@ -569,28 +575,55 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
     if not listings or not isinstance(listings, list):
         raise HTTPException(422, "empty listings")
 
-    async with _ingest_lock:
-        # запись файла — в тред, чтобы не блокировать поллинг бота
-        await asyncio.to_thread(_write_listings, payload)
+    def _price(l):
+        try:
+            return int(l.get("price") or 0)
+        except (TypeError, ValueError):
+            return 0
 
+    async with _ingest_lock:
         now = int(time.time())
-        ids = [(str(l["id"]), now) for l in listings
-               if isinstance(l, dict) and l.get("id")]
+        # 1) читаем прошлые снимки (id → последняя цена) ДО записи файла
         with db() as c:
             first_run = c.execute("SELECT COUNT(*) FROM seen").fetchone()[0] == 0
-            seen = {r["id"] for r in c.execute("SELECT id FROM seen")}
-            fresh = [l for l in listings
-                     if isinstance(l, dict) and l.get("id") and str(l["id"]) not in seen]
-            # upsert ts у ВСЕХ живых объявлений: иначе лот старше 60 дней
-            # вычищался бы и снова становился «новым» (повторный пуш)
-            c.executemany("""INSERT INTO seen(id, ts) VALUES(?,?)
-                             ON CONFLICT(id) DO UPDATE SET ts=excluded.ts""", ids)
+            stored = {r["id"]: r["price"]
+                      for r in c.execute("SELECT id, price FROM seen")}
+        seen = set(stored.keys())
+
+        # 2) история цен на своей стороне: если цена упала vs наш снимок и у
+        #    объявления ещё нет oldPrice — проставляем (работает для всех
+        #    источников, не только OLX previous_value)
+        drops = 0
+        for l in listings:
+            if not (isinstance(l, dict) and l.get("id")):
+                continue
+            cur = _price(l)
+            prev = stored.get(str(l["id"]))
+            if prev and cur and cur < prev and not l.get("oldPrice"):
+                l["oldPrice"] = prev
+                drops += 1
+
+        # 3) запись файла (уже с проставленным oldPrice) — в тред
+        await asyncio.to_thread(_write_listings, payload)
+
+        # 4) upsert ts+price у ВСЕХ живых объявлений (иначе лот старше 60 дней
+        #    вычищался бы и снова становился «новым»)
+        ids = [(str(l["id"]), now, _price(l) or None) for l in listings
+               if isinstance(l, dict) and l.get("id")]
+        fresh = [l for l in listings
+                 if isinstance(l, dict) and l.get("id") and str(l["id"]) not in seen]
+        with db() as c:
+            c.executemany("""INSERT INTO seen(id, ts, price) VALUES(?,?,?)
+                             ON CONFLICT(id) DO UPDATE SET
+                               ts=excluded.ts, price=excluded.price""", ids)
             c.execute("DELETE FROM seen WHERE ts < ?", (now - 60 * 86400,))
             rows = c.execute("""
                 SELECT s.user_id, s.data, u.lang, u.quiet_from, u.quiet_to FROM subs s
                 JOIN users u ON u.id = s.user_id
                 WHERE s.notify = 1 AND COALESCE(u.muted, 0) = 0
             """).fetchall()
+        if drops:
+            log.info("ingest: %d price drops detected from own snapshots", drops)
 
     notified = 0
     if not first_run and fresh and rows:
