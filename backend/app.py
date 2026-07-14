@@ -451,6 +451,15 @@ async def on_widget(m: Message):
                    link_preview_options=LinkPreviewOptions(is_disabled=True))
 
 
+def _preview(l: dict) -> LinkPreviewOptions:
+    """Минимальное превью — маленький thumbnail фото объявления сбоку.
+    Нет фото или не https — превью выключаем (текст без растянутой картинки)."""
+    photo = l.get("photo")
+    if isinstance(photo, str) and photo.startswith("https://"):
+        return LinkPreviewOptions(url=photo, prefer_small_media=True)
+    return LinkPreviewOptions(is_disabled=True)
+
+
 async def notify_user(user_id: int, lang: str, hits: list):
     # hits: список пар (объявление, подписка-которая-совпала) для explainability;
     # допускаем и «голое» объявление (digest шлёт без подписки)
@@ -467,7 +476,7 @@ async def notify_user(user_id: int, lang: str, hits: list):
             try:
                 await bot.send_message(
                     user_id, fmt_listing(l, lang, sub), parse_mode="HTML", reply_markup=kb,
-                    link_preview_options=LinkPreviewOptions(is_disabled=True))
+                    link_preview_options=_preview(l))
                 await asyncio.sleep(0.05)
                 break
             except TelegramRetryAfter as e:

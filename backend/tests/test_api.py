@@ -164,6 +164,14 @@ async def test_widget_flow(client, auth, ingest_headers):
     assert (await client.get("/api/widget/state", headers=wh)).status_code == 401
 
 
+def test_preview_options():
+    # есть https-фото → маленькое превью; иначе выключено
+    p = backend._preview({"photo": "https://cdn.example.com/a.jpg"})
+    assert p.is_disabled is not True and p.url.endswith("a.jpg") and p.prefer_small_media is True
+    assert backend._preview({}).is_disabled is True
+    assert backend._preview({"photo": "http://insecure/a.jpg"}).is_disabled is True
+
+
 async def test_ai_stats_auth(client, ingest_headers):
     ok = await client.get("/api/ai-stats", headers=ingest_headers)
     assert ok.status_code == 200 and ok.json()["model"]
