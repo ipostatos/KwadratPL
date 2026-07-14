@@ -160,6 +160,18 @@ section{ padding:52px 0 }
 .final .btn{ background:#fff; color:var(--accent2) }
 .final .btn:hover{ background:#f0f6fa }
 
+/* other bots */
+.bots{ display:grid; gap:14px; max-width:720px; margin:0 auto }
+.bot-card{ display:flex; align-items:center; gap:16px; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px;
+  box-shadow:var(--shadow); transition:transform .12s ease; color:inherit }
+.bot-card:hover{ transform:translateY(-1px) }
+.bot-emoji{ font-size:32px; flex:0 0 auto; line-height:1 }
+.bot-body{ flex:1; display:flex; flex-direction:column; gap:3px; min-width:0 }
+.bot-name{ font-weight:750; font-size:17px }
+.bot-desc{ color:var(--muted); font-size:14px }
+.bot-arrow{ color:var(--accent); font-size:20px; flex:0 0 auto }
+
 /* footer */
 footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 .foot-grid{ display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; align-items:flex-start }
@@ -323,6 +335,22 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
         <h2>May your home find you!</h2>
         <p>Open Kwadrat PL and subscribe to your search — the right place will come to you.</p>
         <a class="btn" href="https://t.me/KwadratPLBot" rel="noopener"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg> Open the bot in Telegram</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2 class="sec-h">More bots by the author</h2>
+      <div class="bots">
+        <a class="bot-card" href="https://t.me/issa_test_bot" target="_blank" rel="noopener">
+          <span class="bot-emoji">⛵</span>
+          <span class="bot-body">
+            <span class="bot-name">ISSA Trainer</span>
+            <span class="bot-desc">Prep for the skipper licence (ISSA Inshore Skipper), SRC radio and Polish patents — a spaced-repetition trainer.</span>
+          </span>
+          <span class="bot-arrow" aria-hidden="true">→</span>
+        </a>
       </div>
     </div>
   </section>

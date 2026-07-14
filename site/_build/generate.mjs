@@ -23,6 +23,10 @@ const SITE = {
   bot: "https://t.me/KwadratPLBot",
   name: "Kwadrat PL",
   cities: ["warszawa", "krakow", "wroclaw", "gdansk", "poznan", "lodz", "zakopane"],
+  // кросс-промо: другие боты автора (описание — в C[lang].botDesc[id])
+  bots: [
+    { id: "issa", name: "ISSA Trainer", url: "https://t.me/issa_test_bot", emoji: "⛵" },
+  ],
 };
 
 // порядок = порядок в sitemap; ru — корень и x-default
@@ -84,6 +88,8 @@ const C = {
     finalTitle: "Пусть дом найдётся!",
     finalLead: "Откройте Kwadrat PL и подпишитесь на свой поиск — новое жильё придёт само.",
     finalCta: "Открыть бота в Telegram",
+    otherBotsTitle: "Другие боты автора",
+    botDesc: { issa: "Подготовка к лицензии шкипера (ISSA Inshore Skipper), SRC-радио и польским правам — тренажёр с интервальным повторением." },
     footAbout: "Kwadrat PL — поиск аренды жилья в Польше для русско- и украиноязычных. OLX, Otodom, Morizon в одном боте.",
     footLang: "Язык",
     footRights: "Не является агентством недвижимости. Все объявления принадлежат их источникам.",
@@ -135,6 +141,8 @@ const C = {
     finalTitle: "Хай дім знайдеться!",
     finalLead: "Відкрийте Kwadrat PL і підпишіться на свій пошук — нове житло надійде саме.",
     finalCta: "Відкрити бота в Telegram",
+    otherBotsTitle: "Інші боти автора",
+    botDesc: { issa: "Підготовка до ліцензії шкіпера (ISSA Inshore Skipper), SRC-радіо та польських прав — тренажер з інтервальним повторенням." },
     footAbout: "Kwadrat PL — пошук оренди житла в Польщі для російсько- та україномовних. OLX, Otodom, Morizon в одному боті.",
     footLang: "Мова",
     footRights: "Не є агентством нерухомості. Усі оголошення належать їхнім джерелам.",
@@ -186,6 +194,8 @@ const C = {
     finalTitle: "Niech dom się znajdzie!",
     finalLead: "Otwórz Kwadrat PL i zasubskrybuj swoje wyszukiwanie — nowe lokum przyjdzie samo.",
     finalCta: "Otwórz bota w Telegramie",
+    otherBotsTitle: "Inne boty autora",
+    botDesc: { issa: "Przygotowanie do licencji sternika (ISSA Inshore Skipper), radia SRC i polskich patentów — trenażer z powtórkami interwałowymi." },
     footAbout: "Kwadrat PL — wyszukiwanie mieszkań na wynajem w Polsce. OLX, Otodom i Morizon w jednym bocie Telegram.",
     footLang: "Język",
     footRights: "To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł.",
@@ -237,6 +247,8 @@ const C = {
     finalTitle: "May your home find you!",
     finalLead: "Open Kwadrat PL and subscribe to your search — the right place will come to you.",
     finalCta: "Open the bot in Telegram",
+    otherBotsTitle: "More bots by the author",
+    botDesc: { issa: "Prep for the skipper licence (ISSA Inshore Skipper), SRC radio and Polish patents — a spaced-repetition trainer." },
     footAbout: "Kwadrat PL — finding rental homes in Poland. OLX, Otodom and Morizon in one Telegram bot.",
     footLang: "Language",
     footRights: "Not a real-estate agency. All listings belong to their sources.",
@@ -518,6 +530,18 @@ section{ padding:52px 0 }
 .final .btn{ background:#fff; color:var(--accent2) }
 .final .btn:hover{ background:#f0f6fa }
 
+/* other bots */
+.bots{ display:grid; gap:14px; max-width:720px; margin:0 auto }
+.bot-card{ display:flex; align-items:center; gap:16px; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px;
+  box-shadow:var(--shadow); transition:transform .12s ease; color:inherit }
+.bot-card:hover{ transform:translateY(-1px) }
+.bot-emoji{ font-size:32px; flex:0 0 auto; line-height:1 }
+.bot-body{ flex:1; display:flex; flex-direction:column; gap:3px; min-width:0 }
+.bot-name{ font-weight:750; font-size:17px }
+.bot-desc{ color:var(--muted); font-size:14px }
+.bot-arrow{ color:var(--accent); font-size:20px; flex:0 0 auto }
+
 /* footer */
 footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 .foot-grid{ display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; align-items:flex-start }
@@ -618,6 +642,22 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
       </div>
     </div>
   </section>
+${SITE.bots && SITE.bots.length ? `
+  <section class="alt">
+    <div class="wrap">
+      <h2 class="sec-h">${esc(c.otherBotsTitle)}</h2>
+      <div class="bots">
+${SITE.bots.map((b) => `        <a class="bot-card" href="${b.url}" target="_blank" rel="noopener">
+          <span class="bot-emoji">${b.emoji}</span>
+          <span class="bot-body">
+            <span class="bot-name">${esc(b.name)}</span>
+            <span class="bot-desc">${esc((c.botDesc && c.botDesc[b.id]) || "")}</span>
+          </span>
+          <span class="bot-arrow" aria-hidden="true">→</span>
+        </a>`).join("\n")}
+      </div>
+    </div>
+  </section>` : ""}
 </main>
 
 <footer>
