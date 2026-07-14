@@ -9,6 +9,7 @@
 //   3. Впишите свой токен в TOKEN ниже (получить: /widget в боте).
 //   4. Домашний экран → виджет Scriptable (small или medium) → этот скрипт.
 // Поддерживает small, medium и экран блокировки. Тап открывает Mini App.
+// Примечание: без оператора || — некоторые iOS-вставки теряют символ '|'.
 // ===========================================================================
 
 const TOKEN = "PASTE_TOKEN_HERE";
@@ -48,7 +49,7 @@ function build(s) {
   const w = new ListWidget();
   w.backgroundColor = BG;
   w.setPadding(14, 14, 14, 14);
-  const fam = config.widgetFamily || "medium";
+  const fam = config.widgetFamily ? config.widgetFamily : "medium";
 
   if (!s) {
     const t = w.addText("KWADRAT");
@@ -67,7 +68,8 @@ function build(s) {
 
   if (fam !== "small") {
     w.addSpacer(9);
-    const list = (s.topListings || []).slice(0, fam === "large" ? 6 : 3);
+    const all = s.topListings ? s.topListings : [];
+    const list = all.slice(0, fam === "large" ? 6 : 3);
     if (list.length === 0) {
       const e = w.addText("Нет подходящих объявлений. Настройте подписку в боте.");
       e.textColor = MUTED; e.font = Font.systemFont(11); e.lineLimit = 2;
@@ -78,19 +80,24 @@ function build(s) {
       const p = row.addText(zl(l.price));
       p.textColor = WHITE; p.font = Font.mediumSystemFont(12);
       row.addSpacer();
-      const d = row.addText(l.district || l.city || "");
+      const place = l.district ? l.district : (l.city ? l.city : "");
+      const d = row.addText(place);
       d.textColor = MUTED; d.font = Font.systemFont(12);
       w.addSpacer(4);
     });
   }
 
   w.addSpacer();
-  const upd = (s.lastUpdatedAt || "").replace("T", " ").slice(11, 16);
+  const ts = s.lastUpdatedAt ? s.lastUpdatedAt : "";
+  const upd = ts.replace("T", " ").slice(11, 16);
   const foot = w.addText(upd ? "обновлено " + upd : "Kwadrat PL");
   foot.textColor = MUTED; foot.font = Font.systemFont(9);
 
-  w.url = s.openUrl || s.botUrl || "https://t.me/KwadratPLBot";
-  w.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000); // подсказка системе: ~15 мин
+  let tapUrl = "https://t.me/KwadratPLBot";
+  if (s.botUrl) tapUrl = s.botUrl;
+  if (s.openUrl) tapUrl = s.openUrl;
+  w.url = tapUrl;
+  w.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
   return w;
 }
 
