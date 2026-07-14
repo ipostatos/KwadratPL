@@ -37,7 +37,10 @@
     poznan:   { districts: [
       "Stare Miasto", "Nowe Miasto", "Wilda", "Grunwald", "Jeżyce"] },
     lodz:     { districts: [
-      "Śródmieście", "Bałuty", "Górna", "Polesie", "Widzew"] }
+      "Śródmieście", "Bałuty", "Górna", "Polesie", "Widzew"] },
+    zakopane: { districts: [
+      "Centrum", "Krupówki", "Olcza", "Bystre", "Harenda",
+      "Chramcówki", "Kasprusie", "Antałówka", "Pardałówka", "Cyrhla"] }
   };
 
   var STREETS = ["ul. Marszałkowska", "ul. Puławska", "ul. Grzybowska", "al. Jana Pawła II",

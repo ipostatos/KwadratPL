@@ -22,7 +22,7 @@ const SITE = {
   domain: "https://kwadratpl.pl",
   bot: "https://t.me/KwadratPLBot",
   name: "Kwadrat PL",
-  cities: ["warszawa", "krakow", "wroclaw", "gdansk", "poznan", "lodz"],
+  cities: ["warszawa", "krakow", "wroclaw", "gdansk", "poznan", "lodz", "zakopane"],
 };
 
 // порядок = порядок в sitemap; ru — корень и x-default
@@ -63,7 +63,7 @@ const C = {
     ],
     shotsTitle: "Как это выглядит",
     shotsLead: "Поиск, справедливая цена и полная стоимость входа — всё внутри Telegram.",
-    altHome: "Главный экран Kwadrat PL: поиск аренды жилья в 6 городах Польши",
+    altHome: "Главный экран Kwadrat PL: поиск аренды жилья в 7 городах Польши",
     altCards: "Список квартир на аренду с фото, ценой и бейджем «ниже рынка»",
     altSheet: "Карточка объявления: стоимость входа — аренда и кауция — и источник",
     widgetTitle: "Виджет на домашний экран iPhone",
@@ -71,7 +71,7 @@ const C = {
     widgetImgAlt: "Виджет Kwadrat PL на домашнем экране iPhone: число подходящих квартир и цены аренды",
     widgetSteps: ["Установите бесплатный Scriptable из App Store", "Напишите боту команду /widget и получите личный код", "Добавьте виджет на экран — новые квартиры всегда на виду"],
     citiesTitle: "Города Польши",
-    citiesLead: "Аренда квартир и комнат в шести крупнейших городах:",
+    citiesLead: "Аренда квартир и комнат в семи крупнейших городах:",
     faqTitle: "Частые вопросы",
     faq: [
       { q: "Это бесплатно?", a: "Да, полностью. Поиск, уведомления, гайды и калькулятор — без платы и без регистрации." },
@@ -114,7 +114,7 @@ const C = {
     ],
     shotsTitle: "Як це виглядає",
     shotsLead: "Пошук, справедлива ціна й повна вартість входу — усе всередині Telegram.",
-    altHome: "Головний екран Kwadrat PL: пошук оренди житла в 6 містах Польщі",
+    altHome: "Головний екран Kwadrat PL: пошук оренди житла в 7 містах Польщі",
     altCards: "Список квартир на оренду з фото, ціною та бейджем «нижче ринку»",
     altSheet: "Картка оголошення: вартість входу — оренда й кауція — і джерело",
     widgetTitle: "Віджет на домашній екран iPhone",
@@ -122,7 +122,7 @@ const C = {
     widgetImgAlt: "Віджет Kwadrat PL на домашньому екрані iPhone: число відповідних квартир і ціни оренди",
     widgetSteps: ["Установіть безкоштовний Scriptable з App Store", "Напишіть боту команду /widget і отримайте особистий код", "Додайте віджет на екран — нові квартири завжди на очах"],
     citiesTitle: "Міста Польщі",
-    citiesLead: "Оренда квартир і кімнат у шести найбільших містах:",
+    citiesLead: "Оренда квартир і кімнат у семи найбільших містах:",
     faqTitle: "Часті запитання",
     faq: [
       { q: "Це безкоштовно?", a: "Так, повністю. Пошук, сповіщення, гайди та калькулятор — без плати й без реєстрації." },
@@ -165,7 +165,7 @@ const C = {
     ],
     shotsTitle: "Jak to wygląda",
     shotsLead: "Wyszukiwanie, uczciwa cena i pełny koszt wejścia — wszystko w Telegramie.",
-    altHome: "Ekran główny Kwadrat PL: wyszukiwanie wynajmu w 6 miastach w Polsce",
+    altHome: "Ekran główny Kwadrat PL: wyszukiwanie wynajmu w 7 miastach w Polsce",
     altCards: "Lista mieszkań na wynajem ze zdjęciem, ceną i znacznikiem „poniżej rynku”",
     altSheet: "Ogłoszenie: koszt wejścia — najem i kaucja — oraz źródło",
     widgetTitle: "Widżet na ekran główny iPhone'a",
@@ -173,7 +173,7 @@ const C = {
     widgetImgAlt: "Widżet Kwadrat PL na ekranie iPhone'a: liczba pasujących mieszkań i ceny najmu",
     widgetSteps: ["Zainstaluj darmowy Scriptable z App Store", "Napisz do bota komendę /widget i odbierz osobisty kod", "Dodaj widżet na ekran — nowe mieszkania zawsze na widoku"],
     citiesTitle: "Miasta w Polsce",
-    citiesLead: "Wynajem mieszkań i pokoi w sześciu największych miastach:",
+    citiesLead: "Wynajem mieszkań i pokoi w siedmiu największych miastach:",
     faqTitle: "Najczęstsze pytania",
     faq: [
       { q: "Czy to jest za darmo?", a: "Tak, w pełni. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji." },
@@ -216,7 +216,7 @@ const C = {
     ],
     shotsTitle: "How it looks",
     shotsLead: "Search, fair-price check and the full move-in cost — all inside Telegram.",
-    altHome: "Kwadrat PL home screen: searching rentals across 6 cities in Poland",
+    altHome: "Kwadrat PL home screen: searching rentals across 7 cities in Poland",
     altCards: "List of flats for rent with photo, price and a below-market badge",
     altSheet: "Listing card: move-in cost — rent and deposit — and the source",
     widgetTitle: "iPhone home-screen widget",
@@ -224,7 +224,7 @@ const C = {
     widgetImgAlt: "Kwadrat PL widget on an iPhone home screen: number of matching flats and rental prices",
     widgetSteps: ["Install the free Scriptable app from the App Store", "Message the bot the /widget command and get your personal code", "Add the widget to your screen — new flats always in view"],
     citiesTitle: "Cities in Poland",
-    citiesLead: "Flats and rooms for rent in the six largest cities:",
+    citiesLead: "Flats and rooms for rent in the seven largest cities:",
     faqTitle: "FAQ",
     faq: [
       { q: "Is it free?", a: "Yes, fully. Search, alerts, guides and the calculator — no fees and no sign-up." },

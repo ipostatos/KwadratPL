@@ -28,6 +28,7 @@
     wroclaw:  { ru: "Вроцлав", pl: "Wrocław",  ua: "Вроцлав", en: "Wrocław" },
     gdansk:   { ru: "Гданьск", pl: "Gdańsk",   ua: "Гданськ", en: "Gdańsk" },
     poznan:   { ru: "Познань", pl: "Poznań",   ua: "Познань", en: "Poznań" },
+    zakopane: { ru: "Закопане", pl: "Zakopane", ua: "Закопане", en: "Zakopane" },
     lodz:     { ru: "Лодзь",   pl: "Łódź",     ua: "Лодзь",   en: "Łódź" }
   };
 
@@ -63,7 +64,7 @@
     homeSub:    { ru: "Новый опыт поиска жилья в Польше — живые объявления и мгновенные уведомления", pl: "Nowe doświadczenie szukania mieszkania w Polsce — ogłoszenia na żywo i natychmiastowe powiadomienia", ua: "Новий досвід пошуку житла в Польщі — живі оголошення та миттєві сповіщення", en: "A new way to find a home in Poland — live listings and instant alerts" },
     nextLabel:  { ru: "С чего начать", pl: "Od czego zacząć", ua: "З чого почати", en: "Where to start" },
     nextTitle:  { ru: "Найти квартиру", pl: "Znajdź mieszkanie", ua: "Знайти квартиру", en: "Find a flat" },
-    nextHint:   { ru: "6 городов · квартиры, комнаты, посуточно · снижения цен", pl: "6 miast · mieszkania, pokoje, na doby · obniżki cen", ua: "6 міст · квартири, кімнати, подобово · зниження цін", en: "6 cities · flats, rooms, daily · price drops" },
+    nextHint:   { ru: "7 городов · квартиры, комнаты, посуточно · снижения цен", pl: "7 miast · mieszkania, pokoje, na doby · obniżki cen", ua: "7 міст · квартири, кімнати, подобово · зниження цін", en: "7 cities · flats, rooms, daily · price drops" },
     btnSearch:  { ru: "Искать", pl: "Szukaj", ua: "Шукати", en: "Search" },
     btnSubs:    { ru: "Подписки", pl: "Subskrypcje", ua: "Підписки", en: "Alerts" },
     statListings: { ru: "Объявлений", pl: "Ogłoszeń", ua: "Оголошень", en: "Listings" },
