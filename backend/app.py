@@ -26,6 +26,7 @@ import html
 import json
 import logging
 import os
+import secrets
 import sqlite3
 import time
 import urllib.parse
@@ -49,6 +50,7 @@ BASE = Path(__file__).resolve().parent
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 INGEST_TOKEN = os.environ["INGEST_TOKEN"]
 WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://kwadratpl-46-224-220-94.sslip.io")
+WIDGET_STATE_URL = WEBAPP_URL.rstrip("/") + "/api/widget/state"
 # AI-разбор объявления: включается автоматически при наличии ключа Anthropic.
 # Модель настраивается (по умолчанию Haiku — дёшево для перевода/скам-скоринга).
 AI_ENABLED = bool(os.environ.get("ANTHROPIC_API_KEY"))
@@ -125,6 +127,13 @@ def init_db():
             calls INTEGER DEFAULT 0,
             in_tok INTEGER DEFAULT 0,
             out_tok INTEGER DEFAULT 0
+        )""")
+        # токены для iOS-виджета (Scriptable/WidgetKit): читают state по своему
+        # токену, БЕЗ Telegram initData и БЕЗ bot-токена. Один активный на юзера.
+        c.execute("""CREATE TABLE IF NOT EXISTS widget_tokens(
+            token TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            created INTEGER
         )""")
 
 
@@ -369,6 +378,25 @@ async def on_stats(m: Message):
     await m.answer("\n".join(lines))
 
 
+@dp.message(Command("widget"))
+async def on_widget(m: Message):
+    uid = m.from_user.id if m.from_user else 0
+    lang = lang_of(m.from_user.language_code if m.from_user else None)
+    tok = _issue_widget_token(uid, lang)
+    txt = (
+        "📱 <b>Виджет KWADRAT для iPhone</b>\n\n"
+        "Через бесплатное приложение <b>Scriptable</b> — без App Store и аккаунта разработчика:\n\n"
+        "1. Установите <b>Scriptable</b> из App Store.\n"
+        "2. Создайте новый скрипт и вставьте наш код (файл widget/kwadrat-widget.js в репозитории).\n"
+        "3. В начале скрипта вставьте этот токен:\n"
+        f"<code>{html.escape(tok)}</code>\n"
+        "4. Домашний экран → добавить виджет <b>Scriptable</b> → выберите скрипт.\n\n"
+        "Токен только ваш — никому не показывайте. Новый /widget отзывает старый."
+    )
+    await m.answer(txt, parse_mode="HTML",
+                   link_preview_options=LinkPreviewOptions(is_disabled=True))
+
+
 async def notify_user(user_id: int, lang: str, hits: list[dict]):
     for l in hits[:MAX_NOTIFY_PER_USER]:
         url = safe_listing_url(l.get("url"))
@@ -486,6 +514,100 @@ def ai_stats(x_ingest_token: str = Header("")):
     if not hmac.compare_digest(x_ingest_token, INGEST_TOKEN):
         raise HTTPException(401, "bad token")
     return _ai_stats()
+
+
+# ── iOS-виджет (Scriptable/WidgetKit): state по виджет-токену ─────────────────
+# Виджет НЕ читает Telegram и не хранит bot-токен — только свой ограниченный
+# токен, по которому сервер отдаёт подготовленное состояние подписок юзера.
+def _load_listings() -> tuple[list, str | None]:
+    try:
+        with open(LISTINGS_PATH, encoding="utf-8") as f:
+            d = json.load(f)
+        return (d.get("listings") or [], d.get("generated_at"))
+    except Exception:
+        return ([], None)
+
+
+def _issue_widget_token(uid: int, lang: str) -> str:
+    tok = secrets.token_urlsafe(24)
+    with db() as c:
+        c.execute("INSERT OR IGNORE INTO users(id, lang, first_seen) VALUES(?,?,?)",
+                  (uid, lang, int(time.time())))
+        c.execute("DELETE FROM widget_tokens WHERE user_id=?", (uid,))   # один активный
+        c.execute("INSERT INTO widget_tokens(token, user_id, created) VALUES(?,?,?)",
+                  (tok, uid, int(time.time())))
+    return tok
+
+
+def _widget_user(authorization: str) -> int:
+    tok = authorization[7:].strip() if authorization.startswith("Bearer ") else ""
+    if not tok:
+        raise HTTPException(401, "widget token required (Authorization: Bearer <token>)")
+    with db() as c:
+        row = c.execute("SELECT user_id FROM widget_tokens WHERE token=?", (tok,)).fetchone()
+    if not row:
+        raise HTTPException(401, "invalid widget token")
+    return row["user_id"]
+
+
+def _widget_state(user_id: int) -> dict:
+    listings, generated_at = _load_listings()
+    with db() as c:
+        subs = [json.loads(r["data"]) for r in c.execute(
+            "SELECT data FROM subs WHERE user_id=? AND notify=1", (user_id,)).fetchall()]
+    now = int(time.time())
+    matched = [l for l in listings
+               if isinstance(l, dict) and any(matches(l, s) for s in subs)]
+    matched.sort(key=lambda l: l.get("ts") or 0, reverse=True)
+    fresh = sum(1 for l in matched if now - (l.get("ts") or 0) <= 86400)
+    top = [{"id": str(l.get("id")), "price": l.get("price"),
+            "district": l.get("district"), "rooms": l.get("rooms"),
+            "city": l.get("city"), "type": l.get("type")} for l in matched[:5]]
+    return {
+        "totalListings": len(listings),
+        "matchingListings": len(matched),
+        "newMatching": fresh,
+        "topListings": top,
+        "lastUpdatedAt": generated_at,
+        "openUrl": WEBAPP_URL,
+        "botUrl": "https://t.me/KwadratPLBot",
+    }
+
+
+@app.post("/api/widget/connect")
+def widget_connect(authorization: str = Header("")):
+    """Mini App (initData) выпускает виджет-токен для этого пользователя."""
+    user = _auth_user(authorization)
+    tok = _issue_widget_token(user["id"], lang_of(user.get("language_code")))
+    return {"token": tok, "stateUrl": WIDGET_STATE_URL}
+
+
+@app.get("/api/widget/state")
+def widget_state(authorization: str = Header("")):
+    return _widget_state(_widget_user(authorization))
+
+
+@app.post("/api/widget/action")
+async def widget_action(request: Request, authorization: str = Header("")):
+    uid = _widget_user(authorization)
+    body = await request.json()
+    action = body.get("action")
+    if action not in ("pause", "resume"):
+        raise HTTPException(422, "action must be 'pause' or 'resume'")
+    with db() as c:
+        c.execute("INSERT OR IGNORE INTO users(id, lang, first_seen) VALUES(?,?,?)",
+                  (uid, "ru", int(time.time())))
+        c.execute("UPDATE users SET muted=? WHERE id=?",
+                  (1 if action == "pause" else 0, uid))
+    return {"ok": True, "muted": action == "pause"}
+
+
+@app.delete("/api/widget/disconnect")
+def widget_disconnect(authorization: str = Header("")):
+    uid = _widget_user(authorization)
+    with db() as c:
+        c.execute("DELETE FROM widget_tokens WHERE user_id=?", (uid,))
+    return {"disconnected": True}
 
 
 # ── AI-разбор объявления: перевод + выжимка + скам-скоринг одним вызовом ──────
