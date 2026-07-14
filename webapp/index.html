@@ -14,9 +14,8 @@
 <script src="app.js"></script>
 <style>
   /* — дашборд: специфика главного экрана (паттерн ISSA home) — */
-  .hero{ display:flex; align-items:baseline; gap:var(--sp-2); margin-bottom:var(--sp-1) }
-  .hero .logo{ font-size:24px; color:var(--accent) }
-  .hero .logo svg{ width:24px; height:24px }
+  .hero{ display:flex; align-items:center; gap:var(--sp-2); margin-bottom:var(--sp-1) }
+  .hero .logo{ width:34px; height:34px; border-radius:50%; flex:0 0 auto }
 
   /* приоритетный блок «что дальше» */
   .next{ background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg);
@@ -56,7 +55,7 @@
 </style>
 </head>
 <body>
-  <div class="hero"><span class="logo emi" data-icon="building"></span><h1>Kwadrat PL</h1><button class="lang-chip" id="langChip"></button></div>
+  <div class="hero"><img class="logo" src="logo.png" alt="Kwadrat PL" width="34" height="34"><h1>Kwadrat PL</h1><button class="lang-chip" id="langChip"></button></div>
   <p class="sub" data-i18n="homeSub"></p>
 
   <!-- ПРИОРИТЕТ: что делать прямо сейчас -->
