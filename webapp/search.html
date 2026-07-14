@@ -290,8 +290,10 @@ function photoHtml(l, cls) {
   var bg = "linear-gradient(135deg," + l.grad[0] + "," + l.grad[1] + ")";
   // у реальных объявлений фото поверх града (град виден, пока фото грузится);
   // URL валидируется и чистится — данные из OLX не должны ломать style
+  // одинарные кавычки в url(): style="…" уже в двойных, а safePhotoUrl
+  // вычищает из URL кавычки/скобки — инъекции нет, а атрибут не рвётся
   var photo = App.safePhotoUrl(l.photo);
-  if (photo) bg = 'url("' + photo + '") center/cover no-repeat, ' + bg;
+  if (photo) bg = "url('" + photo + "') center/cover no-repeat, " + bg;
   return '<div class="photo" style="background:' + bg + '">' +
     (photo ? "" : Icons.svg(l.icon)) +
     '<div class="lbadges">' +

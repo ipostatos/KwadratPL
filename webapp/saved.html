@@ -159,7 +159,7 @@ function openSheet(l) {
   var grad = l.grad || ["#3a6186", "#89253e"];
   var bg = "linear-gradient(135deg," + grad[0] + "," + grad[1] + ")";
   var photo = App.safePhotoUrl(l.photo);
-  if (photo) bg = 'url("' + photo + '") center/cover no-repeat, ' + bg;
+  if (photo) bg = "url('" + photo + "') center/cover no-repeat, " + bg;
   var title = l.title ? App.esc(l.title) : App.esc(l.street || "");
   var specs = [
     [I18N.t("roomsLabel"), l.rooms],
