@@ -119,6 +119,7 @@
     allInBtn: { ru: "Прикинуть полную стоимость", pl: "Oblicz pełny koszt", ua: "Прикинути повну вартість", en: "Estimate full cost" },
     /* ── trust-слой + стоимость входа ── */
     tbDrop: { ru: "снижение цены", pl: "obniżka ceny", ua: "зниження ціни", en: "price drop" },
+    tbThin: { ru: "мало деталей", pl: "mało szczegółów", ua: "мало деталей", en: "few details" },
     miTitle: { ru: "Сколько нужно на въезд", pl: "Ile potrzeba na wejście", ua: "Скільки треба на в'їзд", en: "What you need to move in" },
     miFirst: { ru: "Первый месяц (аренда)", pl: "Pierwszy miesiąc (najem)", ua: "Перший місяць (оренда)", en: "First month (rent)" },
     miDeposit: { ru: "Кауция (≈1 мес)", pl: "Kaucja (≈1 mies.)", ua: "Кауція (≈1 міс)", en: "Deposit (≈1 mo)" },

@@ -505,7 +505,20 @@
     return ' <span class="pv above">↑ ' + esc(I18N.t("pvAbove", { n: pct })) + "</span>";
   }
 
-  // ряд trust-чипов: источник, частник/агентство, снижение цены, анти-скам
+  // полнота карточки объявления (фото/описание/метраж/…) — сигнал доверия,
+  // независимый от цены: пустые объявления чаще низкого качества либо скам
+  function dataQuality(l) {
+    var score = 0;
+    if (l.photo) score += 2;
+    if (l.descr && l.descr.trim().length >= 30) score += 1.5;
+    if (l.area != null) score += 1;
+    if (l.floor != null) score += 0.5;
+    if (l.district) score += 0.5;
+    if (l.agency !== null && l.agency !== undefined) score += 0.5;
+    return score <= 2 ? "thin" : null;
+  }
+
+  // ряд trust-чипов: источник, частник/агентство, снижение цены, полнота, анти-скам
   function trustBadges(l) {
     var chips = [];
     if (l.source) chips.push('<span class="tb src">' + esc(String(l.source)) + "</span>");
@@ -513,6 +526,8 @@
     else if (l.agency === false) chips.push('<span class="tb private">' + esc(I18N.t("ownerPrivate")) + "</span>");
     if (l.oldPrice && l.price && +l.oldPrice > +l.price)
       chips.push('<span class="tb drop">↓ ' + esc(I18N.t("tbDrop")) + "</span>");
+    if (dataQuality(l) === "thin")
+      chips.push('<span class="tb thin">' + esc(I18N.t("tbThin")) + "</span>");
     var v = priceVerdict(l);
     if (v && v.level === "scam")
       chips.push('<span class="tb warn">⚠ ' + esc(I18N.t("pvScamBadge")) + "</span>");
@@ -570,7 +585,7 @@
     toast: toast, timeAgo: timeAgo, esc: esc,
     safePhotoUrl: safePhotoUrl, openListingUrl: openListingUrl,
     priceVerdict: priceVerdict, priceBadge: priceBadge, priceInsight: priceInsight,
-    trustBadges: trustBadges, moveInCost: moveInCost,
+    trustBadges: trustBadges, moveInCost: moveInCost, dataQuality: dataQuality,
     deleteAccount: deleteAccount,
     aiAvailable: aiAvailable, analyzeListing: analyzeListing, mountAiButton: mountAiButton,
     priceUnit: function (type) { return I18N.t(type === "short" ? "perDay" : "perMonth"); },
