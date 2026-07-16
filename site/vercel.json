@@ -1,6 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "trailingSlash": true,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.kwadratpl.pl" }],
+      "destination": "https://kwadratpl.pl/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "kwadratpl-site.vercel.app" }],
+      "destination": "https://kwadratpl.pl/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
