@@ -6,6 +6,7 @@ import time
 import pytest
 
 import app as backend
+import bot as backend_bot
 from conftest import make_init_data
 
 
@@ -116,7 +117,9 @@ async def test_ingest_notifies_with_explainability(client, auth, ingest_headers,
     async def fake_notify(uid, lang, pairs):
         captured.append((uid, lang, pairs))
 
-    monkeypatch.setattr(backend, "notify_user", fake_notify)
+    # роутер зовёт bot_module.notify_user(...) (атрибут модуля, не прямой
+    # импорт имени) — патчить нужно сам модуль bot, иначе перехват не сработает
+    monkeypatch.setattr(backend_bot, "notify_user", fake_notify)
 
     await client.put("/api/subs", headers=auth, json={
         "subs": [{"city": "warszawa", "type": "long", "priceMax": 3500, "rooms": 2, "notify": True}],

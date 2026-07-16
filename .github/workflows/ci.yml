@@ -81,5 +81,6 @@ jobs:
           $SCP webapp/*.html webapp/*.css webapp/*.js webapp/*.png "$VPS:/opt/kwadratpl/webapp/"
           $SCP webapp/data/commute.json "$VPS:/opt/kwadratpl/webapp/data/"
           $SCP backend/*.py backend/requirements.txt "$VPS:/opt/kwadratpl/backend/"
+          $SCP -r backend/routers "$VPS:/opt/kwadratpl/backend/"
           $SCP -r tools "$VPS:/opt/kwadratpl/"
           $SSH "$VPS" "systemctl restart kwadratpl-api && sleep 2 && systemctl is-active kwadratpl-api"
