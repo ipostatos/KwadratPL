@@ -185,6 +185,14 @@ section{ padding:52px 0 }
 .bot-desc{ color:var(--muted); font-size:14px }
 .bot-arrow{ color:var(--accent); font-size:20px; flex:0 0 auto }
 
+/* donate */
+.donate .d-box{ max-width:720px; margin:0 auto; background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px 24px; display:flex; flex-wrap:wrap; align-items:center;
+  justify-content:center; text-align:center; gap:10px 18px }
+.donate p{ color:var(--muted); font-size:14.5px; margin:0 }
+.btn.ghost{ background:transparent; color:var(--accent); border:1px solid var(--border) }
+.btn.ghost:hover{ background:var(--bg2); color:var(--accent2); transform:none }
+
 /* footer */
 footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 .foot-grid{ display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; align-items:flex-start }
@@ -497,6 +505,15 @@ Script.complete();
       </div>
     </div>
   </section>
+
+  <section class="donate">
+    <div class="wrap">
+      <div class="d-box">
+        <p>Kwadrat PL бесплатный и без рекламы. Донаты идут на оплату домена и сервера.</p>
+        <a class="btn sm ghost" href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener">Поддержать проект ☕</a>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer>
@@ -511,7 +528,7 @@ Script.complete();
         <div class="foot-langs"><span class="lang on" aria-current="true">RU</span><a class="lang" href="https://kwadratpl.pl/ua/" hreflang="uk">UA</a><a class="lang" href="https://kwadratpl.pl/pl/" hreflang="pl">PL</a><a class="lang" href="https://kwadratpl.pl/en/" hreflang="en">EN</a></div>
       </div>
     </div>
-    <div class="foot-legal">© Kwadrat PL · Не является агентством недвижимости. Все объявления принадлежат их источникам.</div>
+    <div class="foot-legal">© Kwadrat PL · Не является агентством недвижимости. Все объявления принадлежат их источникам. · <a href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener" style="color:var(--accent)">Поддержать проект ☕</a></div>
   </div>
 </footer>
 

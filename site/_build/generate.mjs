@@ -23,6 +23,7 @@ const WIDGET_CODE = readFileSync(join(__dirname, "..", "..", "widget", "kwadrat-
 const SITE = {
   domain: "https://kwadratpl.pl",
   bot: "https://t.me/KwadratPLBot",
+  donate: "https://buymeacoffee.com/ipostatos",
   name: "Kwadrat PL",
   cities: ["warszawa", "krakow", "wroclaw", "gdansk", "poznan", "lodz", "zakopane", "bialystok"],
   // кросс-промо: другие боты автора (описание — в C[lang].botDesc[id])
@@ -51,6 +52,8 @@ const C = {
     lead: "Kwadrat PL собирает свежие объявления с OLX, Otodom и Morizon в один Telegram-бот. Подпишитесь на поиск — новые квартиры и комнаты придут прямо в чат, раньше других.",
     ctaPrimary: "Открыть бота в Telegram",
     ctaNote: "Без регистрации · 5 языков · внутри Telegram",
+    donateText: "Kwadrat PL бесплатный и без рекламы. Донаты идут на оплату домена и сервера.",
+    donateCta: "Поддержать проект ☕",
     trust: ["Бесплатно", "Прямые объявления, без агентств", "Обновление ~5 минут", "AI-разбор + анти-скам"],
     featuresTitle: "Почему Kwadrat PL",
     features: [
@@ -121,6 +124,8 @@ const C = {
     lead: "Kwadrat PL збирає свіжі оголошення з OLX, Otodom і Morizon в один Telegram-бот. Підпишіться на пошук — нові квартири й кімнати надійдуть просто в чат, раніше за інших.",
     ctaPrimary: "Відкрити бота в Telegram",
     ctaNote: "Без реєстрації · 5 мов · всередині Telegram",
+    donateText: "Kwadrat PL безкоштовний і без реклами. Донати йдуть на оплату домену та сервера.",
+    donateCta: "Підтримати проєкт ☕",
     trust: ["Безкоштовно", "Прямі оголошення, без агентств", "Оновлення ~5 хвилин", "AI-розбір + анти-скам"],
     featuresTitle: "Чому Kwadrat PL",
     features: [
@@ -191,6 +196,8 @@ const C = {
     lead: "Kwadrat PL zbiera świeże ogłoszenia z OLX, Otodom i Morizon w jednym bocie Telegram. Zasubskrybuj wyszukiwanie — nowe mieszkania i pokoje trafią prosto na czat, szybciej niż do innych.",
     ctaPrimary: "Otwórz bota w Telegramie",
     ctaNote: "Bez rejestracji · 5 języków · w Telegramie",
+    donateText: "Kwadrat PL jest darmowy i bez reklam. Wpłaty pokrywają koszty domeny i serwera.",
+    donateCta: "Wesprzyj projekt ☕",
     trust: ["Za darmo", "Ogłoszenia wprost, bez agencji", "Odświeżanie ~5 minut", "Analiza AI + anti-scam"],
     featuresTitle: "Dlaczego Kwadrat PL",
     features: [
@@ -261,6 +268,8 @@ const C = {
     lead: "Kwadrat PL gathers fresh listings from OLX, Otodom and Morizon into one Telegram bot. Subscribe to a search and new flats and rooms land right in your chat, before everyone else.",
     ctaPrimary: "Open the bot in Telegram",
     ctaNote: "No sign-up · 5 languages · inside Telegram",
+    donateText: "Kwadrat PL is free and ad-free. Donations cover the domain and server costs.",
+    donateCta: "Support the project ☕",
     trust: ["Free", "Listings direct, no agencies", "Refreshed ~5 min", "AI breakdown + anti-scam"],
     featuresTitle: "Why Kwadrat PL",
     features: [
@@ -625,6 +634,14 @@ section{ padding:52px 0 }
 .bot-desc{ color:var(--muted); font-size:14px }
 .bot-arrow{ color:var(--accent); font-size:20px; flex:0 0 auto }
 
+/* donate */
+.donate .d-box{ max-width:720px; margin:0 auto; background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px 24px; display:flex; flex-wrap:wrap; align-items:center;
+  justify-content:center; text-align:center; gap:10px 18px }
+.donate p{ color:var(--muted); font-size:14.5px; margin:0 }
+.btn.ghost{ background:transparent; color:var(--accent); border:1px solid var(--border) }
+.btn.ghost:hover{ background:var(--bg2); color:var(--accent2); transform:none }
+
 /* footer */
 footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 .foot-grid{ display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; align-items:flex-start }
@@ -753,6 +770,15 @@ ${SITE.bots.map((b) => `        <a class="bot-card" href="${b.url}" target="_bla
       </div>
     </div>
   </section>` : ""}
+${SITE.donate ? `
+  <section class="donate">
+    <div class="wrap">
+      <div class="d-box">
+        <p>${esc(c.donateText)}</p>
+        <a class="btn sm ghost" href="${SITE.donate}" target="_blank" rel="noopener">${esc(c.donateCta)}</a>
+      </div>
+    </div>
+  </section>` : ""}
 </main>
 
 <footer>
@@ -767,7 +793,7 @@ ${SITE.bots.map((b) => `        <a class="bot-card" href="${b.url}" target="_bla
         <div class="foot-langs">${langSwitcher(lang)}</div>
       </div>
     </div>
-    <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)}</div>
+    <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)}${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(c.donateCta)}</a>` : ""}</div>
   </div>
 </footer>
 
