@@ -1,72 +1,61 @@
 # Технический долг KwadratPL — план
 
 Этот файл — «память» проекта по техдолгу: что осталось, **откуда → куда → зачем → как**.
-Пиши сюда при изменении статуса. Обновлено: 2026-07-14.
+Пиши сюда при изменении статуса. Обновлено: 2026-07-16.
 
 ## Контекст: что уже закрыто (чтобы не делать дважды)
 
 | Долг | Статус | Где |
 |------|--------|-----|
-| AI-кэш и суточные лимиты в памяти процесса | ✅ перенесено в SQLite | `backend/app.py` таблицы `ai_cache` (TTL-eviction), `ai_user_day` |
+| AI-кэш и суточные лимиты в памяти процесса | ✅ перенесено в SQLite | `backend/db.py` таблицы `ai_cache` (TTL-eviction), `ai_user_day` |
 | Ручной `scp`-деплой, хардкод `root@IP` | ✅ CI/CD-деплой + env-хост | `.github/workflows/ci.yml` (job `deploy`), `deploy-vps.sh` (`KWADRAT_VPS`) |
-| Нет тестов / quality-gate | ✅ pytest (22) + i18n-чек + CI | `backend/tests/`, `webapp/_test/check-i18n.mjs` |
+| Нет тестов / quality-gate | ✅ pytest (23) + i18n-чек + CI | `backend/tests/`, `webapp/_test/check-i18n.mjs` |
 | Асимметрия trust в ссылках, privacy/RODO, alert explainability | ✅ | см. `kwadratpl-bot-state` memory |
+| **Распил монолита `backend/app.py`** (был 1169 строк) | ✅ **2026-07-16**, см. ниже | `backend/{config,db,auth,matching,texts,bot,ai_usage,widget_tokens}.py` + `backend/routers/*.py` |
 
 Инфраструктура деплоя: push в `main` → CI (backend pytest + frontend checks) →
 если зелёные, job `deploy` по SSH (ed25519-ключ в секретах `VPS_SSH_KEY`/`VPS_HOST`)
 кладёт webapp+backend+tools на VPS и рестартит `kwadratpl-api`.
 **Важно:** теперь любой рефакторинг защищён тестами — это снимает главный риск распила.
 
----
+### Как прошёл распил `backend/app.py` (для справки при следующем большом рефакторинге)
 
-## 1. Распил монолита `backend/app.py` (1169 строк)  ⬅ приоритет №1
+Сделано ровно по плану ниже, тремя коммитами под зелёным CI, каждый развёрнут и
+живьём проверен на проде (`/api/health` + журнал systemd + один реальный
+эндпоинт из каждого нового роутера) перед следующим шагом:
+1. `config.py`/`db.py`/`auth.py`/`matching.py`/`texts.py` — беззависимые модули.
+2. `bot.py`. По ходу вскрылась потребность в двух модулях, которых не было
+   в исходном плане — `ai_usage.py` (`_ai_stats`) и `widget_tokens.py`
+   (`_issue_widget_token`/`_widget_user`): без них `/stats` и `/widget`-хендлеры
+   бота и одноимённые роуты в `app.py` тянули бы друг друга по кругу.
+3. `routers/{health,widget,analyze,subs,listings}.py` + `app.py` стал тонким
+   (66 строк): `FastAPI(lifespan=...)`, `include_router()` на все пять.
 
-### Откуда (сейчас)
-Один файл `backend/app.py` держит ВЕСЬ backend-домен. Секции (по `grep '^# ──'`):
-- конфиг/env (строки ~50–70), `db()`/`init_db()` (72–154),
-- `validate_init_data` (156), `matches()` (179), `_clean_sub()` (в /api/subs),
-- тексты уведомлений: `CITY`, `T`, `_*_LBL`, `lang_of`, `sub_label`, `fmt_listing`, `fmt_share` (207–375, 829–873),
-- бот: `Bot`/`Dispatcher`, хендлеры `/start /off /on /stats /widget`, `notify_user`, `digest_loop` (402–573),
-- FastAPI `lifespan` + эндпоинты: `/api/health`, `/api/ai-stats`, `/api/widget/*`, `/api/analyze`, `/api/analyze/share`, `/api/subs` (GET/PUT/DELETE), `/api/listings` (ingest) (574–1169),
-- AI: `_ai_get_client`, `analyze`, кэш/лимит (713–828).
+**Итоговая структура НЕ совпадает 1:1 с планом ниже** — читай `backend/app.py`
+и `backend/routers/` как источник истины, план ниже оставлен только как
+летопись решения, не как актуальная карта.
 
-### Куда (цель)
-Пакет вместо файла — тонкий `app.py` собирает FastAPI и подключает роутеры:
-```
-backend/
-  app.py           # ТОНКИЙ: FastAPI(), lifespan, include_router(...), запуск бота
-  config.py        # env-константы: BOT_TOKEN, INGEST_TOKEN, ANALYZE_MODEL, AI_*, ADMIN_IDS, WEBAPP_URL, TZ
-  db.py            # db(), init_db()  (единственное место с DDL)
-  auth.py          # validate_init_data(), _auth_user()
-  matching.py      # matches(), _clean_sub()
-  texts.py         # CITY, T, _TYPE/_OWNER/_ROOM/_FLOOR/_AI_SCAM/_SHARE_*_LBL, lang_of, sub_label, fmt_listing, fmt_share, safe_listing_url
-  bot.py           # bot, dp, хендлеры команд, notify_user(), digest_loop(), _preview/_issue_widget_token
-  routers/
-    health.py      # /api/health
-    subs.py        # /api/subs GET/PUT/DELETE
-    listings.py    # /api/listings (ingest, _write_listings, _ingest_lock, price-history)
-    analyze.py     # /api/analyze, /api/analyze/share, /api/ai-stats, _ai_get_client, _ai_stats
-    widget.py      # /api/widget/connect|state|action|disconnect, _widget_*
-```
+**Пойманный тестом реальный баг** (не гипотетический — стоит помнить при
+следующем распиле с монолита на модули): роутер `listings.py` изначально звал
+`notify_user(...)` через прямой импорт имени (`from bot import notify_user`).
+Тест патчил `monkeypatch.setattr(backend, "notify_user", fake_notify)` —
+и патч не срабатывал, потому что `from X import Y` создаёт в модуле-импортёре
+**свою независимую привязку** имени, не связанную с оригиналом в `X`. Патч
+одной копии не видит другая. Починено на атрибут модуля (`import bot as
+bot_module; bot_module.notify_user(...)`) — так monkeypatch на сам `bot`
+реально перехватывает вызов. Правило на будущее: если функцию/объект будут
+подменять в тестах (или переопределять в рантайме), импортировать модуль
+целиком и звать через атрибут, а не `from module import name`.
 
-### Зачем
-- Сейчас любое изменение = чтение 1169 строк; онбординг, ревью, on-call дороже.
-- Тесты уже есть → рефакторинг безопасен, но крупный файл мешает точечным правкам.
-- Роутеры FastAPI (`APIRouter`) — идиоматичный способ, минимальный риск.
-
-### Как (пошагово, каждый шаг — отдельный коммит под зелёным CI)
-1. Вынести **чистые, беззависимые** куски первыми: `texts.py`, `matching.py`, `auth.py`, `config.py`, `db.py`. Они не импортируют FastAPI/aiogram — низкий риск.
-2. `bot.py`: перенести `bot`/`dp`/хендлеры/`notify_user`/`digest_loop`. Осторожно с **циклическими импортами** — `bot.py` тянет `texts`, `db`, `config`; роутеры тянут `bot` (для notify) и `auth`,`db`.
-3. Роутеры по одному: начать с `widget.py` (самый изолированный), затем `analyze.py`, `subs.py`, `listings.py`, `health.py`. Каждый — `APIRouter()`, в `app.py` — `app.include_router(...)`.
-4. `app.py` оставить тонким: создание `FastAPI(lifespan=...)`, старт polling бота, include всех роутеров.
-5. Тесты (`backend/tests/`) импортируют `import app as backend` и обращаются к `backend.matches`, `backend.fmt_listing` и т.п. — после распила эти имена должны **реэкспортироваться** из `app.py` (`from matching import matches` и т.д.), иначе тесты сломаются. Либо поправить импорты в тестах на новые модули.
-
-### Риск / усилие
-Средне-высокое усилие, средний риск (циклические импорты, единый `state.db` DDL). **Делать инкрементально**, не одним коммитом. Предусловие выполнено: тесты есть.
+**Деплой не забывает про новые файлы**: glob `backend/*.py` в CI/deploy-vps.sh
+берёт только плоский верхний уровень — при добавлении `backend/routers/`
+понадобился отдельный `scp -r backend/routers`. Если будущий распил добавит
+ещё один подкаталог — не забыть то же самое, иначе прод рестартует на новый
+`app.py`, который импортирует несуществующие на сервере модули, и падает.
 
 ---
 
-## 2. Распил `webapp/app.js` (587 строк) — НО сначала реши судьбу Next.js
+## 1. Распил `webapp/app.js` (587 строк) — НО сначала реши судьбу Next.js
 
 ### Откуда
 Один IIFE `webapp/app.js`: `CITIES`+демо-генератор, загрузка данных (`ready`), `localStorage` persist, синк подписок, `matches`, `searchLabel`, ценовой движок (`priceVerdict/priceBadge/priceInsight/trustBadges/moveInCost`), AI (`analyzeListing/mountAiButton/shareAnalysis`), `openListingUrl/safePhotoUrl`, экспорт `App`.
@@ -84,7 +73,7 @@ backend/
 
 ---
 
-## 3. Эвристика дедупа в `tools/fetch-olx.py`
+## 2. Эвристика дедупа в `tools/fetch-olx.py`
 
 ### Откуда
 `dedup()` схлопывает кросс-портальные дубли по ключу `(city, type, price, area)`. В комментарии кода честно признано: эвристика, «ложные слияния редки». Живёт и в боевом фетчер-репо `ipostatos/kwadratpl-fetcher` (синхронизировать отдельно!).
@@ -101,7 +90,7 @@ backend/
 
 ---
 
-## 4. Одна нода / SQLite → Postgres + горизонтальное масштабирование
+## 3. Одна нода / SQLite → Postgres + горизонтальное масштабирование
 
 ### Откуда
 `state.db` (SQLite, WAL) на одном VPS. Всё состояние (users, subs, seen, pending, ai_cache, ai_user_day, widget_tokens) — там. Uvicorn один процесс, бот polling в том же процессе.
@@ -124,5 +113,5 @@ backend/
 
 - Любой распил — **маленькими коммитами**, каждый под зелёным CI (тесты гоняются автоматически, деплой — только после них).
 - Правки в `tools/fetch-olx.py` дублировать в боевой фетчер-репо `ipostatos/kwadratpl-fetcher` (иначе прод-крон не увидит изменений).
-- `matches()` в `backend/app.py` — **зеркало** `webapp/app.js matches` (и наоборот). При правке логики матчинга менять ОБА и держать синхрон (это скрытая связанность).
-- Приоритет: **1 (backend split) → 3 (dedup) → 2 (после решения по Next.js) → 4 (только по необходимости)**.
+- `matches()` в `backend/matching.py` — **зеркало** `webapp/app.js matches` (и наоборот). При правке логики матчинга менять ОБА и держать синхрон (это скрытая связанность).
+- Приоритет: **2 (dedup) → 1 (app.js, после решения по Next.js) → 3 (только по необходимости)**. Backend split (был №1) закрыт 2026-07-16.
