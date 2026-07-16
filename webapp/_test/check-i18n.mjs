@@ -5,7 +5,7 @@ const require = createRequire(import.meta.url);
 const KW = require("../i18n.dict.js");
 const Icons = require("../icons.js");
 
-const LANGS = ["ru", "pl", "ua", "en"];
+const LANGS = ["ru", "pl", "ua", "by", "en"];
 const errors = [];
 
 for (const [key, row] of Object.entries(KW.DICT)) {

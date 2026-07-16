@@ -22,6 +22,7 @@
         Telegram.WebApp.initDataUnsafe.user.language_code;
       var c = (tgLang || navigator.language || "en").slice(0, 2).toLowerCase();
       if (c === "uk") c = "ua";
+      if (c === "be") c = "by";
       return D.long[c] ? c : "en";
     } catch (e) { return "en"; }
   }
@@ -45,7 +46,7 @@
       }).join("<br>");
       else el.textContent = s;
     });
-    document.documentElement.lang = lang === "ua" ? "uk" : lang;
+    document.documentElement.lang = lang === "ua" ? "uk" : lang === "by" ? "be" : lang;
   }
 
   /* ── экран выбора языка ── */
