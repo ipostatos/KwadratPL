@@ -128,6 +128,8 @@
     /* ── trust-слой + стоимость входа ── */
     tbDrop: { ru: "снижение цены", pl: "obniżka ceny", ua: "зниження ціни", by: "зніжэнне цаны", en: "price drop" },
     tbThin: { ru: "мало деталей", pl: "mało szczegółów", ua: "мало деталей", by: "мала дэталяў", en: "few details" },
+    tbRepeat: { ru: "{n} объявлений на OLX", pl: "{n} ogłoszeń na OLX", ua: "{n} оголошень на OLX", by: "{n} аб'яў на OLX", en: "{n} listings on OLX" },
+    tbSince: { ru: "на OLX с {year}", pl: "na OLX od {year}", ua: "на OLX з {year}", by: "на OLX з {year}", en: "on OLX since {year}" },
     miTitle: { ru: "Сколько нужно на въезд", pl: "Ile potrzeba na wejście", ua: "Скільки треба на в'їзд", by: "Колькі трэба на ўезд", en: "What you need to move in" },
     miFirst: { ru: "Первый месяц (аренда)", pl: "Pierwszy miesiąc (najem)", ua: "Перший місяць (оренда)", by: "Першы месяц (арэнда)", en: "First month (rent)" },
     miDeposit: { ru: "Кауция (≈1 мес)", pl: "Kaucja (≈1 mies.)", ua: "Кауція (≈1 міс)", by: "Задатак (≈1 мес)", en: "Deposit (≈1 mo)" },

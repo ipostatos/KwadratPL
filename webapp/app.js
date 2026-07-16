@@ -518,7 +518,19 @@
     return score <= 2 ? "thin" : null;
   }
 
-  // ряд trust-чипов: источник, частник/агентство, снижение цены, полнота, анти-скам
+  // landlord trust pack: сколько ещё живых объявлений того же продавца
+  // (ownerId) и с какого года его аккаунт на OLX. Есть только у OLX —
+  // Otodom/Morizon личность продавца на выдаче поиска не отдают.
+  function landlordInfo(l) {
+    if (!l.ownerId) return null;
+    var count = 0;
+    for (var i = 0; i < listings.length; i++) {
+      if (listings[i].ownerId === l.ownerId) count++;
+    }
+    return { count: count, since: l.ownerSince || null };
+  }
+
+  // ряд trust-чипов: источник, частник/агентство, снижение цены, полнота, продавец, анти-скам
   function trustBadges(l) {
     var chips = [];
     if (l.source) chips.push('<span class="tb src">' + esc(String(l.source)) + "</span>");
@@ -528,6 +540,11 @@
       chips.push('<span class="tb drop">↓ ' + esc(I18N.t("tbDrop")) + "</span>");
     if (dataQuality(l) === "thin")
       chips.push('<span class="tb thin">' + esc(I18N.t("tbThin")) + "</span>");
+    var owner = landlordInfo(l);
+    if (owner && owner.count >= 2)
+      chips.push('<span class="tb">' + esc(I18N.t("tbRepeat", { n: owner.count })) + "</span>");
+    if (owner && owner.since)
+      chips.push('<span class="tb">' + esc(I18N.t("tbSince", { year: owner.since })) + "</span>");
     var v = priceVerdict(l);
     if (v && v.level === "scam")
       chips.push('<span class="tb warn">⚠ ' + esc(I18N.t("pvScamBadge")) + "</span>");
@@ -585,7 +602,7 @@
     toast: toast, timeAgo: timeAgo, esc: esc,
     safePhotoUrl: safePhotoUrl, openListingUrl: openListingUrl,
     priceVerdict: priceVerdict, priceBadge: priceBadge, priceInsight: priceInsight,
-    trustBadges: trustBadges, moveInCost: moveInCost, dataQuality: dataQuality,
+    trustBadges: trustBadges, moveInCost: moveInCost, dataQuality: dataQuality, landlordInfo: landlordInfo,
     deleteAccount: deleteAccount,
     aiAvailable: aiAvailable, analyzeListing: analyzeListing, mountAiButton: mountAiButton,
     priceUnit: function (type) { return I18N.t(type === "short" ? "perDay" : "perMonth"); },
