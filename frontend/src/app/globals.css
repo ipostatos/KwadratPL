@@ -1,9 +1,0 @@
-/* Единый источник токенов и базовых стилей — ТОТ ЖЕ theme.css, что и webapp/.
-   Переменные Telegram (--tg-theme-*), палитра, .btn/.card/.ic-tile и пр. */
-@import "../../../webapp/theme.css";
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}

@@ -55,21 +55,28 @@ bot_module; bot_module.notify_user(...)`) — так monkeypatch на сам `bo
 
 ---
 
-## 1. Распил `webapp/app.js` (587 строк) — НО сначала реши судьбу Next.js
+## 1. Распил `webapp/app.js` (634 строки) — развилка Next.js РЕШЕНА
+
+### ✅ Развилка решена 2026-07-16: остаёмся на vanilla (путь «б»)
+Решение владельца. Мотивы: Mini App не выигрывает от React/SSR (SEO закрывает
+отдельный `site/`), порт продвинулся на 1/12 страниц за две сессии и уже
+устарел (5-й язык, useful/najem/privacy, trust-слой прошли мимо него),
+скорость итераций на статике выше, команда = один человек. `frontend/`
+удалён из main; при нужде достаётся из git-истории (коммит 94b4863).
 
 ### Откуда
-Один IIFE `webapp/app.js`: `CITIES`+демо-генератор, загрузка данных (`ready`), `localStorage` persist, синк подписок, `matches`, `searchLabel`, ценовой движок (`priceVerdict/priceBadge/priceInsight/trustBadges/moveInCost`), AI (`analyzeListing/mountAiButton/shareAnalysis`), `openListingUrl/safePhotoUrl`, экспорт `App`.
+Один IIFE `webapp/app.js`: `CITIES`+демо-генератор, загрузка данных (`ready`), `localStorage` persist, синк подписок, `matches`, `searchLabel`, ценовой движок (`priceVerdict/priceBadge/priceInsight/trustBadges/moveInCost/dataQuality/landlordInfo`), AI (`analyzeListing/mountAiButton/shareAnalysis`), `openListingUrl/safePhotoUrl`, экспорт `App`.
 
-### Куда / Зачем / Важная развилка
-**НЕ распиливай `app.js` в лоб.** Есть роадмап-пункт [[#26]] «перенос UI на `frontend/` (Next.js)», где модульность возникает естественно (компоненты + `lib/`). Вкладывать силы в распил vanilla-`app.js` = двойная работа, если всё равно переезжаем на Next.js.
-- **Решение, которое нужно принять:** либо (а) продолжаем перенос на `frontend/` (тогда `app.js` доживает как есть и умирает при переключении прода), либо (б) остаёмся на vanilla надолго — тогда есть смысл разнести `app.js` на `webapp/js/{data,price,ai,subs}.js`, подключаемые тегами `<script>` (без сборки).
-- Пока прод = `webapp/`, а `frontend/` перенесён только на главную (см. README-роадмап `[~]`).
-
-### Как (если выбран путь «б», без сборки)
+### Как (путь «б», без сборки)
 Разбить на `webapp/js/core.js` (данные+persist), `price.js`, `ai.js`, `subs.js`; каждый вешает своё в общий `window.App`; подключать в фиксированном порядке в `<head>`. Порядок важен (как i18n.dict.js ПЕРЕД i18n.js).
 
+**⚠️ Деплой-грабли (те же, что были с `backend/routers/`):** CI (`ci.yml` job
+`deploy`) и `deploy-vps.sh` копируют `webapp/*.js` плоским glob'ом — подкаталог
+`webapp/js/` туда НЕ попадёт. При распиле добавить отдельный `scp -r webapp/js`
+в ОБА места, плюс дописать новые файлы в syntax-check list CI и pre-commit.
+
 ### Риск / усилие
-Низкий риск, среднее усилие — но **сначала развилка Next.js**, иначе выброшенная работа.
+Низкий риск, среднее усилие.
 
 ---
 
@@ -114,4 +121,4 @@ bot_module; bot_module.notify_user(...)`) — так monkeypatch на сам `bo
 - Любой распил — **маленькими коммитами**, каждый под зелёным CI (тесты гоняются автоматически, деплой — только после них).
 - Правки в `tools/fetch-olx.py` дублировать в боевой фетчер-репо `ipostatos/kwadratpl-fetcher` (иначе прод-крон не увидит изменений).
 - `matches()` в `backend/matching.py` — **зеркало** `webapp/app.js matches` (и наоборот). При правке логики матчинга менять ОБА и держать синхрон (это скрытая связанность).
-- Приоритет: **2 (dedup) → 1 (app.js, после решения по Next.js) → 3 (только по необходимости)**. Backend split (был №1) закрыт 2026-07-16.
+- Приоритет: **1 (app.js, развилка решена — vanilla) → 2 (dedup) → 3 (только по необходимости)**. Backend split (был №1) закрыт 2026-07-16.
