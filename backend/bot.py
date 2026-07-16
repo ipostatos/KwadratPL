@@ -6,6 +6,7 @@
 import asyncio
 import html
 import time
+import urllib.parse
 
 from aiogram import Bot, Dispatcher
 from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter
@@ -101,6 +102,20 @@ async def on_widget(m: Message):
                    link_preview_options=LinkPreviewOptions(is_disabled=True))
 
 
+def _search_url(sub: dict) -> str:
+    """Диплинк в Mini App на поиск с фильтрами подписки — search.html читает
+    эти параметры из query (см. webapp/search.html). Не все поля подписки
+    туда пробрасываются (district/price/rooms search.html из URL не читает),
+    но город+тип+условия — уже сильно точнее, чем просто открыть главную."""
+    params = {"city": sub.get("city"), "type": sub.get("type")}
+    if sub.get("owner") in ("private", "agency"):
+        params["owner"] = sub["owner"]
+    for k in ("pets", "parking", "balcony"):
+        if sub.get(k):
+            params[k] = "1"
+    return WEBAPP_URL.rstrip("/") + "/search.html?" + urllib.parse.urlencode(params)
+
+
 async def notify_user(user_id: int, lang: str, hits: list):
     # hits: список пар (объявление, подписка-которая-совпала) для explainability;
     # допускаем и «голое» объявление (digest шлёт без подписки).
@@ -145,8 +160,14 @@ async def notify_user(user_id: int, lang: str, hits: list):
                 break  # к следующему объявлению
     if len(hits) > MAX_NOTIFY_PER_USER:
         try:
+            overflow = hits[MAX_NOTIFY_PER_USER:]
+            _, extra_sub = overflow[0] if isinstance(overflow[0], tuple) else (overflow[0], None)
+            url = _search_url(extra_sub) if extra_sub else WEBAPP_URL
+            kb = InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text=T["start_btn"][lang], web_app=WebAppInfo(url=url))]])
             await bot.send_message(
-                user_id, T["more"][lang].format(n=len(hits) - MAX_NOTIFY_PER_USER))
+                user_id, T["more"][lang].format(n=len(hits) - MAX_NOTIFY_PER_USER),
+                reply_markup=kb)
         except Exception:
             pass
 
