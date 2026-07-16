@@ -345,10 +345,12 @@ function openSheet(id) {
   var l = App.listings.find(function (x) { return x.id === id; });
   if (!l) return;
   haptic("light");
+  var _commute = App.commuteInfo(l);
   var specs = [
     [I18N.t("roomsLabel"), l.rooms],
     [I18N.t("area"), l.area != null ? l.area + " m²" : null],
     [I18N.t("floor"), l.floor],
+    [I18N.t("toCenter"), _commute ? _commute.min + " " + I18N.t("minShort") : null],
     [I18N.t("published"), App.timeAgo(l.ts)]
   ].filter(function (s) { return s[1] != null; });
   var descr = l.descr || (l.title ? "" : I18N.t("descr"));

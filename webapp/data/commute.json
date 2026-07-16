@@ -1,0 +1,518 @@
+{
+ "warszawa": {
+  "center": {
+   "lat": 52.2297,
+   "lon": 21.0122
+  },
+  "districts": {
+   "Śródmieście": {
+    "km": 0.9,
+    "min": 3
+   },
+   "Mokotów": {
+    "km": 5.0,
+    "min": 9
+   },
+   "Wola": {
+    "km": 5.3,
+    "min": 9
+   },
+   "Ochota": {
+    "km": 3.8,
+    "min": 6
+   },
+   "Żoliborz": {
+    "km": 5.5,
+    "min": 9
+   },
+   "Praga-Północ": {
+    "km": 6.1,
+    "min": 11
+   },
+   "Praga-Południe": {
+    "km": 4.8,
+    "min": 10
+   },
+   "Targówek": {
+    "km": 8.5,
+    "min": 15
+   },
+   "Bemowo": {
+    "km": 8.3,
+    "min": 14
+   },
+   "Bielany": {
+    "km": 7.9,
+    "min": 13
+   },
+   "Białołęka": {
+    "km": 16.4,
+    "min": 24
+   },
+   "Ursynów": {
+    "km": 11.9,
+    "min": 19
+   },
+   "Ursus": {
+    "km": 11.4,
+    "min": 17
+   },
+   "Włochy": {
+    "km": 7.8,
+    "min": 13
+   },
+   "Wilanów": {
+    "km": 13.2,
+    "min": 20
+   },
+   "Wawer": {
+    "km": 11.9,
+    "min": 16
+   },
+   "Wesoła": {
+    "km": 19.9,
+    "min": 26
+   },
+   "Rembertów": {
+    "km": 14.4,
+    "min": 19
+   }
+  }
+ },
+ "krakow": {
+  "center": {
+   "lat": 50.0616,
+   "lon": 19.9366
+  },
+  "districts": {
+   "Stare Miasto": {
+    "km": 0.6,
+    "min": 3
+   },
+   "Grzegórzki": {
+    "km": 3.5,
+    "min": 9
+   },
+   "Prądnik Czerwony": {
+    "km": 5.6,
+    "min": 11
+   },
+   "Prądnik Biały": {
+    "km": 7.5,
+    "min": 15
+   },
+   "Krowodrza": {
+    "km": 2.4,
+    "min": 7
+   },
+   "Bronowice": {
+    "km": 6.2,
+    "min": 13
+   },
+   "Zwierzyniec": {
+    "km": 7.3,
+    "min": 16
+   },
+   "Dębniki": {
+    "km": 13.1,
+    "min": 21
+   },
+   "Łagiewniki-Borek Fałęcki": {
+    "km": 6.7,
+    "min": 12
+   },
+   "Swoszowice": {
+    "km": 11.3,
+    "min": 18
+   },
+   "Podgórze Duchackie": {
+    "km": 7.2,
+    "min": 13
+   },
+   "Bieżanów-Prokocim": {
+    "km": 9.8,
+    "min": 16
+   },
+   "Podgórze": {
+    "km": 3.5,
+    "min": 8
+   },
+   "Czyżyny": {
+    "km": 6.8,
+    "min": 13
+   },
+   "Mistrzejowice": {
+    "km": 9.8,
+    "min": 16
+   },
+   "Bieńczyce": {
+    "km": 9.3,
+    "min": 17
+   },
+   "Wzgórza Krzesławickie": {
+    "km": 13.4,
+    "min": 24
+   },
+   "Nowa Huta": {
+    "km": 18.2,
+    "min": 34
+   }
+  }
+ },
+ "wroclaw": {
+  "center": {
+   "lat": 51.1099,
+   "lon": 17.0326
+  },
+  "districts": {
+   "Stare Miasto": {
+    "km": 1.7,
+    "min": 5
+   },
+   "Śródmieście": {
+    "km": 3.7,
+    "min": 8
+   },
+   "Krzyki": {
+    "km": 5.5,
+    "min": 11
+   },
+   "Fabryczna": {
+    "km": 4.3,
+    "min": 9
+   },
+   "Psie Pole": {
+    "km": 9.7,
+    "min": 16
+   }
+  }
+ },
+ "gdansk": {
+  "center": {
+   "lat": 54.3487,
+   "lon": 18.6531
+  },
+  "districts": {
+   "Śródmieście": {
+    "km": 1.1,
+    "min": 4
+   },
+   "Aniołki": {
+    "km": 3.0,
+    "min": 7
+   },
+   "Brętowo": {
+    "km": 7.8,
+    "min": 14
+   },
+   "Brzeźno": {
+    "km": 8.5,
+    "min": 16
+   },
+   "Chełm": {
+    "km": 4.3,
+    "min": 8
+   },
+   "Jasień": {
+    "km": 7.7,
+    "min": 11
+   },
+   "Kokoszki": {
+    "km": 12.3,
+    "min": 15
+   },
+   "Krakowiec-Górki Zachodnie": {
+    "km": 9.9,
+    "min": 18
+   },
+   "Letnica": {
+    "km": 6.0,
+    "min": 11
+   },
+   "Matarnia": {
+    "km": 13.9,
+    "min": 15
+   },
+   "Młyniska": {
+    "km": 4.5,
+    "min": 9
+   },
+   "Nowy Port": {
+    "km": 7.8,
+    "min": 14
+   },
+   "Oliwa": {
+    "km": 10.0,
+    "min": 18
+   },
+   "Olszynka": {
+    "km": 5.4,
+    "min": 11
+   },
+   "Orunia Górna-Gdańsk Południe": {
+    "km": 7.2,
+    "min": 14
+   },
+   "Orunia-Św. Wojciech-Lipce": {
+    "km": 5.5,
+    "min": 10
+   },
+   "Osowa": {
+    "km": 21.9,
+    "min": 22
+   },
+   "Piecki-Migowo": {
+    "km": 5.7,
+    "min": 11
+   },
+   "Przeróbka": {
+    "km": 6.6,
+    "min": 11
+   },
+   "Przymorze Małe": {
+    "km": 8.9,
+    "min": 16
+   },
+   "Przymorze Wielkie": {
+    "km": 8.9,
+    "min": 16
+   },
+   "Rudniki": {
+    "km": 7.2,
+    "min": 11
+   },
+   "Siedlce": {
+    "km": 2.7,
+    "min": 6
+   },
+   "Stogi": {
+    "km": 7.5,
+    "min": 13
+   },
+   "Strzyża": {
+    "km": 6.8,
+    "min": 13
+   },
+   "Suchanino": {
+    "km": 3.7,
+    "min": 7
+   },
+   "Ujeścisko-Łostowice": {
+    "km": 6.2,
+    "min": 10
+   },
+   "VII Dwór": {
+    "km": 8.0,
+    "min": 15
+   },
+   "Wrzeszcz Dolny": {
+    "km": 5.3,
+    "min": 10
+   },
+   "Wrzeszcz Górny": {
+    "km": 4.8,
+    "min": 9
+   },
+   "Wyspa Sobieszewska": {
+    "km": 19.8,
+    "min": 29
+   },
+   "Wzgórze Mickiewicza": {
+    "km": 5.4,
+    "min": 9
+   },
+   "Zaspa-Młyniec": {
+    "km": 7.1,
+    "min": 14
+   },
+   "Zaspa-Rozstaje": {
+    "km": 7.4,
+    "min": 14
+   },
+   "Żabianka-Wejhera-Jelitkowo-Tysiąclecia": {
+    "km": 9.9,
+    "min": 17
+   }
+  }
+ },
+ "poznan": {
+  "center": {
+   "lat": 52.4082,
+   "lon": 16.9335
+  },
+  "districts": {
+   "Stare Miasto": {
+    "km": 0.0,
+    "min": 0
+   },
+   "Nowe Miasto": {
+    "km": 5.7,
+    "min": 10
+   },
+   "Wilda": {
+    "km": 3.4,
+    "min": 8
+   },
+   "Grunwald": {
+    "km": 4.9,
+    "min": 9
+   },
+   "Jeżyce": {
+    "km": 2.7,
+    "min": 7
+   }
+  }
+ },
+ "lodz": {
+  "center": {
+   "lat": 51.7769,
+   "lon": 19.4547
+  },
+  "districts": {
+   "Śródmieście": {
+    "km": 2.9,
+    "min": 7
+   },
+   "Bałuty": {
+    "km": 2.9,
+    "min": 5
+   },
+   "Górna": {
+    "km": 7.5,
+    "min": 13
+   },
+   "Polesie": {
+    "km": 4.7,
+    "min": 8
+   },
+   "Widzew": {
+    "km": 7.7,
+    "min": 12
+   }
+  }
+ },
+ "zakopane": {
+  "center": {
+   "lat": 49.2992,
+   "lon": 19.9496
+  },
+  "districts": {
+   "Centrum": {
+    "km": 3.7,
+    "min": 6
+   },
+   "Krupówki": {
+    "km": 1.3,
+    "min": 2
+   },
+   "Olcza": {
+    "km": 5.3,
+    "min": 9
+   },
+   "Bystre": {
+    "km": 3.5,
+    "min": 7
+   },
+   "Harenda": {
+    "km": 4.4,
+    "min": 8
+   },
+   "Chramcówki": {
+    "km": 1.1,
+    "min": 2
+   },
+   "Kasprusie": {
+    "km": 0.9,
+    "min": 2
+   },
+   "Antałówka": {
+    "km": 3.3,
+    "min": 7
+   },
+   "Pardałówka": {
+    "km": 4.3,
+    "min": 8
+   },
+   "Cyrhla": {
+    "km": 7.0,
+    "min": 12
+   }
+  }
+ },
+ "bialystok": {
+  "center": {
+   "lat": 53.1325,
+   "lon": 23.1688
+  },
+  "districts": {
+   "Centrum": {
+    "km": 1.3,
+    "min": 3
+   },
+   "Sienkiewicza": {
+    "km": 1.2,
+    "min": 3
+   },
+   "Bojary": {
+    "km": 0.5,
+    "min": 1
+   },
+   "Piaski": {
+    "km": 1.8,
+    "min": 4
+   },
+   "Przydworcowe": {
+    "km": 2.2,
+    "min": 4
+   },
+   "Białostoczek": {
+    "km": 2.7,
+    "min": 6
+   },
+   "Antoniuk": {
+    "km": 3.1,
+    "min": 5
+   },
+   "Wygoda": {
+    "km": 4.7,
+    "min": 7
+   },
+   "Skorupy": {
+    "km": 2.9,
+    "min": 5
+   },
+   "Mickiewicza": {
+    "km": 1.2,
+    "min": 2
+   },
+   "Dziesięciny": {
+    "km": 4.4,
+    "min": 7
+   },
+   "Zielone Wzgórza": {
+    "km": 5.8,
+    "min": 8
+   },
+   "Leśna Dolina": {
+    "km": 6.7,
+    "min": 10
+   },
+   "Słoneczny Stok": {
+    "km": 6.2,
+    "min": 12
+   },
+   "Starosielce": {
+    "km": 7.8,
+    "min": 11
+   },
+   "Dojlidy": {
+    "km": 3.6,
+    "min": 6
+   },
+   "Bacieczki": {
+    "km": 6.4,
+    "min": 10
+   }
+  }
+ }
+}

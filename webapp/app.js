@@ -153,6 +153,20 @@
       App.live = false;
     });
 
+  // ── районный контекст: статическая таблица «район → км/мин до центра».
+  // Разово посчитана tools/build-commute.py (Nominatim + OSRM demo, авто),
+  // в рантайме — только чтение локального JSON, без внешних запросов. ──
+  var commute = {};
+  fetch("data/commute.json", { cache: "no-cache" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { if (d) commute = d; })
+    .catch(function () {});
+  function commuteInfo(l) {
+    var city = commute[l.city];
+    if (!city || !l.district) return null;
+    return city.districts[l.district] || null;
+  }
+
   // ── хранилище ──
   function load(key, fallback) {
     try { return JSON.parse(localStorage.getItem(key)) || fallback; }
@@ -603,6 +617,7 @@
     safePhotoUrl: safePhotoUrl, openListingUrl: openListingUrl,
     priceVerdict: priceVerdict, priceBadge: priceBadge, priceInsight: priceInsight,
     trustBadges: trustBadges, moveInCost: moveInCost, dataQuality: dataQuality, landlordInfo: landlordInfo,
+    commuteInfo: commuteInfo,
     deleteAccount: deleteAccount,
     aiAvailable: aiAvailable, analyzeListing: analyzeListing, mountAiButton: mountAiButton,
     priceUnit: function (type) { return I18N.t(type === "short" ? "perDay" : "perMonth"); },

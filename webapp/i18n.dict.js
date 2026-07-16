@@ -56,6 +56,8 @@
     area:       { ru: "Площадь", pl: "Metraż", ua: "Площа", by: "Плошча", en: "Area" },
     floor:      { ru: "Этаж", pl: "Piętro", ua: "Поверх", by: "Паверх", en: "Floor" },
     published:  { ru: "Опубликовано", pl: "Opublikowano", ua: "Опубліковано", by: "Апублікавана", en: "Published" },
+    toCenter:   { ru: "До центра", pl: "Do centrum", ua: "До центру", by: "Да цэнтра", en: "To center" },
+    minShort:   { ru: "мин", pl: "min", ua: "хв", by: "хв", en: "min" },
     justNow:    { ru: "только что", pl: "przed chwilą", ua: "щойно", by: "толькі што", en: "just now" },
     minAgo:     { ru: "{n} мин назад", pl: "{n} min temu", ua: "{n} хв тому", by: "{n} хв таму", en: "{n} min ago" },
     hAgo:       { ru: "{n} ч назад", pl: "{n} godz. temu", ua: "{n} год тому", by: "{n} гадз таму", en: "{n} h ago" },

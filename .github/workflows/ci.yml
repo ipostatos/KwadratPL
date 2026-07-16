@@ -76,8 +76,10 @@ jobs:
         run: |
           SSH="ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes"
           SCP="scp -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes"
-          # webapp/data НЕ трогаем — прод-данные обновляет фетчер через /api/listings
+          # webapp/data/listings.json НЕ трогаем — прод-данные обновляет фетчер через
+          # /api/listings; commute.json — статика (районный контекст), не фетчером
           $SCP webapp/*.html webapp/*.css webapp/*.js webapp/*.png "$VPS:/opt/kwadratpl/webapp/"
+          $SCP webapp/data/commute.json "$VPS:/opt/kwadratpl/webapp/data/"
           $SCP backend/app.py backend/requirements.txt "$VPS:/opt/kwadratpl/backend/"
           $SCP -r tools "$VPS:/opt/kwadratpl/"
           $SSH "$VPS" "systemctl restart kwadratpl-api && sleep 2 && systemctl is-active kwadratpl-api"
