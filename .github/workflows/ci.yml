@@ -46,7 +46,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect deploy-relevant changes
+        id: changes
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BEFORE" "${{ github.sha }}" | grep -qE '^(webapp/|backend/|tools/)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Setup SSH
+        if: steps.changes.outputs.relevant == 'true'
         env:
           KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS: ${{ secrets.VPS_HOST }}
@@ -56,6 +70,7 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H "${VPS#*@}" >> ~/.ssh/known_hosts 2>/dev/null
       - name: Deploy webapp + backend + tools, restart service
+        if: steps.changes.outputs.relevant == 'true'
         env:
           VPS: ${{ secrets.VPS_HOST }}
         run: |
