@@ -139,6 +139,16 @@ async def test_ingest_notifies_with_explainability(client, auth, ingest_headers,
     msg = backend.fmt_listing(listing, "ru", sub)
     assert "🔎" in msg  # строка explainability
 
+    # подписчик без совпадений НЕ считается notified и не спавнит пустой notify
+    captured.clear()
+    miss = {"id": "miss", "city": "lodz", "type": "short", "price": 200,
+            "ts": int(time.time())}
+    r = await client.post("/api/listings", headers=ingest_headers,
+                          json={"listings": [base, fresh, miss], "count": 3})
+    await asyncio.sleep(0.2)
+    assert r.json()["notified_users"] == 0
+    assert not captured
+
 
 async def test_price_history_drop(client, ingest_headers):
     L = {"id": "otodom-1", "city": "warszawa", "type": "long", "price": 3000, "ts": int(time.time())}

@@ -126,6 +126,8 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
         buffered = []
         for uid, u in per_user.items():
             pairs = list(u["hits"].values())   # [(listing, matched_sub), ...]
+            if not pairs:
+                continue   # подписка есть, совпадений нет — «notified» не считаем
             if u["quiet"]:
                 # тихие часы: копим в буфер, утром уйдёт одной сводкой
                 buffered.extend((uid, l["id"], now) for l, _s in pairs)
