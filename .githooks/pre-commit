@@ -1,0 +1,41 @@
+#!/bin/sh
+# Зеркалит проверки CI (.github/workflows/ci.yml) локально, перед коммитом.
+# Гоняет только то, что реально задели staged-файлы. Пропуск: SKIP_HOOKS=1 git commit ...
+
+if [ -n "$SKIP_HOOKS" ]; then
+  echo "pre-commit: SKIP_HOOKS=1 — проверки пропущены"
+  exit 0
+fi
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+FAIL=0
+
+echo "$STAGED" | grep -q '^backend/.*\.py$'
+if [ $? -eq 0 ]; then
+  if command -v pytest >/dev/null 2>&1; then
+    echo "pre-commit: backend изменён — запускаю pytest"
+    (cd backend && pytest) || FAIL=1
+  else
+    echo "pre-commit: pytest не найден в PATH — пропускаю backend-тесты (проверит CI)"
+  fi
+fi
+
+echo "$STAGED" | grep -q '^webapp/'
+if [ $? -eq 0 ]; then
+  if command -v node >/dev/null 2>&1; then
+    echo "pre-commit: webapp изменён — синтаксис-чек + i18n"
+    for f in webapp/app.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
+      node --check "$f" || FAIL=1
+    done
+    node webapp/_test/check-i18n.mjs || FAIL=1
+  else
+    echo "pre-commit: node не найден в PATH — пропускаю frontend-чеки (проверит CI)"
+  fi
+fi
+
+if [ $FAIL -ne 0 ]; then
+  echo "pre-commit: проверки не прошли — коммит отменён (SKIP_HOOKS=1 для обхода)"
+  exit 1
+fi
+
+exit 0
