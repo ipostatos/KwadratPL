@@ -4,9 +4,9 @@
 // © Lucide Contributors, ISC License (https://lucide.dev).
 //   Icons.svg("search")            → строка <svg>…</svg>
 //   data-icon="search" + Icons.hydrate() → авто-замена по атрибуту
-// UMD: в браузере кладётся как window.Icons, в Node/сборке frontend/ —
-// импортируется как CommonJS: const Icons = require("../../webapp/icons.js")
-// (Icons.P — «сырые» пути для React-компонента <Icon>).
+// UMD: в браузере кладётся как window.Icons, в Node (генератор лендинга
+// site/_build/generate.mjs) — как CommonJS: require("../../webapp/icons.js")
+// (Icons.P — «сырые» пути).
 // ===========================================================================
 (function (root, factory) {
   "use strict";

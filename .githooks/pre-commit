@@ -24,10 +24,11 @@ echo "$STAGED" | grep -q '^webapp/'
 if [ $? -eq 0 ]; then
   if command -v node >/dev/null 2>&1; then
     echo "pre-commit: webapp изменён — синтаксис-чек + i18n"
-    for f in webapp/app.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
+    for f in webapp/js/core.js webapp/js/subs.js webapp/js/price.js webapp/js/ai.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
       node --check "$f" || FAIL=1
     done
     node webapp/_test/check-i18n.mjs || FAIL=1
+    node webapp/_test/check-app.mjs || FAIL=1
   else
     echo "pre-commit: node не найден в PATH — пропускаю frontend-чеки (проверит CI)"
   fi

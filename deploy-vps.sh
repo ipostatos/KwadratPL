@@ -14,6 +14,7 @@ REMOTE="$KWADRAT_VPS"
 DEST="${KWADRAT_DEST:-/opt/kwadratpl}"
 
 scp webapp/*.html webapp/*.css webapp/*.js webapp/*.png "$REMOTE:$DEST/webapp/"
+scp -r webapp/js "$REMOTE:$DEST/webapp/"
 scp webapp/data/commute.json "$REMOTE:$DEST/webapp/data/"
 scp -r tools "$REMOTE:$DEST/"
 scp backend/*.py backend/requirements.txt "$REMOTE:$DEST/backend/"

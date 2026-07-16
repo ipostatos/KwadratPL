@@ -21,7 +21,7 @@
 # widget_tokens/routers/*), см. docs/TECH_DEBT.md за картой распила.
 #
 # .env (EnvironmentFile systemd): BOT_TOKEN, INGEST_TOKEN, WEBAPP_URL.
-# SQLite: state.db рядом с app.py. Матчинг зеркалит webapp/app.js matches().
+# SQLite: state.db рядом с app.py. Матчинг зеркалит webapp/js/core.js matches().
 # ===========================================================================
 import asyncio
 from contextlib import asynccontextmanager

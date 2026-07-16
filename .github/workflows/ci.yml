@@ -31,11 +31,13 @@ jobs:
           node-version: "20"
       - name: Syntax-check webapp JS
         run: |
-          for f in webapp/app.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
+          for f in webapp/js/core.js webapp/js/subs.js webapp/js/price.js webapp/js/ai.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
             node --check "$f"
           done
       - name: Check i18n dictionary + icons integrity
         run: node webapp/_test/check-i18n.mjs
+      - name: Smoke-test App modules (js/core+subs+price+ai)
+        run: node webapp/_test/check-app.mjs
       - name: Build landing (generator must not throw)
         run: node site/_build/generate.mjs
 
@@ -79,6 +81,7 @@ jobs:
           # webapp/data/listings.json НЕ трогаем — прод-данные обновляет фетчер через
           # /api/listings; commute.json — статика (районный контекст), не фетчером
           $SCP webapp/*.html webapp/*.css webapp/*.js webapp/*.png "$VPS:/opt/kwadratpl/webapp/"
+          $SCP -r webapp/js "$VPS:/opt/kwadratpl/webapp/"
           $SCP webapp/data/commute.json "$VPS:/opt/kwadratpl/webapp/data/"
           $SCP backend/*.py backend/requirements.txt "$VPS:/opt/kwadratpl/backend/"
           $SCP -r backend/routers "$VPS:/opt/kwadratpl/backend/"

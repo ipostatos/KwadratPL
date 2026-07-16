@@ -59,7 +59,7 @@ def route_car(a, b):
 
 
 def main():
-    with open("webapp/app.js", encoding="utf-8") as f:
+    with open("webapp/js/core.js", encoding="utf-8") as f:
         src = f.read()
     import re
     m = re.search(r"var CITIES = (\{.*?\n  \});", src, re.S)
@@ -68,7 +68,7 @@ def main():
     import subprocess
     cities_bytes = subprocess.check_output(
         ["node", "-e",
-         "const fs=require('fs');const src=fs.readFileSync('webapp/app.js','utf-8');"
+         "const fs=require('fs');const src=fs.readFileSync('webapp/js/core.js','utf-8');"
          "const m=src.match(/var CITIES = (\\{[\\s\\S]*?\\n  \\});/);"
          "process.stdout.write(JSON.stringify(Function('return '+m[1])()));"],
         cwd=".")

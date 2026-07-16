@@ -12,6 +12,7 @@
 | Нет тестов / quality-gate | ✅ pytest (23) + i18n-чек + CI | `backend/tests/`, `webapp/_test/check-i18n.mjs` |
 | Асимметрия trust в ссылках, privacy/RODO, alert explainability | ✅ | см. `kwadratpl-bot-state` memory |
 | **Распил монолита `backend/app.py`** (был 1169 строк) | ✅ **2026-07-16**, см. ниже | `backend/{config,db,auth,matching,texts,bot,ai_usage,widget_tokens}.py` + `backend/routers/*.py` |
+| **Распил `webapp/app.js`** (был 634 строки) | ✅ **2026-07-16**, см. §1 | `webapp/js/{core,subs,price,ai}.js`, подключаются в этом порядке (index/search/saved) |
 
 Инфраструктура деплоя: push в `main` → CI (backend pytest + frontend checks) →
 если зелёные, job `deploy` по SSH (ed25519-ключ в секретах `VPS_SSH_KEY`/`VPS_HOST`)
@@ -55,28 +56,30 @@ bot_module; bot_module.notify_user(...)`) — так monkeypatch на сам `bo
 
 ---
 
-## 1. Распил `webapp/app.js` (634 строки) — развилка Next.js РЕШЕНА
+## 1. ✅ Распил `webapp/app.js` — ЗАКРЫТ 2026-07-16 (вместе с развилкой Next.js)
 
-### ✅ Развилка решена 2026-07-16: остаёмся на vanilla (путь «б»)
+### Развилка решена: остаёмся на vanilla (путь «б»)
 Решение владельца. Мотивы: Mini App не выигрывает от React/SSR (SEO закрывает
 отдельный `site/`), порт продвинулся на 1/12 страниц за две сессии и уже
 устарел (5-й язык, useful/najem/privacy, trust-слой прошли мимо него),
 скорость итераций на статике выше, команда = один человек. `frontend/`
 удалён из main; при нужде достаётся из git-истории (коммит 94b4863).
 
-### Откуда
-Один IIFE `webapp/app.js`: `CITIES`+демо-генератор, загрузка данных (`ready`), `localStorage` persist, синк подписок, `matches`, `searchLabel`, ценовой движок (`priceVerdict/priceBadge/priceInsight/trustBadges/moveInCost/dataQuality/landlordInfo`), AI (`analyzeListing/mountAiButton/shareAnalysis`), `openListingUrl/safePhotoUrl`, экспорт `App`.
+### Как сделано
+Монолит (634 строки) разнесён на `webapp/js/{core,subs,price,ai}.js` —
+каждый IIFE вешает своё в общий `window.App`, подключение в фиксированном
+порядке ПОСЛЕ i18n: core → subs → price → ai (порядок важен, как
+i18n.dict.js ПЕРЕД i18n.js). Публичный API `App.*` не менялся; добавлены
+только `App.tgInitData` и `App._load` (межмодульный шаринг). Кросс-связка
+`persist → syncSubs` — через guarded-вызов `App.syncSubs && App.syncSubs()`
+(subs.js загружается следом, к моменту действий пользователя уже есть).
+Модули нужны только index/search/saved; гайд-страницы `App` не используют
+(раньше подключали app.js зря — теперь не подключают ничего).
 
-### Как (путь «б», без сборки)
-Разбить на `webapp/js/core.js` (данные+persist), `price.js`, `ai.js`, `subs.js`; каждый вешает своё в общий `window.App`; подключать в фиксированном порядке в `<head>`. Порядок важен (как i18n.dict.js ПЕРЕД i18n.js).
-
-**⚠️ Деплой-грабли (те же, что были с `backend/routers/`):** CI (`ci.yml` job
-`deploy`) и `deploy-vps.sh` копируют `webapp/*.js` плоским glob'ом — подкаталог
-`webapp/js/` туда НЕ попадёт. При распиле добавить отдельный `scp -r webapp/js`
-в ОБА места, плюс дописать новые файлы в syntax-check list CI и pre-commit.
-
-### Риск / усилие
-Низкий риск, среднее усилие.
+**Деплой-грабли обойдены:** в CI (`ci.yml` job `deploy`) и `deploy-vps.sh`
+добавлен `scp -r webapp/js` (плоский glob `webapp/*.js` подкаталог не берёт);
+новые файлы вписаны в syntax-check list CI и pre-commit. Также перенацелен
+`tools/build-commute.py` (парсит CITIES теперь из `js/core.js`).
 
 ---
 
@@ -120,5 +123,5 @@ bot_module; bot_module.notify_user(...)`) — так monkeypatch на сам `bo
 
 - Любой распил — **маленькими коммитами**, каждый под зелёным CI (тесты гоняются автоматически, деплой — только после них).
 - Правки в `tools/fetch-olx.py` дублировать в боевой фетчер-репо `ipostatos/kwadratpl-fetcher` (иначе прод-крон не увидит изменений).
-- `matches()` в `backend/matching.py` — **зеркало** `webapp/app.js matches` (и наоборот). При правке логики матчинга менять ОБА и держать синхрон (это скрытая связанность).
-- Приоритет: **1 (app.js, развилка решена — vanilla) → 2 (dedup) → 3 (только по необходимости)**. Backend split (был №1) закрыт 2026-07-16.
+- `matches()` в `backend/matching.py` — **зеркало** `webapp/js/core.js matches` (и наоборот). При правке логики матчинга менять ОБА и держать синхрон (это скрытая связанность).
+- Приоритет: **2 (dedup) → 3 (только по необходимости)**. Backend split и app.js split закрыты 2026-07-16.
