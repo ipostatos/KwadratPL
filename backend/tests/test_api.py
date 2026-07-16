@@ -62,9 +62,17 @@ def test_clean_sub_sanitizes():
 def test_sub_label_langs():
     sub = {"city": "warszawa", "type": "long", "priceMax": 3500, "rooms": 2,
            "owner": "private", "pets": True}
-    for lang in ("ru", "pl", "ua", "en"):
+    for lang in ("ru", "pl", "ua", "by", "en"):
         lbl = backend.sub_label(sub, lang)
         assert "≤3 500 zł" in lbl and backend.CITY["warszawa"][lang] in lbl
+
+
+def test_lang_of_belarusian():
+    # be (Telegram language_code) → внутренний код "by" (БЧБ, не путать с "ru")
+    assert backend.lang_of("be") == "by"
+    assert backend.lang_of("be-BY") == "by"
+    assert backend.lang_of("ru") == "ru"
+    assert backend.lang_of(None) == "en"
 
 
 def test_zakopane_registered():
