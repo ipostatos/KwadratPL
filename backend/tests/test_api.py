@@ -244,6 +244,34 @@ async def test_notify_overflow_has_button(monkeypatch):
     assert "search.html?" in btn.web_app.url and "city=warszawa" in btn.web_app.url
 
 
+def test_watchdog_should_dispatch():
+    import fetch_watchdog as fw
+    now = 1_000_000.0
+    # свежие данные — не дёргаем
+    assert not fw.should_dispatch(5.0, 0.0, now)
+    # старше порога — дёргаем
+    assert fw.should_dispatch(fw.STALE_MIN + 1, 0.0, now)
+    # файла нет вообще — дёргаем
+    assert fw.should_dispatch(None, 0.0, now)
+    # кулдаун после недавнего dispatch — не дёргаем даже при старых данных
+    assert not fw.should_dispatch(999.0, now - 60, now)
+
+
+def test_watchdog_data_age(tmp_path, monkeypatch):
+    import json as _json
+    from datetime import datetime, timedelta, timezone
+    import fetch_watchdog as fw
+    p = tmp_path / "listings.json"
+    ts = datetime.now(timezone.utc) - timedelta(minutes=50)
+    p.write_text(_json.dumps({"generated_at": ts.isoformat(), "listings": []}),
+                 encoding="utf-8")
+    monkeypatch.setattr(fw, "LISTINGS_PATH", p)
+    age = fw.data_age_min()
+    assert age is not None and 49 < age < 52
+    monkeypatch.setattr(fw, "LISTINGS_PATH", tmp_path / "missing.json")
+    assert fw.data_age_min() is None
+
+
 async def test_ai_stats_auth(client, ingest_headers):
     ok = await client.get("/api/ai-stats", headers=ingest_headers)
     assert ok.status_code == 200 and ok.json()["model"]

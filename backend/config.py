@@ -35,6 +35,16 @@ LISTINGS_PATH = Path(os.environ.get(
 DB_PATH = Path(os.environ.get("STATE_DB", str(BASE / "state.db")))
 MAX_NOTIFY_PER_USER = 5   # за один инжест, чтобы не заспамить чат
 
+# ── вотчдог свежести данных (watchdog.py) ──────────────────────────────────
+# GH Actions cron фетчера троттлится до 1.5–2.5 ч; вотчдог дёргает
+# workflow_dispatch, когда listings.json старше STALE_MIN минут.
+# GH_DISPATCH_TOKEN: fine-grained PAT, право Actions Read&Write ТОЛЬКО на
+# репо фетчера. Пусто = вотчдог выключен.
+GH_DISPATCH_TOKEN = os.environ.get("GH_DISPATCH_TOKEN", "")
+FETCHER_REPO = os.environ.get("FETCHER_REPO", "ipostatos/kwadratpl-fetcher")
+FETCHER_WORKFLOW = os.environ.get("FETCHER_WORKFLOW", "fetch.yml")
+STALE_MIN = int(os.environ.get("STALE_MIN", "35"))
+
 # ── тихие часы (Europe/Warsaw) ─────────────────────────────────────────────
 TZ = ZoneInfo("Europe/Warsaw")
 

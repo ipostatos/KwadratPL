@@ -36,6 +36,7 @@ from db import db, init_db  # noqa: F401 (db — re-export для тестов)
 from matching import _clean_sub, matches  # noqa: F401 (re-export для тестов)
 from routers import analyze, health, listings, subs, widget
 from texts import CITY, fmt_listing, lang_of, sub_label  # noqa: F401 (re-export для тестов)
+from fetch_watchdog import watchdog_loop
 
 
 @asynccontextmanager
@@ -51,10 +52,12 @@ async def lifespan(app: FastAPI):
         log.warning("set_my_commands failed: %s", e)
     task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
     digest = asyncio.create_task(digest_loop())
+    watchdog = asyncio.create_task(watchdog_loop())
     log.info("bot polling started; listings at %s", LISTINGS_PATH)
     yield
     task.cancel()
     digest.cancel()
+    watchdog.cancel()
     await bot.session.close()
 
 
