@@ -207,6 +207,33 @@ async def test_notify_photo_vs_text(monkeypatch):
     assert calls and calls[0][0] == "msg"
 
 
+def test_search_url_builds_deeplink():
+    sub = {"city": "krakow", "type": "room", "owner": "private", "pets": True}
+    url = backend_bot._search_url(sub)
+    assert url.startswith(backend_bot.WEBAPP_URL.rstrip("/") + "/search.html?")
+    assert "city=krakow" in url and "type=room" in url
+    assert "owner=private" in url and "pets=1" in url
+
+
+async def test_notify_overflow_has_button(monkeypatch):
+    sent = []
+
+    async def fake_msg(uid, text=None, **kw):
+        sent.append((text, kw.get("reply_markup")))
+
+    monkeypatch.setattr(backend.bot, "send_message", fake_msg)
+    sub = {"city": "warszawa", "type": "long", "owner": "private"}
+    hits = [({"id": f"l{i}", "city": "warszawa", "type": "long", "price": 3000 + i}, sub)
+            for i in range(backend_bot.MAX_NOTIFY_PER_USER + 2)]
+    await backend.notify_user(999, "ru", hits)
+    # последнее сообщение — «…и ещё N» с web_app-кнопкой на поиск по подписке
+    text, kb = sent[-1]
+    assert "ещё 2" in text
+    btn = kb.inline_keyboard[0][0]
+    assert btn.web_app is not None
+    assert "search.html?" in btn.web_app.url and "city=warszawa" in btn.web_app.url
+
+
 async def test_ai_stats_auth(client, ingest_headers):
     ok = await client.get("/api/ai-stats", headers=ingest_headers)
     assert ok.status_code == 200 and ok.json()["model"]
