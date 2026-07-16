@@ -40,50 +40,52 @@ var SUB = {
   ru: "Отмечайте пункты прямо на просмотре — прогресс сохраняется на устройстве.",
   pl: "Odznaczaj punkty podczas oglądania — postęp zapisuje się na urządzeniu.",
   ua: "Відмічайте пункти просто на огляді — прогрес зберігається на пристрої.",
+  by: "Адзначайце пункты проста на аглядзе — прагрэс захоўваецца на прыладзе.",
   en: "Tick items during the viewing — progress is saved on your device."
 };
 var FOOT = {
   ru: "Совет: всё, что вызвало сомнение, — сфотографируйте и внесите в протокол.",
   pl: "Rada: wszystko, co budzi wątpliwości — sfotografuj i wpisz do protokołu.",
   ua: "Порада: усе, що викликало сумнів, — сфотографуйте та внесіть у протокол.",
+  by: "Парада: усё, што выклікала сумнеў, — сфатаграфуйце і ўнясіце ў пратакол.",
   en: "Tip: photograph anything doubtful and put it in the protocol."
 };
 var GROUPS = [
-{ h: {ru:"Документы и деньги", pl:"Dokumenty i pieniądze", ua:"Документи й гроші", en:"Documents & money"}, items: [
-  {ru:"Владелец показал право собственности (или доверенность)", pl:"Właściciel okazał tytuł własności (lub pełnomocnictwo)", ua:"Власник показав право власності (або довіреність)", en:"Owner showed proof of ownership (or power of attorney)"},
-  {ru:"Полная цена: czynsz najmu + administracyjny + media — записана", pl:"Pełna cena: czynsz najmu + administracyjny + media — zapisana", ua:"Повна ціна: czynsz najmu + administracyjny + media — записана", en:"Full price: rent + building fee + utilities — written down"},
-  {ru:"Кауция: сумма и условия возврата оговорены", pl:"Kaucja: kwota i zasady zwrotu ustalone", ua:"Кауція: сума й умови повернення узгоджені", en:"Deposit: amount and return rules agreed"},
-  {ru:"Протокол передачи будет приложением к договору", pl:"Protokół zdawczo-odbiorczy będzie załącznikiem do umowy", ua:"Протокол передачі буде додатком до договору", en:"Handover protocol will be a contract annex"} ] },
-{ h: {ru:"Общее состояние", pl:"Stan ogólny", ua:"Загальний стан", en:"General condition"}, items: [
-  {ru:"Стены/потолок: нет пятен влаги, плесени, трещин (загляните за мебель!)", pl:"Ściany/sufit: brak zacieków, pleśni, pęknięć (zajrzyj za meble!)", ua:"Стіни/стеля: немає плям вологи, плісняви, тріщин (загляньте за меблі!)", en:"Walls/ceiling: no damp stains, mould, cracks (look behind furniture!)"},
-  {ru:"Окна открываются/закрываются, не дует, стеклопакеты целые", pl:"Okna otwierają się/zamykają, nie wieje, szyby całe", ua:"Вікна відчиняються/зачиняються, не дме, склопакети цілі", en:"Windows open/close, no drafts, glazing intact"},
-  {ru:"Двери и замки работают, комплект ключей полный", pl:"Drzwi i zamki działają, komplet kluczy pełny", ua:"Двері й замки працюють, комплект ключів повний", en:"Doors and locks work, full key set"},
-  {ru:"Полы ровные, ламинат/паркет без вздутий", pl:"Podłogi równe, panele/parkiet bez wybrzuszeń", ua:"Підлога рівна, ламінат/паркет без здуття", en:"Floors level, no swollen laminate/parquet"},
-  {ru:"Запахи: сырость, канализация, табак — принюхайтесь", pl:"Zapachy: wilgoć, kanalizacja, papierosy — powąchaj", ua:"Запахи: вогкість, каналізація, тютюн — принюхайтеся", en:"Smells: damp, sewage, smoke — sniff around"} ] },
-{ h: {ru:"Кухня и ванная", pl:"Kuchnia i łazienka", ua:"Кухня та ванна", en:"Kitchen & bathroom"}, items: [
-  {ru:"Напор и температура воды (откройте краны на пару минут)", pl:"Ciśnienie i temperatura wody (odkręć krany na parę minut)", ua:"Напір і температура води (відкрийте крани на пару хвилин)", en:"Water pressure and temperature (run taps for a couple of minutes)"},
-  {ru:"Слив не забит: раковина, душ/ванна уходят быстро", pl:"Odpływ drożny: zlew, prysznic/wanna schodzą szybko", ua:"Злив не забитий: раковина, душ/ванна йдуть швидко", en:"Drains clear: sink, shower/bath empty fast"},
-  {ru:"Под раковинами сухо, нет следов протечек", pl:"Pod zlewami sucho, brak śladów przecieków", ua:"Під раковинами сухо, немає слідів протікань", en:"Dry under sinks, no leak marks"},
-  {ru:"Плита, духовка, холодильник, стиральная машина — включите и проверьте", pl:"Kuchenka, piekarnik, lodówka, pralka — włącz i sprawdź", ua:"Плита, духовка, холодильник, пральна машина — увімкніть і перевірте", en:"Hob, oven, fridge, washing machine — switch on and test"},
-  {ru:"Вентиляция тянет (лист бумаги прилипает к решётке)", pl:"Wentylacja ciągnie (kartka przykleja się do kratki)", ua:"Вентиляція тягне (аркуш паперу прилипає до решітки)", en:"Ventilation works (paper sticks to the grille)"},
-  {ru:"Швы/силикон в ванной без чёрной плесени", pl:"Fugi/silikon w łazience bez czarnej pleśni", ua:"Шви/силікон у ванній без чорної плісняви", en:"Bathroom grout/silicone free of black mould"} ] },
-{ h: {ru:"Электрика и отопление", pl:"Elektryka i ogrzewanie", ua:"Електрика й опалення", en:"Electrics & heating"}, items: [
-  {ru:"Все розетки и выключатели работают (зарядка телефона в помощь)", pl:"Wszystkie gniazdka i włączniki działają (ładowarka do testu)", ua:"Усі розетки й вимикачі працюють (зарядка телефона в поміч)", en:"All sockets and switches work (phone charger as tester)"},
-  {ru:"Тип отопления и стоимость зимой — спросить и записать", pl:"Rodzaj ogrzewania i koszt zimą — zapytaj i zapisz", ua:"Тип опалення й вартість узимку — спитати й записати", en:"Heating type and winter cost — ask and note down"},
-  {ru:"Батареи греют во всех комнатах (в сезон)", pl:"Grzejniki grzeją we wszystkich pokojach (w sezonie)", ua:"Батареї гріють у всіх кімнатах (у сезон)", en:"Radiators heat in all rooms (in season)"},
-  {ru:"Счётчики: фото показаний электричества, газа, воды", pl:"Liczniki: zdjęcie stanów prądu, gazu, wody", ua:"Лічильники: фото показів електрики, газу, води", en:"Meters: photo of electricity, gas, water readings"},
-  {ru:"Интернет: какой провайдер, какая скорость возможна", pl:"Internet: jaki dostawca, jaka prędkość możliwa", ua:"Інтернет: який провайдер, яка швидкість можлива", en:"Internet: which provider, what speed is available"} ] },
-{ h: {ru:"Дом и район", pl:"Budynek i okolica", ua:"Будинок і район", en:"Building & area"}, items: [
-  {ru:"Шум: окна на улицу/двор, слышно ли соседей, бары рядом", pl:"Hałas: okna na ulicę/podwórko, słychać sąsiadów, bary obok", ua:"Шум: вікна на вулицю/двір, чути сусідів, бари поруч", en:"Noise: street/courtyard windows, neighbours audible, bars nearby"},
-  {ru:"Подъезд/лифт: состояние, домофон работает", pl:"Klatka/winda: stan, domofon działa", ua:"Під'їзд/ліфт: стан, домофон працює", en:"Staircase/lift: condition, intercom works"},
-  {ru:"Транспорт: реальное время до работы/учёбы в час пик", pl:"Transport: realny czas do pracy/uczelni w godzinach szczytu", ua:"Транспорт: реальний час до роботи/навчання в годину пік", en:"Transport: real commute time at rush hour"},
-  {ru:"Парковка/веломесто, если нужно — где и почём", pl:"Parking/miejsce na rower — gdzie i za ile", ua:"Парковка/веломісце, якщо треба — де і почому", en:"Parking/bike storage if needed — where and how much"},
-  {ru:"Вечером пройдитесь по району — ощущение безопасности", pl:"Przejdź się wieczorem po okolicy — poczucie bezpieczeństwa", ua:"Увечері пройдіться районом — відчуття безпеки", en:"Walk the area in the evening — how safe it feels"} ] },
-{ h: {ru:"Перед подписанием", pl:"Przed podpisaniem", ua:"Перед підписанням", en:"Before signing"}, items: [
-  {ru:"Фото/видео каждой комнаты и всех дефектов сделаны", pl:"Zdjęcia/film każdego pomieszczenia i wszystkich usterek zrobione", ua:"Фото/відео кожної кімнати та всіх дефектів зроблені", en:"Photos/video of every room and every defect taken"},
-  {ru:"Все дефекты внесены в протокол письменно", pl:"Wszystkie usterki wpisane do protokołu", ua:"Усі дефекти внесені в протокол письмово", en:"All defects written into the protocol"},
-  {ru:"Договор прочитан целиком, непонятные пункты переведены", pl:"Umowa przeczytana w całości, niejasne zapisy przetłumaczone", ua:"Договір прочитаний повністю, незрозумілі пункти перекладені", en:"Contract read in full, unclear clauses translated"},
-  {ru:"Устные обещания владельца перенесены в договор", pl:"Ustne obietnice właściciela przeniesione do umowy", ua:"Усні обіцянки власника перенесені в договір", en:"Verbal promises moved into the contract"} ] }
+{ h: {ru:"Документы и деньги", pl:"Dokumenty i pieniądze", ua:"Документи й гроші", by:"Дакументы і грошы", en:"Documents & money"}, items: [
+  {ru:"Владелец показал право собственности (или доверенность)", pl:"Właściciel okazał tytuł własności (lub pełnomocnictwo)", ua:"Власник показав право власності (або довіреність)", by:"Гаспадар паказаў права ўласнасці (або даверанасць)", en:"Owner showed proof of ownership (or power of attorney)"},
+  {ru:"Полная цена: czynsz najmu + administracyjny + media — записана", pl:"Pełna cena: czynsz najmu + administracyjny + media — zapisana", ua:"Повна ціна: czynsz najmu + administracyjny + media — записана", by:"Поўная цана: czynsz najmu + administracyjny + media — запісана", en:"Full price: rent + building fee + utilities — written down"},
+  {ru:"Кауция: сумма и условия возврата оговорены", pl:"Kaucja: kwota i zasady zwrotu ustalone", ua:"Кауція: сума й умови повернення узгоджені", by:"Кауцыя: сума і ўмовы вяртання агавораны", en:"Deposit: amount and return rules agreed"},
+  {ru:"Протокол передачи будет приложением к договору", pl:"Protokół zdawczo-odbiorczy będzie załącznikiem do umowy", ua:"Протокол передачі буде додатком до договору", by:"Пратакол перадачы будзе дадаткам да дамовы", en:"Handover protocol will be a contract annex"} ] },
+{ h: {ru:"Общее состояние", pl:"Stan ogólny", ua:"Загальний стан", by:"Агульны стан", en:"General condition"}, items: [
+  {ru:"Стены/потолок: нет пятен влаги, плесени, трещин (загляните за мебель!)", pl:"Ściany/sufit: brak zacieków, pleśni, pęknięć (zajrzyj za meble!)", ua:"Стіни/стеля: немає плям вологи, плісняви, тріщин (загляньте за меблі!)", by:"Сцены/столь: няма плям вільгаці, цвілі, трэшчын (зазірніце за мэблю!)", en:"Walls/ceiling: no damp stains, mould, cracks (look behind furniture!)"},
+  {ru:"Окна открываются/закрываются, не дует, стеклопакеты целые", pl:"Okna otwierają się/zamykają, nie wieje, szyby całe", ua:"Вікна відчиняються/зачиняються, не дме, склопакети цілі", by:"Вокны адчыняюцца/зачыняюцца, не дзьме, шклопакеты цэлыя", en:"Windows open/close, no drafts, glazing intact"},
+  {ru:"Двери и замки работают, комплект ключей полный", pl:"Drzwi i zamki działają, komplet kluczy pełny", ua:"Двері й замки працюють, комплект ключів повний", by:"Дзверы і замкі працуюць, камплект ключоў поўны", en:"Doors and locks work, full key set"},
+  {ru:"Полы ровные, ламинат/паркет без вздутий", pl:"Podłogi równe, panele/parkiet bez wybrzuszeń", ua:"Підлога рівна, ламінат/паркет без здуття", by:"Падлога роўная, ламінат/паркет без здзьмуцця", en:"Floors level, no swollen laminate/parquet"},
+  {ru:"Запахи: сырость, канализация, табак — принюхайтесь", pl:"Zapachy: wilgoć, kanalizacja, papierosy — powąchaj", ua:"Запахи: вогкість, каналізація, тютюн — принюхайтеся", by:"Пахі: вільготнасць, каналізацыя, тытунь — панюхайце", en:"Smells: damp, sewage, smoke — sniff around"} ] },
+{ h: {ru:"Кухня и ванная", pl:"Kuchnia i łazienka", ua:"Кухня та ванна", by:"Кухня і ванная", en:"Kitchen & bathroom"}, items: [
+  {ru:"Напор и температура воды (откройте краны на пару минут)", pl:"Ciśnienie i temperatura wody (odkręć krany na parę minut)", ua:"Напір і температура води (відкрийте крани на пару хвилин)", by:"Напор і тэмпература вады (адкрыйце краны на пару хвілін)", en:"Water pressure and temperature (run taps for a couple of minutes)"},
+  {ru:"Слив не забит: раковина, душ/ванна уходят быстро", pl:"Odpływ drożny: zlew, prysznic/wanna schodzą szybko", ua:"Злив не забитий: раковина, душ/ванна йдуть швидко", by:"Злiў не забіты: ракавіна, душ/ванна сыходзяць хутка", en:"Drains clear: sink, shower/bath empty fast"},
+  {ru:"Под раковинами сухо, нет следов протечек", pl:"Pod zlewami sucho, brak śladów przecieków", ua:"Під раковинами сухо, немає слідів протікань", by:"Пад ракавінамі суха, няма слядоў пацёкаў", en:"Dry under sinks, no leak marks"},
+  {ru:"Плита, духовка, холодильник, стиральная машина — включите и проверьте", pl:"Kuchenka, piekarnik, lodówka, pralka — włącz i sprawdź", ua:"Плита, духовка, холодильник, пральна машина — увімкніть і перевірте", by:"Пліта, духоўка, халадзільнік, пральная машына — уключыце і праверце", en:"Hob, oven, fridge, washing machine — switch on and test"},
+  {ru:"Вентиляция тянет (лист бумаги прилипает к решётке)", pl:"Wentylacja ciągnie (kartka przykleja się do kratki)", ua:"Вентиляція тягне (аркуш паперу прилипає до решітки)", by:"Вентыляцыя цягне (аркуш паперы прыліпае да краткі)", en:"Ventilation works (paper sticks to the grille)"},
+  {ru:"Швы/силикон в ванной без чёрной плесени", pl:"Fugi/silikon w łazience bez czarnej pleśni", ua:"Шви/силікон у ванній без чорної плісняви", by:"Швы/сілікон у ваннай без чорнай цвілі", en:"Bathroom grout/silicone free of black mould"} ] },
+{ h: {ru:"Электрика и отопление", pl:"Elektryka i ogrzewanie", ua:"Електрика й опалення", by:"Электрыка і ацяпленне", en:"Electrics & heating"}, items: [
+  {ru:"Все розетки и выключатели работают (зарядка телефона в помощь)", pl:"Wszystkie gniazdka i włączniki działają (ładowarka do testu)", ua:"Усі розетки й вимикачі працюють (зарядка телефона в поміч)", by:"Усе разеткі і выключальнікі працуюць (зарадка тэлефона ў дапамогу)", en:"All sockets and switches work (phone charger as tester)"},
+  {ru:"Тип отопления и стоимость зимой — спросить и записать", pl:"Rodzaj ogrzewania i koszt zimą — zapytaj i zapisz", ua:"Тип опалення й вартість узимку — спитати й записати", by:"Тып ацяплення і кошт узімку — спытаць і запісаць", en:"Heating type and winter cost — ask and note down"},
+  {ru:"Батареи греют во всех комнатах (в сезон)", pl:"Grzejniki grzeją we wszystkich pokojach (w sezonie)", ua:"Батареї гріють у всіх кімнатах (у сезон)", by:"Батарэі грэюць ва ўсіх пакоях (у сезон)", en:"Radiators heat in all rooms (in season)"},
+  {ru:"Счётчики: фото показаний электричества, газа, воды", pl:"Liczniki: zdjęcie stanów prądu, gazu, wody", ua:"Лічильники: фото показів електрики, газу, води", by:"Лічыльнікі: фота паказанняў электрычнасці, газу, вады", en:"Meters: photo of electricity, gas, water readings"},
+  {ru:"Интернет: какой провайдер, какая скорость возможна", pl:"Internet: jaki dostawca, jaka prędkość możliwa", ua:"Інтернет: який провайдер, яка швидкість можлива", by:"Інтэрнэт: які правайдар, якая хуткасць магчымая", en:"Internet: which provider, what speed is available"} ] },
+{ h: {ru:"Дом и район", pl:"Budynek i okolica", ua:"Будинок і район", by:"Дом і раён", en:"Building & area"}, items: [
+  {ru:"Шум: окна на улицу/двор, слышно ли соседей, бары рядом", pl:"Hałas: okna na ulicę/podwórko, słychać sąsiadów, bary obok", ua:"Шум: вікна на вулицю/двір, чути сусідів, бари поруч", by:"Шум: вокны на вуліцу/двор, ці чуваць суседзяў, бары побач", en:"Noise: street/courtyard windows, neighbours audible, bars nearby"},
+  {ru:"Подъезд/лифт: состояние, домофон работает", pl:"Klatka/winda: stan, domofon działa", ua:"Під'їзд/ліфт: стан, домофон працює", by:"Пад'езд/ліфт: стан, дамафон працуе", en:"Staircase/lift: condition, intercom works"},
+  {ru:"Транспорт: реальное время до работы/учёбы в час пик", pl:"Transport: realny czas do pracy/uczelni w godzinach szczytu", ua:"Транспорт: реальний час до роботи/навчання в годину пік", by:"Транспарт: рэальны час да працы/вучобы ў гадзіну пік", en:"Transport: real commute time at rush hour"},
+  {ru:"Парковка/веломесто, если нужно — где и почём", pl:"Parking/miejsce na rower — gdzie i za ile", ua:"Парковка/веломісце, якщо треба — де і почому", by:"Паркоўка/веламесца, калі трэба — дзе і почым", en:"Parking/bike storage if needed — where and how much"},
+  {ru:"Вечером пройдитесь по району — ощущение безопасности", pl:"Przejdź się wieczorem po okolicy — poczucie bezpieczeństwa", ua:"Увечері пройдіться районом — відчуття безпеки", by:"Увечары прайдзіцеся па раёне — адчуванне бяспекі", en:"Walk the area in the evening — how safe it feels"} ] },
+{ h: {ru:"Перед подписанием", pl:"Przed podpisaniem", ua:"Перед підписанням", by:"Перад падпісаннем", en:"Before signing"}, items: [
+  {ru:"Фото/видео каждой комнаты и всех дефектов сделаны", pl:"Zdjęcia/film każdego pomieszczenia i wszystkich usterek zrobione", ua:"Фото/відео кожної кімнати та всіх дефектів зроблені", by:"Фота/відэа кожнага пакоя і ўсіх дэфектаў зроблены", en:"Photos/video of every room and every defect taken"},
+  {ru:"Все дефекты внесены в протокол письменно", pl:"Wszystkie usterki wpisane do protokołu", ua:"Усі дефекти внесені в протокол письмово", by:"Усе дэфекты ўнесены ў пратакол пісьмова", en:"All defects written into the protocol"},
+  {ru:"Договор прочитан целиком, непонятные пункты переведены", pl:"Umowa przeczytana w całości, niejasne zapisy przetłumaczone", ua:"Договір прочитаний повністю, незрозумілі пункти перекладені", by:"Дамова прачытана цалкам, незразумелыя пункты перакладзены", en:"Contract read in full, unclear clauses translated"},
+  {ru:"Устные обещания владельца перенесены в договор", pl:"Ustne obietnice właściciela przeniesione do umowy", ua:"Усні обіцянки власника перенесені в договір", by:"Вусныя абяцанні гаспадара перанесены ў дамову", en:"Verbal promises moved into the contract"} ] }
 ];
 
 var KEY = "kw_check";

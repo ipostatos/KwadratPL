@@ -103,8 +103,8 @@ I18N.hydrate();
 
 // «Что умеет» и «Как пользоваться» — по языку (без раздувания словаря)
 var GUIDE = {
-  funcsT: { ru:"Что умеет бот", pl:"Co potrafi bot", ua:"Що вміє бот", en:"What the bot does" },
-  howT:   { ru:"Как пользоваться", pl:"Jak korzystać", ua:"Як користуватися", en:"How to use it" },
+  funcsT: { ru:"Что умеет бот", pl:"Co potrafi bot", ua:"Що вміє бот", by:"Што ўмее бот", en:"What the bot does" },
+  howT:   { ru:"Как пользоваться", pl:"Jak korzystać", ua:"Як користуватися", by:"Як карыстацца", en:"How to use it" },
   funcs: {
     ru:[
       "🏠 <b>Поиск</b> аренды в 8 городах: квартиры, комнаты и подселение, посуточно — живые объявления с OLX, Otodom и Morizon, дубли объединяются.",
@@ -114,7 +114,7 @@ var GUIDE = {
       "💰 <b>Калькулятор заезда</b>: сколько денег нужно на старте (аренда + czynsz + media + кауция + комиссия).",
       "👥 <b>Facebook-группы</b> аренды и подселения по вашему городу.",
       "📚 <b>Гайды</b>: как вернуть кауцию (с готовым шаблоном претензии), разбор договора, чек-лист осмотра, готовые фразы владельцу по-польски.",
-      "🌍 Интерфейс на 4 языках: RU / PL / UA / EN."
+      "🌍 Интерфейс на 5 языках: RU / PL / UA / BY / EN."
     ],
     pl:[
       "🏠 <b>Wyszukiwanie</b> najmu w 8 miastach: mieszkania, pokoje i współlokatorzy, na doby — ogłoszenia na żywo z OLX, Otodom i Morizon, duplikaty łączone.",
@@ -124,7 +124,7 @@ var GUIDE = {
       "💰 <b>Kalkulator wprowadzki</b>: ile pieniędzy na start (najem + czynsz + media + kaucja + prowizja).",
       "👥 <b>Grupy na Facebooku</b> dla najmu i współlokatorów w Twoim mieście.",
       "📚 <b>Przewodniki</b>: jak odzyskać kaucję (z gotowym wzorem wezwania), analiza umowy, checklista oględzin, gotowe wiadomości do właściciela.",
-      "🌍 Interfejs w 4 językach: PL / RU / UA / EN."
+      "🌍 Interfejs w 5 językach: PL / RU / UA / BY / EN."
     ],
     ua:[
       "🏠 <b>Пошук</b> оренди в 8 містах: квартири, кімнати й підселення, подобово — живі оголошення з OLX, Otodom і Morizon, дублі об'єднуються.",
@@ -134,7 +134,17 @@ var GUIDE = {
       "💰 <b>Калькулятор заїзду</b>: скільки грошей потрібно на старті (оренда + czynsz + media + кауція + комісія).",
       "👥 <b>Facebook-групи</b> оренди й підселення у вашому місті.",
       "📚 <b>Гайди</b>: як повернути кауцію (з готовим шаблоном претензії), розбір договору, чек-лист огляду, готові фрази власнику польською.",
-      "🌍 Інтерфейс 4 мовами: UA / PL / RU / EN."
+      "🌍 Інтерфейс 5 мовами: UA / PL / RU / BY / EN."
+    ],
+    by:[
+      "🏠 <b>Пошук</b> арэнды ў 8 гарадах: кватэры, пакоі і падсяленне, пасутачна — жывыя аб'явы з OLX, Otodom і Morizon, дублі аб'ядноўваюцца.",
+      "🔔 <b>Апавяшчэнні</b>: падпішыцеся на пошук — новыя прыдатныя аб'явы прыйдуць проста ў чат. Ціхія гадзіны і паўза камандай /off.",
+      "🛡 <b>Справядлівая цана і анты-скам</b>: бейдж «ніжэй/вышэй рынку раёна» і папярэджанне пра падазрона танныя аб'явы.",
+      "✨ <b>AI-разбор</b>: пераклад аб'явы на вашу мову, выжымка ключавога і ацэнка рызыкі шахрайства — кнопкай у картцы.",
+      "💰 <b>Калькулятар пераезду</b>: колькі грошай трэба на старце (арэнда + czynsz + media + кауцыя + камісія).",
+      "👥 <b>Facebook-групы</b> арэнды і падсялення па вашым горадзе.",
+      "📚 <b>Гайды</b>: як вярнуць кауцыю (з гатовым шаблонам прэтэнзіі), разбор дамовы, чэк-ліст агляду, гатовыя фразы гаспадару па-польску.",
+      "🌍 Інтэрфейс на 5 мовах: RU / PL / UA / BY / EN."
     ],
     en:[
       "🏠 <b>Search</b> rentals in 8 cities: flats, rooms & flat-shares, short stays — live listings from OLX, Otodom and Morizon, duplicates merged.",
@@ -144,7 +154,7 @@ var GUIDE = {
       "💰 <b>Move-in calculator</b>: how much cash you need upfront (rent + czynsz + utilities + deposit + agent fee).",
       "👥 <b>Facebook groups</b> for rentals and flat-shares in your city.",
       "📚 <b>Guides</b>: how to get your deposit back (with a ready demand letter), a contract breakdown, a viewing checklist, ready-made Polish messages to the owner.",
-      "🌍 Interface in 4 languages: EN / PL / RU / UA."
+      "🌍 Interface in 5 languages: EN / PL / RU / UA / BY."
     ]
   },
   how: {
@@ -168,6 +178,13 @@ var GUIDE = {
       "У картці дивіться бейдж ціни; тисніть «✨ AI-розбір» для перекладу й перевірки на шахрайство.",
       "Перед угодою загляньте в «Корисне»: кауція, договір, чек-лист огляду й калькулятор заїзду.",
       "Команди в чаті: /off — пауза сповіщень, /on — увімкнути знову."
+    ],
+    by:[
+      "Адкрыйце «Пошук», выберыце горад і тып арэнды, наладзьце фільтры — вынік абнаўляецца імгненна.",
+      "Націсніце «Падпісацца на пошук» — новыя прыдатныя аб'явы будуць прыходзіць у чат.",
+      "У картцы глядзіце бейдж цаны; жміце «✨ AI-разбор» для перакладу і праверкі на шахрайства.",
+      "Перад здзелкай зазірніце ў «Карыснае»: кауцыя, дамова, чэк-ліст агляду і калькулятар пераезду.",
+      "Каманды ў чаце: /off — паўза апавяшчэнняў, /on — уключыць зноў."
     ],
     en:[
       "Open “Search”, pick a city and rental type, set filters — results update instantly.",

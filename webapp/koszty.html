@@ -80,20 +80,20 @@
 <script>
 "use strict";
 var L10N = {
-  sub: {ru:"Сколько денег нужно, чтобы заехать, и сколько квартира стоит в месяц на самом деле.", pl:"Ile pieniędzy trzeba na wprowadzkę i ile mieszkanie naprawdę kosztuje miesięcznie.", ua:"Скільки грошей треба, щоб заїхати, і скільки квартира коштує на місяць насправді.", en:"How much cash you need to move in — and what the flat really costs per month."},
-  czynsz: {ru:"Czynsz (аренда), zł", pl:"Czynsz najmu, zł", ua:"Czynsz (оренда), zł", en:"Rent (czynsz), zł"},
-  admin: {ru:"Administracyjny, zł", pl:"Czynsz administracyjny, zł", ua:"Administracyjny, zł", en:"Building fee, zł"},
-  media: {ru:"Media (свет, газ…), zł", pl:"Media (prąd, gaz…), zł", ua:"Media (світло, газ…), zł", en:"Utilities, zł"},
-  kaucja: {ru:"Кауция", pl:"Kaucja", ua:"Кауція", en:"Deposit"},
-  prow: {ru:"Комиссия посредника", pl:"Prowizja pośrednika", ua:"Комісія посередника", en:"Agent's fee"},
-  none: {ru:"Нет", pl:"Brak", ua:"Немає", en:"None"},
-  start: {ru:"Нужно при заезде", pl:"Potrzebne na start", ua:"Потрібно при заїзді", en:"Needed to move in"},
-  monthly: {ru:"Реальная цена в месяц", pl:"Realny koszt miesięczny", ua:"Реальна ціна на місяць", en:"True monthly cost"},
-  firstMonth: {ru:"Первый месяц (czynsz + admin + media)", pl:"Pierwszy miesiąc (czynsz + admin. + media)", ua:"Перший місяць (czynsz + admin + media)", en:"First month (rent + fee + utilities)"},
-  kaucjaRow: {ru:"Кауция", pl:"Kaucja", ua:"Кауція", en:"Deposit"},
-  prowRow: {ru:"Комиссия", pl:"Prowizja", ua:"Комісія", en:"Agent's fee"},
-  totalRow: {ru:"Итого", pl:"Razem", ua:"Разом", en:"Total"},
-  foot: {ru:"Кауция вернётся при выезде (см. гайд), комиссия — нет. Media зимой обычно выше — спросите владельца о счетах за январь.", pl:"Kaucja wraca przy wyprowadzce, prowizja — nie. Media zimą są zwykle wyższe.", ua:"Кауція повернеться при виїзді (див. гайд), комісія — ні. Media взимку зазвичай вищі — спитайте про рахунки за січень.", en:"The deposit comes back when you leave (see the guide), the fee doesn't. Utilities are higher in winter — ask about January bills."}
+  sub: {ru:"Сколько денег нужно, чтобы заехать, и сколько квартира стоит в месяц на самом деле.", pl:"Ile pieniędzy trzeba na wprowadzkę i ile mieszkanie naprawdę kosztuje miesięcznie.", ua:"Скільки грошей треба, щоб заїхати, і скільки квартира коштує на місяць насправді.", by:"Колькі грошай трэба, каб заехаць, і колькі кватэра каштуе на месяц на самой справе.", en:"How much cash you need to move in — and what the flat really costs per month."},
+  czynsz: {ru:"Czynsz (аренда), zł", pl:"Czynsz najmu, zł", ua:"Czynsz (оренда), zł", by:"Czynsz (арэнда), zł", en:"Rent (czynsz), zł"},
+  admin: {ru:"Administracyjny, zł", pl:"Czynsz administracyjny, zł", ua:"Administracyjny, zł", by:"Administracyjny, zł", en:"Building fee, zł"},
+  media: {ru:"Media (свет, газ…), zł", pl:"Media (prąd, gaz…), zł", ua:"Media (світло, газ…), zł", by:"Media (святло, газ…), zł", en:"Utilities, zł"},
+  kaucja: {ru:"Кауция", pl:"Kaucja", ua:"Кауція", by:"Кауцыя", en:"Deposit"},
+  prow: {ru:"Комиссия посредника", pl:"Prowizja pośrednika", ua:"Комісія посередника", by:"Камісія пасярэдніка", en:"Agent's fee"},
+  none: {ru:"Нет", pl:"Brak", ua:"Немає", by:"Няма", en:"None"},
+  start: {ru:"Нужно при заезде", pl:"Potrzebne na start", ua:"Потрібно при заїзді", by:"Трэба пры заездзе", en:"Needed to move in"},
+  monthly: {ru:"Реальная цена в месяц", pl:"Realny koszt miesięczny", ua:"Реальна ціна на місяць", by:"Рэальная цана на месяц", en:"True monthly cost"},
+  firstMonth: {ru:"Первый месяц (czynsz + admin + media)", pl:"Pierwszy miesiąc (czynsz + admin. + media)", ua:"Перший місяць (czynsz + admin + media)", by:"Першы месяц (czynsz + admin + media)", en:"First month (rent + fee + utilities)"},
+  kaucjaRow: {ru:"Кауция", pl:"Kaucja", ua:"Кауція", by:"Кауцыя", en:"Deposit"},
+  prowRow: {ru:"Комиссия", pl:"Prowizja", ua:"Комісія", by:"Камісія", en:"Agent's fee"},
+  totalRow: {ru:"Итого", pl:"Razem", ua:"Разом", by:"Разам", en:"Total"},
+  foot: {ru:"Кауция вернётся при выезде (см. гайд), комиссия — нет. Media зимой обычно выше — спросите владельца о счетах за январь.", pl:"Kaucja wraca przy wyprowadzce, prowizja — nie. Media zimą są zwykle wyższe.", ua:"Кауція повернеться при виїзді (див. гайд), комісія — ні. Media взимку зазвичай вищі — спитайте про рахунки за січень.", by:"Кауцыя вернецца пры выездзе (гл. гайд), камісія — не. Media ўзімку звычайна вышэй — спытайце гаспадара пра рахункі за студзень.", en:"The deposit comes back when you leave (see the guide), the fee doesn't. Utilities are higher in winter — ask about January bills."}
 };
 
 var kMult = 1, pMult = 0;
