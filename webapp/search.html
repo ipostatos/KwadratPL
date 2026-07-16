@@ -373,7 +373,7 @@ function openSheet(id) {
     Icons.svg(l.url ? "key" : "message-circle") + "</span> " +
     App.esc(I18N.t(l.url ? "openSrc" : "write")) + "</button>" +
     '<button class="btn ghost" id="btnFavSheet" style="width:auto; flex:0 0 auto">' +
-    Icons.svg("heart") + "</button>" +
+    '<span class="emi">' + Icons.svg("heart") + "</span></button>" +
     "</div><div style='height:12px'></div></div>";
   $("#overlay").classList.add("open");
   App.mountAiButton($("#sheet").querySelector(".sbody"), l);
