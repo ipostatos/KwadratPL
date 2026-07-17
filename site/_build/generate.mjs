@@ -18,6 +18,91 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "..");
 // код виджета берём из единого источника — repo/widget/kwadrat-widget.js
 const WIDGET_CODE = readFileSync(join(__dirname, "..", "..", "widget", "kwadrat-widget.js"), "utf8");
+const BUILD_DATE = new Date().toISOString().slice(0, 10); // дата генерации = дата деплоя
+
+// локализация юзер-видимых строк виджет-кода (исходник widget/ остаётся RU)
+const WIDGET_STR = {
+  ru: null, // как в исходнике
+  ua: {
+    "Нет связи или токен неверный. Обновите /widget в боте.": "Немає зв'язку або токен невірний. Оновіть /widget у боті.",
+    "подходящих": "відповідних",
+    " новых за сутки": " нових за добу",
+    "обновлено ": "оновлено ",
+  },
+  pl: {
+    "Нет связи или токен неверный. Обновите /widget в боте.": "Brak połączenia lub błędny token. Odśwież /widget w bocie.",
+    "подходящих": "pasujących",
+    " новых за сутки": " nowych dzisiaj",
+    "обновлено ": "zaktualizowano ",
+  },
+  en: {
+    "Нет связи или токен неверный. Обновите /widget в боте.": "No connection or invalid token. Refresh /widget in the bot.",
+    "подходящих": "matching",
+    " новых за сутки": " new today",
+    "обновлено ": "updated ",
+  },
+};
+// «кто за этим стоит» — трест-строка в футере (E-E-A-T)
+const OWNER_LINE = {
+  ru: "Независимый проект одного разработчика, не агентство. Вопросы и баги — в чат бота.",
+  ua: "Незалежний проєкт одного розробника, не агентство. Питання й баги — у чат бота.",
+  pl: "Niezależny projekt jednego dewelopera, nie agencja. Pytania i błędy — na czacie bota.",
+  en: "An independent one-developer project, not an agency. Questions and bugs — in the bot chat.",
+};
+const PRIVACY_LABEL = KW.DICT.privacyLink; // { ru, pl, ua, by, en }
+
+const FRAME = "// " + "=".repeat(75);
+const WIDGET_COMMENT = {
+  ru: null,
+  ua: `${FRAME}
+// Kwadrat PL — віджет для Scriptable (iOS). Справжній віджет на домашньому екрані
+// без App Store та Apple Developer. Дані бере з нашого сервера за особистим
+// віджет-токеном (команда /widget у @KwadratPLBot).
+//
+// Встановлення:
+//   1. Поставте безкоштовний застосунок Scriptable з App Store.
+//   2. Новий скрипт → вставте весь цей файл.
+//   3. Впишіть свій токен у TOKEN нижче (отримати: /widget у боті).
+//   4. Домашній екран → віджет Scriptable (small або medium) → цей скрипт.
+// Підтримує small, medium та екран блокування. Тап відкриває Mini App.
+${FRAME}`,
+  pl: `${FRAME}
+// Kwadrat PL — widżet dla Scriptable (iOS). Prawdziwy widżet na ekranie głównym
+// bez App Store i Apple Developer. Dane pobiera z naszego serwera przez osobisty
+// token widżetu (komenda /widget w @KwadratPLBot).
+//
+// Instalacja:
+//   1. Zainstaluj darmową aplikację Scriptable z App Store.
+//   2. Nowy skrypt → wklej cały ten plik.
+//   3. Wpisz swój token w TOKEN poniżej (uzyskasz go komendą /widget w bocie).
+//   4. Ekran główny → widżet Scriptable (small lub medium) → ten skrypt.
+// Obsługuje small, medium i ekran blokady. Dotknięcie otwiera Mini App.
+${FRAME}`,
+  en: `${FRAME}
+// Kwadrat PL — widget for Scriptable (iOS). A real home-screen widget without
+// the App Store or an Apple Developer account. Fetches data from our server with
+// your personal widget token (the /widget command in @KwadratPLBot).
+//
+// Install:
+//   1. Get the free Scriptable app from the App Store.
+//   2. New script → paste this whole file.
+//   3. Put your token into TOKEN below (get it with /widget in the bot).
+//   4. Home screen → Scriptable widget (small or medium) → this script.
+// Supports small, medium and the lock screen. Tap opens the Mini App.
+${FRAME}`,
+};
+
+function widgetCodeFor(lang) {
+  let code = WIDGET_CODE;
+  const strs = WIDGET_STR[lang];
+  if (strs) for (const [from, to] of Object.entries(strs)) code = code.split(from).join(to);
+  const comment = WIDGET_COMMENT[lang];
+  if (comment) {
+    // заменяем шапку-комментарий (первые подряд идущие //-строки) на локализованную
+    code = code.replace(/^(\/\/[^\n]*\n)+/, comment + "\n");
+  }
+  return code;
+}
 
 // ── конфиг ────────────────────────────────────────────────────────────────
 const SITE = {
@@ -51,7 +136,7 @@ const C = {
     title: "Аренда жилья в Польше без посредников — бот Kwadrat PL",
     desc: "Поиск аренды квартир и комнат в Польше: OLX, Otodom и Morizon в одном Telegram-боте. Мгновенные уведомления, справедливая цена, AI-разбор. Бесплатно.",
     eyebrow: "Telegram-бот для аренды в Польше",
-    h1: "Пусть дом в Польше найдётся сам",
+    h1: "Аренда жилья в Польше: пусть дом найдётся сам",
     lead: "Kwadrat PL собирает свежие объявления с OLX, Otodom и Morizon в один Telegram-бот. Подпишитесь на поиск — новые квартиры и комнаты придут прямо в чат, раньше других.",
     ctaPrimary: "Открыть бота в Telegram",
     ctaNote: "Без регистрации · 5 языков · внутри Telegram",
@@ -106,7 +191,7 @@ const C = {
       { q: "Откуда объявления?", a: "Мы собираем публичные объявления с OLX, Otodom и Morizon и обновляем их каждые несколько минут. Одинаковые лоты с разных сайтов объединяются." },
       { q: "Что такое AI-разбор?", a: "Кнопка в карточке объявления: переводит текст на ваш язык, делает короткую выжимку и оценивает риск мошенничества по описанию." },
       { q: "На каких языках работает?", a: "Русский, украинский, белорусский, польский и английский. Язык переключается прямо в приложении." },
-      { q: "Как понять, что цена справедливая?", a: "Бот считает медианную цену за м² по району и типу жилья из своих данных и показывает, насколько объявление дешевле или дороже рынка." },
+      { q: "Как понять, что цена справедливая?", a: "Бот считает медианную цену за м² по району и типу жилья из своих данных и показывает, насколько объявление дешевле или дороже рынка. Медиана берётся по выборке минимум из 6 объявлений; если по району данных мало, используется медиана по городу. Данные обновляются с каждым обновлением базы." },
       { q: "Нужно ли устанавливать приложение?", a: "Нет. Kwadrat PL работает внутри Telegram как Mini App — ничего ставить не нужно." },
       { q: "Есть ли виджет для iPhone?", a: "Да. Через бесплатное приложение Scriptable можно поставить на домашний экран виджет с числом подходящих квартир и свежими ценами — без App Store-платежей. Пошаговая инструкция выше." },
     ],
@@ -115,7 +200,7 @@ const C = {
     finalCta: "Открыть бота в Telegram",
     otherBotsTitle: "Другие боты автора",
     botDesc: { issa: "Подготовка к лицензии шкипера (ISSA Inshore Skipper), SRC-радио и польским правам — тренажёр с интервальным повторением." },
-    footAbout: "Kwadrat PL — поиск аренды жилья в Польше для русско- и украиноязычных. OLX, Otodom, Morizon в одном боте.",
+    footAbout: "Kwadrat PL — поиск аренды жилья в Польше на 5 языках: русский, украинский, белорусский, польский, английский. OLX, Otodom, Morizon в одном боте.",
     footLang: "Язык",
     footRights: "Не является агентством недвижимости. Все объявления принадлежат их источникам.",
   },
@@ -123,7 +208,7 @@ const C = {
     title: "Оренда житла в Польщі без посередників — бот Kwadrat PL",
     desc: "Пошук оренди квартир і кімнат у Польщі: OLX, Otodom і Morizon в одному Telegram-боті. Миттєві сповіщення, справедлива ціна, AI-розбір. Безкоштовно.",
     eyebrow: "Telegram-бот для оренди в Польщі",
-    h1: "Хай дім у Польщі знайдеться сам",
+    h1: "Оренда житла в Польщі: хай дім знайдеться сам",
     lead: "Kwadrat PL збирає свіжі оголошення з OLX, Otodom і Morizon в один Telegram-бот. Підпишіться на пошук — нові квартири й кімнати надійдуть просто в чат, раніше за інших.",
     ctaPrimary: "Відкрити бота в Telegram",
     ctaNote: "Без реєстрації · 5 мов · всередині Telegram",
@@ -178,7 +263,7 @@ const C = {
       { q: "Звідки оголошення?", a: "Ми збираємо публічні оголошення з OLX, Otodom і Morizon та оновлюємо їх кожні кілька хвилин. Однакові лоти з різних сайтів об'єднуються." },
       { q: "Що таке AI-розбір?", a: "Кнопка в картці оголошення: перекладає текст вашою мовою, робить коротку вижимку й оцінює ризик шахрайства за описом." },
       { q: "Якими мовами працює?", a: "Українська, російська, білоруська, польська та англійська. Мова перемикається просто в застосунку." },
-      { q: "Як зрозуміти, що ціна справедлива?", a: "Бот рахує медіанну ціну за м² по району й типу житла зі своїх даних і показує, наскільки оголошення дешевше або дорожче за ринок." },
+      { q: "Як зрозуміти, що ціна справедлива?", a: "Бот рахує медіанну ціну за м² по району й типу житла зі своїх даних і показує, наскільки оголошення дешевше або дорожче за ринок. Медіана береться з вибірки щонайменше з 6 оголошень; якщо по району даних мало, використовується медіана по місту. Дані оновлюються з кожним оновленням бази." },
       { q: "Чи потрібно встановлювати застосунок?", a: "Ні. Kwadrat PL працює всередині Telegram як Mini App — нічого ставити не потрібно." },
       { q: "Чи є віджет для iPhone?", a: "Так. Через безкоштовний застосунок Scriptable можна поставити на домашній екран віджет із числом відповідних квартир і свіжими цінами — без оплат App Store. Покрокова інструкція вище." },
     ],
@@ -187,7 +272,7 @@ const C = {
     finalCta: "Відкрити бота в Telegram",
     otherBotsTitle: "Інші боти автора",
     botDesc: { issa: "Підготовка до ліцензії шкіпера (ISSA Inshore Skipper), SRC-радіо та польських прав — тренажер з інтервальним повторенням." },
-    footAbout: "Kwadrat PL — пошук оренди житла в Польщі для російсько- та україномовних. OLX, Otodom, Morizon в одному боті.",
+    footAbout: "Kwadrat PL — пошук оренди житла в Польщі 5 мовами: українська, російська, білоруська, польська, англійська. OLX, Otodom, Morizon в одному боті.",
     footLang: "Мова",
     footRights: "Не є агентством нерухомості. Усі оголошення належать їхнім джерелам.",
   },
@@ -195,7 +280,7 @@ const C = {
     title: "Wynajem mieszkań w Polsce bez pośredników — bot Kwadrat PL",
     desc: "Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.",
     eyebrow: "Bot Telegram do wynajmu w Polsce",
-    h1: "Niech dom w Polsce znajdzie się sam",
+    h1: "Wynajem mieszkania w Polsce — niech dom znajdzie się sam",
     lead: "Kwadrat PL zbiera świeże ogłoszenia z OLX, Otodom i Morizon w jednym bocie Telegram. Zasubskrybuj wyszukiwanie — nowe mieszkania i pokoje trafią prosto na czat, szybciej niż do innych.",
     ctaPrimary: "Otwórz bota w Telegramie",
     ctaNote: "Bez rejestracji · 5 języków · w Telegramie",
@@ -250,7 +335,7 @@ const C = {
       { q: "Skąd pochodzą ogłoszenia?", a: "Zbieramy publiczne ogłoszenia z OLX, Otodom i Morizon i odświeżamy je co kilka minut. Te same oferty z różnych serwisów są łączone." },
       { q: "Czym jest analiza AI?", a: "Przycisk w ogłoszeniu: tłumaczy treść na Twój język, tworzy krótkie streszczenie i ocenia ryzyko oszustwa na podstawie opisu." },
       { q: "W jakich językach działa?", a: "Polski, ukraiński, rosyjski, białoruski i angielski. Język przełączysz bezpośrednio w aplikacji." },
-      { q: "Jak poznać, że cena jest uczciwa?", a: "Bot liczy medianę ceny za m² według dzielnicy i typu lokum z własnych danych i pokazuje, o ile ogłoszenie jest tańsze lub droższe od rynku." },
+      { q: "Jak poznać, że cena jest uczciwa?", a: "Bot liczy medianę ceny za m² według dzielnicy i typu lokum z własnych danych i pokazuje, o ile ogłoszenie jest tańsze lub droższe od rynku. Mediana liczona jest z próby co najmniej 6 ogłoszeń; gdy danych dla dzielnicy jest mało, używana jest mediana dla miasta. Dane odświeżają się z każdą aktualizacją bazy." },
       { q: "Czy trzeba instalować aplikację?", a: "Nie. Kwadrat PL działa wewnątrz Telegrama jako Mini App — niczego nie instalujesz." },
       { q: "Czy jest widżet na iPhone'a?", a: "Tak. Przez darmową aplikację Scriptable można dodać na ekran główny widżet z liczbą pasujących mieszkań i świeżymi cenami — bez opłat App Store. Instrukcja krok po kroku powyżej." },
     ],
@@ -259,7 +344,7 @@ const C = {
     finalCta: "Otwórz bota w Telegramie",
     otherBotsTitle: "Inne boty autora",
     botDesc: { issa: "Przygotowanie do licencji sternika (ISSA Inshore Skipper), radia SRC i polskich patentów — trenażer z powtórkami interwałowymi." },
-    footAbout: "Kwadrat PL — wyszukiwanie mieszkań na wynajem w Polsce. OLX, Otodom i Morizon w jednym bocie Telegram.",
+    footAbout: "Kwadrat PL — wyszukiwanie mieszkań na wynajem w Polsce, 5 języków interfejsu. OLX, Otodom i Morizon w jednym bocie Telegram.",
     footLang: "Język",
     footRights: "To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł.",
   },
@@ -267,7 +352,7 @@ const C = {
     title: "Rent a home in Poland without agents — Kwadrat PL bot",
     desc: "Find flats and rooms for rent in Poland: OLX, Otodom and Morizon in one Telegram bot. Instant alerts, fair-price check, AI breakdown. Free to use.",
     eyebrow: "Telegram bot for renting in Poland",
-    h1: "Let your home in Poland find you",
+    h1: "Rent an apartment in Poland — let your home find you",
     lead: "Kwadrat PL gathers fresh listings from OLX, Otodom and Morizon into one Telegram bot. Subscribe to a search and new flats and rooms land right in your chat, before everyone else.",
     ctaPrimary: "Open the bot in Telegram",
     ctaNote: "No sign-up · 5 languages · inside Telegram",
@@ -322,7 +407,7 @@ const C = {
       { q: "Where do listings come from?", a: "We gather public listings from OLX, Otodom and Morizon and refresh them every few minutes. The same offer across sites is merged." },
       { q: "What is the AI breakdown?", a: "A button on each listing: it translates the text into your language, writes a short summary and scores the scam risk from the description." },
       { q: "Which languages are supported?", a: "English, Polish, Ukrainian, Belarusian and Russian. You switch the language right inside the app." },
-      { q: "How do I know the price is fair?", a: "The bot computes the median price per m² by district and home type from its own data and shows how far a listing sits below or above the market." },
+      { q: "How do I know the price is fair?", a: "The bot computes the median price per m² by district and home type from its own data and shows how far a listing sits below or above the market. The median needs a sample of at least 6 listings; when a district has too little data, the city-wide median is used. Figures refresh with every database update." },
       { q: "Do I need to install an app?", a: "No. Kwadrat PL runs inside Telegram as a Mini App — nothing to install." },
       { q: "Is there an iPhone widget?", a: "Yes. Via the free Scriptable app you can add a home-screen widget showing the number of matching flats and the latest prices — no App Store payments. Step-by-step guide above." },
     ],
@@ -331,7 +416,7 @@ const C = {
     finalCta: "Open the bot in Telegram",
     otherBotsTitle: "More bots by the author",
     botDesc: { issa: "Prep for the skipper licence (ISSA Inshore Skipper), SRC radio and Polish patents — a spaced-repetition trainer." },
-    footAbout: "Kwadrat PL — finding rental homes in Poland. OLX, Otodom and Morizon in one Telegram bot.",
+    footAbout: "Kwadrat PL — finding rental homes in Poland, with a 5-language interface. OLX, Otodom and Morizon in one Telegram bot.",
     footLang: "Language",
     footRights: "Not a real-estate agency. All listings belong to their sources.",
   },
@@ -354,11 +439,11 @@ function jsonLd(lang, meta) {
   const pageUrl = url(meta.path);
   const graph = [
     {
+      // общий @id на 4 языках — без per-page свойств (язык живёт в WebPage)
       "@type": "WebSite",
       "@id": SITE.domain + "/#website",
       url: SITE.domain + "/",
       name: SITE.name,
-      inLanguage: meta.hreflang,
       publisher: { "@id": SITE.domain + "/#org" },
     },
     {
@@ -366,19 +451,33 @@ function jsonLd(lang, meta) {
       "@id": SITE.domain + "/#org",
       name: SITE.name,
       url: SITE.domain + "/",
-      logo: url("icon-512.png"),
+      logo: { "@type": "ImageObject", url: url("icon-512.png"), width: 512, height: 512 },
       sameAs: [SITE.bot],
     },
     {
-      "@type": "SoftwareApplication",
+      "@type": "WebPage",
+      "@id": pageUrl + "#webpage",
+      url: pageUrl,
+      name: c.title,
+      description: c.desc,
+      inLanguage: meta.hreflang,
+      dateModified: BUILD_DATE,
+      isPartOf: { "@id": SITE.domain + "/#website" },
+    },
+    {
+      // Mini App = веб-софт в WebView, не нативный бинарь → WebApplication
+      "@type": "WebApplication",
+      "@id": pageUrl + "#app",
       name: SITE.name,
       applicationCategory: "LifestyleApplication",
-      operatingSystem: "Telegram",
+      operatingSystem: "Any",
+      browserRequirements: "Requires the Telegram app (iOS, Android, Desktop or Web)",
       url: pageUrl,
+      installUrl: SITE.bot,
       inLanguage: LANGS.map((l) => l.hreflang),
       description: c.desc,
-      screenshot: [url("shots/shot-home.png"), url("shots/shot-cards.png"),
-                   url("shots/shot-sheet.png"), url("shots/shot-widget.png")],
+      screenshot: [url("shots/shot-home.webp"), url("shots/shot-cards.webp"),
+                   url("shots/shot-sheet.webp"), url("shots/shot-widget.webp")],
       offers: { "@type": "Offer", price: "0", priceCurrency: "PLN" },
     },
     {
@@ -442,9 +541,9 @@ function page(meta) {
 
   const faqItems = c.faq
     .map(
-      (f) => `
-      <details class="faq">
-        <summary>${esc(f.q)}</summary>
+      (f, i) => `
+      <details class="faq" id="faq-${i + 1}">
+        <summary><span role="heading" aria-level="3">${esc(f.q)}</span></summary>
         <div class="faq-a">${esc(f.a)}</div>
       </details>`
     )
@@ -464,6 +563,7 @@ function page(meta) {
 <title>${esc(c.title)}</title>
 <meta name="description" content="${esc(c.desc)}">
 <link rel="canonical" href="${canonical}">
+<link rel="preload" as="image" href="/logo.webp" fetchpriority="high">
 ${altLinks(meta.path)}
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#229ED9">
@@ -513,8 +613,9 @@ p{ margin:0 }
 .top .wrap{ display:flex; align-items:center; gap:16px; height:60px }
 .brand{ display:flex; align-items:center; gap:9px; font-weight:800; font-size:18px; letter-spacing:-.01em }
 .brand .mark{ width:34px; height:34px; border-radius:50%; display:inline-block; object-fit:contain }
-.langs{ margin-left:auto; display:flex; gap:2px }
-.lang{ font-size:13px; font-weight:700; color:var(--muted); padding:6px 9px; border-radius:8px }
+.langs{ margin-left:auto; display:flex; gap:6px }
+.lang{ font-size:13px; font-weight:700; color:var(--muted); padding:6px 10px; border-radius:8px;
+  display:inline-flex; align-items:center; justify-content:center; min-height:44px; min-width:44px }
 .lang:hover{ color:var(--text); background:var(--bg2) }
 .lang.on{ color:var(--accent) }
 .top .cta{ display:none }
@@ -642,6 +743,7 @@ section{ padding:52px 0 }
   border-radius:var(--radius); padding:20px 24px; display:flex; flex-wrap:wrap; align-items:center;
   justify-content:center; text-align:center; gap:10px 18px }
 .donate p{ color:var(--muted); font-size:14.5px; margin:0 }
+.donate .d-h{ flex-basis:100%; font-size:17px; font-weight:750 }
 .btn.bmc{ background:#FFDD00; color:#0D0C22 }
 .btn.bmc:hover{ background:#ffd400; transform:translateY(-1px) }
 
@@ -660,7 +762,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 <header class="top">
   <div class="wrap">
     <a class="brand" href="${url(meta.path)}" aria-label="${esc(SITE.name)}">
-      <img class="mark" src="/logo.png" alt="" width="34" height="34"> ${esc(SITE.name)}
+      <img class="mark" src="/logo.webp" alt="" width="34" height="34"> ${esc(SITE.name)}
     </a>
     <nav class="langs" aria-label="${esc(c.footLang)}">${langSwitcher(lang)}</nav>
     <a class="btn sm cta" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} Telegram</a>
@@ -670,7 +772,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
 <main>
   <section class="hero">
     <div class="wrap">
-      <img class="hero-logo" src="/logo.png" alt="${esc(SITE.name)}" width="112" height="112">
+      <img class="hero-logo" src="/logo.webp" alt="${esc(SITE.name)}" width="112" height="112" fetchpriority="high">
       <span class="eyebrow">${esc(c.eyebrow)}</span>
       <h1>${esc(c.h1)}</h1>
       <p class="lead">${esc(c.lead)}</p>
@@ -701,9 +803,9 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
       <h2 class="sec-h">${esc(c.shotsTitle)}</h2>
       <p class="sec-lead">${esc(c.shotsLead)}</p>
       <div class="shots">
-        <figure class="shot"><img src="/shots/shot-home.png" width="400" height="870" loading="lazy" alt="${esc(c.altHome)}"></figure>
-        <figure class="shot"><img src="/shots/shot-cards.png" width="400" height="870" loading="lazy" alt="${esc(c.altCards)}"></figure>
-        <figure class="shot"><img src="/shots/shot-sheet.png" width="385" height="700" loading="lazy" alt="${esc(c.altSheet)}"></figure>
+        <figure class="shot"><img src="/shots/shot-home.webp" width="400" height="870" loading="lazy" alt="${esc(c.altHome)}"></figure>
+        <figure class="shot"><img src="/shots/shot-cards.webp" width="400" height="870" loading="lazy" alt="${esc(c.altCards)}"></figure>
+        <figure class="shot"><img src="/shots/shot-sheet.webp" width="385" height="700" loading="lazy" alt="${esc(c.altSheet)}"></figure>
       </div>
     </div>
   </section>
@@ -715,7 +817,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
           <h2 class="sec-h">${esc(c.widgetTitle)}</h2>
           <p class="widget-lead">${esc(c.widgetLead)}</p>
         </div>
-        <figure class="widget-img"><img src="/shots/shot-widget.png" width="520" height="420" loading="lazy" alt="${esc(c.widgetImgAlt)}"></figure>
+        <figure class="widget-img"><img src="/shots/shot-widget.webp" width="520" height="420" loading="lazy" alt="${esc(c.widgetImgAlt)}"></figure>
       </div>
       <div class="widget-guide">
         <h3 class="wg-h">${esc(c.widgetStepsTitle)}</h3>
@@ -724,7 +826,7 @@ footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
           <summary>${esc(c.widgetCodeShow)}</summary>
           <div class="wcode-inner">
             <button type="button" class="wcopy" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.textContent='✓'">${esc(c.widgetCopy)}</button>
-            <pre><code>${esc(WIDGET_CODE)}</code></pre>
+            <pre><code>${esc(widgetCodeFor(lang))}</code></pre>
           </div>
         </details>
         <h3 class="wg-h">${esc(c.widgetUseTitle)}</h3>
@@ -777,6 +879,7 @@ ${SITE.donate ? `
   <section class="donate">
     <div class="wrap">
       <div class="d-box">
+        <h2 class="d-h">${esc(c.donateCta.replace("☕", "").trim())}</h2>
         <p>${esc(c.donateText)}</p>
         <a class="btn sm bmc" href="${SITE.donate}" target="_blank" rel="noopener">${BMC_CUP} ${esc(c.donateCta.replace("☕", "").trim())}</a>
       </div>
@@ -788,15 +891,16 @@ ${SITE.donate ? `
   <div class="wrap">
     <div class="foot-grid">
       <div class="foot-about">
-        <div class="brand"><img class="mark" src="/logo.png" alt="" width="34" height="34"> ${esc(SITE.name)}</div>
+        <div class="brand"><img class="mark" src="/logo.webp" alt="" width="34" height="34"> ${esc(SITE.name)}</div>
         <p>${esc(c.footAbout)}</p>
+        <p style="margin-top:8px">${esc(OWNER_LINE[lang])}</p>
       </div>
       <div>
         <div style="font-weight:700;margin-bottom:10px">${esc(c.footLang)}</div>
         <div class="foot-langs">${langSwitcher(lang)}</div>
       </div>
     </div>
-    <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)}${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(c.donateCta)}</a>` : ""}</div>
+    <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)} · <a href="${url(meta.path + "privacy/")}" style="color:var(--accent)">${esc(PRIVACY_LABEL[lang])}</a>${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(c.donateCta)}</a>` : ""}</div>
   </div>
 </footer>
 
@@ -807,23 +911,106 @@ ${SITE.donate ? `
 
 // ── sitemap + robots ─────────────────────────────────────────────────────────
 function sitemap() {
-  const items = LANGS.map((meta) => {
-    const alts = LANGS.map(
-      (l) => `    <xhtml:link rel="alternate" hreflang="${l.hreflang}" href="${url(l.path)}"/>`
-    ).join("\n");
-    const xdef = `    <xhtml:link rel="alternate" hreflang="x-default" href="${url("")}"/>`;
-    return `  <url>
-    <loc>${url(meta.path)}</loc>
+  // (suffix, priority, changefreq) — главная и privacy, каждая своей hreflang-группой
+  const groups = [
+    { suffix: "", priority: (m) => (m.code === "ru" ? "1.0" : "0.9"), changefreq: "daily" },
+    { suffix: "privacy/", priority: () => "0.3", changefreq: "monthly" },
+  ];
+  const items = groups.flatMap((g) =>
+    LANGS.map((meta) => {
+      const alts = LANGS.map(
+        (l) => `    <xhtml:link rel="alternate" hreflang="${l.hreflang}" href="${url(l.path + g.suffix)}"/>`
+      ).join("\n");
+      const xdef = `    <xhtml:link rel="alternate" hreflang="x-default" href="${url(g.suffix)}"/>`;
+      return `  <url>
+    <loc>${url(meta.path + g.suffix)}</loc>
+    <lastmod>${BUILD_DATE}</lastmod>
 ${alts}
 ${xdef}
-    <changefreq>daily</changefreq>
-    <priority>${meta.code === "ru" ? "1.0" : "0.9"}</priority>
+    <changefreq>${g.changefreq}</changefreq>
+    <priority>${g.priority(meta)}</priority>
   </url>`;
-  }).join("\n");
+    })
+  ).join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${items}
 </urlset>
+`;
+}
+
+// ── privacy-страница (тексты — single source из webapp/privacy.html) ─────────
+const PRIV = (() => {
+  const html = readFileSync(join(__dirname, "..", "..", "webapp", "privacy.html"), "utf8");
+  const m = html.match(/var P = (\{[\s\S]*?\n\});/);
+  if (!m) throw new Error("PRIV: не нашёл объект P в webapp/privacy.html");
+  return new Function("return " + m[1])();
+})();
+
+function privacyPage(meta) {
+  const lang = meta.code;
+  const p = PRIV[lang];
+  const c = C[lang];
+  const title = `${PRIVACY_LABEL[lang]} — ${SITE.name}`;
+  const canonical = url(meta.path + "privacy/");
+  const alts = LANGS.map(
+    (l) => `<link rel="alternate" hreflang="${l.hreflang}" href="${url(l.path + "privacy/")}">`
+  ).join("\n") + `\n<link rel="alternate" hreflang="x-default" href="${url("privacy/")}">`;
+  const sections = p.sections.map((s) => `
+    <h2>${esc(s.h)}</h2>
+    ${s.p ? s.p.map((t) => `<p>${t}</p>`).join("\n    ") : ""}
+    ${s.list ? `<ul>${s.list.map((t) => `<li>${t}</li>`).join("")}</ul>` : ""}`).join("\n");
+  const ld = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": canonical + "#webpage",
+    url: canonical,
+    name: title,
+    inLanguage: meta.hreflang,
+    dateModified: BUILD_DATE,
+    isPartOf: { "@id": SITE.domain + "/#website" },
+  });
+  return `<!DOCTYPE html>
+<html lang="${meta.htmlLang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(p.sub)}">
+<link rel="canonical" href="${canonical}">
+${alts}
+<meta name="robots" content="index, follow">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<script type="application/ld+json">${ld}</script>
+<style>
+:root{ --bg:#ffffff; --text:#0e1621; --muted:#5b6b7b; --accent:#229ED9; --border:#e4eaf0 }
+@media (prefers-color-scheme:dark){ :root{ --bg:#0e1621; --text:#e7edf3; --muted:#93a4b4; --accent:#3aaee0; --border:#26313d } }
+*{ box-sizing:border-box }
+body{ margin:0; background:var(--bg); color:var(--text); line-height:1.65;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif }
+main{ max-width:720px; margin:0 auto; padding:40px 20px 60px }
+h1{ font-size:clamp(26px,4.5vw,36px); line-height:1.2; margin:0 0 10px }
+.sub{ color:var(--muted); margin:0 0 28px }
+h2{ font-size:19px; margin:28px 0 8px }
+ul{ margin:0; padding-left:22px }
+li{ margin:6px 0 }
+p{ margin:8px 0 }
+a{ color:var(--accent); text-decoration:none }
+.back{ display:inline-block; margin-top:32px; font-weight:700 }
+.upd{ color:var(--muted); font-size:13px; margin-top:24px }
+</style>
+</head>
+<body>
+<main>
+  <h1>${esc(PRIVACY_LABEL[lang])}</h1>
+  <p class="sub">${esc(p.sub)}</p>
+${sections}
+  <p>${esc(p.contact)}<a href="${SITE.bot}" rel="noopener">@KwadratPLBot</a></p>
+  <p class="upd">${esc(p.updated)}</p>
+  <a class="back" href="${url(meta.path)}">← ${esc(SITE.name)}</a>
+</main>
+</body>
+</html>
 `;
 }
 
@@ -839,7 +1026,10 @@ for (const meta of LANGS) {
   const dir = meta.path ? join(OUT, meta.path) : OUT;
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, "index.html"), page(meta));
-  count++;
+  const privDir = join(dir, "privacy");
+  mkdirSync(privDir, { recursive: true });
+  writeFileSync(join(privDir, "index.html"), privacyPage(meta));
+  count += 2;
 }
 writeFileSync(join(OUT, "sitemap.xml"), sitemap());
 writeFileSync(join(OUT, "robots.txt"), robots);

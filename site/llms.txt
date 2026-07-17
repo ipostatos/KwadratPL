@@ -1,22 +1,52 @@
 # Kwadrat PL
 
-> Free Telegram Mini App for finding rental housing (flats and rooms) in Poland. It gathers fresh, direct listings from OLX, Otodom and Morizon into one bot, merges duplicates across portals, and pushes instant alerts. Built for Russian-, Ukrainian-, Polish- and English-speaking renters — especially migrants — who want to rent directly, without agencies or middlemen.
+> Free Telegram Mini App for finding rental housing (flats and rooms) in Poland. It aggregates fresh, direct listings from OLX, Otodom and Morizon into one bot, merges duplicate listings across portals, and pushes instant chat alerts. Built for Russian-, Ukrainian-, Belarusian-, Polish- and English-speaking renters — especially migrants — who want to rent directly, without agencies or middlemen.
 
 ## What it does
-- Aggregated search across OLX, Otodom and Morizon; the same listing across sites is merged (no duplicates).
-- Instant chat alerts when a new matching flat or room appears (typically within minutes).
-- Fair-price check: a below/above district-market badge computed from the bot's own data.
-- Anti-scam warning on suspiciously cheap listings.
-- AI listing breakdown: translates a listing, summarises it and scores scam risk (powered by Claude).
-- Move-in cost calculator (rent, czynsz, utilities, deposit, agent fee).
-- Renter guides: deposit refund (with a demand-letter template), contract red flags, viewing checklist, ready-made Polish messages to landlords.
+- Aggregated search across OLX, Otodom and Morizon; the same listing across sites is merged (no duplicates in the feed).
+- Instant chat alerts when a new matching flat or room appears, typically within a few minutes of publication.
+- Fair-price check: a below/above district-market badge computed from the bot's own listing data (median price per m² by district and home type, minimum sample of 6 listings).
+- Anti-scam warning on suspiciously cheap listings, a common bait tactic.
+- AI listing breakdown (powered by Claude): translates a listing into the user's language, summarizes it, and scores scam risk from the description text.
+- Move-in cost calculator: rent, czynsz, utilities, deposit (kaucja) and agent fee, in one estimate.
+- Renter guides: deposit refund (with a ready-to-send demand-letter template), rental-contract red flags, a viewing checklist, and ready-made Polish messages to landlords.
+- Optional iOS home-screen widget (via the free Scriptable app) showing matching-listing count and latest prices.
 
 ## Key facts
-- Price: free, no sign-up, runs inside Telegram (no app to install).
-- Cities: Warszawa, Kraków, Wrocław, Gdańsk, Poznań, Łódź.
-- Languages: Russian, Ukrainian, Polish, English.
-- Not a real-estate agency; listings belong to their original sources.
+- Price: completely free, no sign-up, no app to install — runs inside Telegram.
+- Cities covered: Warszawa, Kraków, Wrocław, Gdańsk, Poznań, Łódź, Zakopane, Białystok.
+- Listing sources: OLX, Otodom, Morizon (public listings only).
+- Interface languages: Russian, Ukrainian, Belarusian, Polish, English.
+- Update frequency: new listings pulled and pushed within minutes.
+- Not a real-estate agency; listings remain the property of their original source sites.
+
+## FAQ
+Q: Is Kwadrat PL free?
+A: Yes, fully. Search, alerts, guides and the move-in calculator are all free, with no fees and no sign-up.
+
+Q: Where do the listings come from?
+A: Public listings from OLX, Otodom and Morizon, refreshed every few minutes. Identical listings posted on multiple sites are merged into one entry.
+
+Q: What is the AI listing breakdown?
+A: A one-tap feature on each listing card that translates it into the user's language, writes a short summary, and estimates scam risk from the listing text.
+
+Q: Which languages does Kwadrat PL support?
+A: Russian, Ukrainian, Belarusian, Polish and English, switchable at any time inside the app.
+
+Q: How does Kwadrat PL know if a price is fair?
+A: It computes the median price per m² for each district and home type from its own listing data (minimum sample of 6 listings, city-wide fallback) and shows how far a listing sits below or above that median.
+
+Q: Do I need to install an app?
+A: No. Kwadrat PL runs entirely inside Telegram as a Mini App.
+
+Q: Is there an iPhone home-screen widget?
+A: Yes, via the free Scriptable app (no App Store payment needed), showing matching-listing count and current prices.
 
 ## Links
-- Bot: https://t.me/KwadratPLBot
-- Website: https://kwadratpl.pl
+- Telegram bot: https://t.me/KwadratPLBot
+- Website: https://kwadratpl.pl/ (RU) · https://kwadratpl.pl/pl/ (PL) · https://kwadratpl.pl/ua/ (UA) · https://kwadratpl.pl/en/ (EN)
+- Privacy policy: https://kwadratpl.pl/privacy/
+- Support the project: https://buymeacoffee.com/ipostatos
+
+## Last updated
+2026-07-17

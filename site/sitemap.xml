@@ -2,6 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://kwadratpl.pl/</loc>
+    <lastmod>2026-07-17</lastmod>
     <xhtml:link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/"/>
     <xhtml:link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/"/>
     <xhtml:link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/"/>
@@ -12,6 +13,7 @@
   </url>
   <url>
     <loc>https://kwadratpl.pl/ua/</loc>
+    <lastmod>2026-07-17</lastmod>
     <xhtml:link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/"/>
     <xhtml:link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/"/>
     <xhtml:link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/"/>
@@ -22,6 +24,7 @@
   </url>
   <url>
     <loc>https://kwadratpl.pl/pl/</loc>
+    <lastmod>2026-07-17</lastmod>
     <xhtml:link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/"/>
     <xhtml:link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/"/>
     <xhtml:link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/"/>
@@ -32,6 +35,7 @@
   </url>
   <url>
     <loc>https://kwadratpl.pl/en/</loc>
+    <lastmod>2026-07-17</lastmod>
     <xhtml:link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/"/>
     <xhtml:link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/"/>
     <xhtml:link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/"/>
@@ -39,5 +43,49 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://kwadratpl.pl/"/>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://kwadratpl.pl/privacy/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kwadratpl.pl/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kwadratpl.pl/privacy/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://kwadratpl.pl/ua/privacy/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kwadratpl.pl/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kwadratpl.pl/privacy/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://kwadratpl.pl/pl/privacy/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kwadratpl.pl/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kwadratpl.pl/privacy/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://kwadratpl.pl/en/privacy/</loc>
+    <lastmod>2026-07-17</lastmod>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://kwadratpl.pl/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="uk" href="https://kwadratpl.pl/ua/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="pl" href="https://kwadratpl.pl/pl/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kwadratpl.pl/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kwadratpl.pl/privacy/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>
