@@ -19,12 +19,19 @@ DEST="${KWADRAT_DEST:-/opt/kwadratpl}"
 # ловили это руками. --exclude защищает рантайм-данные (listings.json на VPS
 # живёт своей жизнью, обновляется отдельно GitHub Actions; state.db/.venv —
 # бэкендный рантайм; _test/tests — дев-заглушки, в деплой не нужны).
-rsync -a --delete \
+# ⚠️ ГРАБЛЯ (поймана 2026-07-17): rsync -a БЕЗ --chown преserves owner/group
+# С ИСТОЧНИКА — деплой-раннер (root или CI-раннер с чужим uid) перезаписывает
+# ownership всего дерева на свой uid, включая уже существующие файлы (в
+# отличие от scp, который просто перезаписывал контент, не трогая владельца).
+# Итог был: PermissionError у сервиса на запись в webapp/data/ (работает под
+# user kwadratpl). --chown=kwadratpl:kwadratpl форсирует владельца независимо
+# от того, кем реально запущен rsync.
+rsync -a --chown=kwadratpl:kwadratpl --delete \
   --exclude='_test/' \
   --exclude='data/listings.json' \
   webapp/ "$REMOTE:$DEST/webapp/"
-rsync -a --delete tools/ "$REMOTE:$DEST/tools/"
-rsync -a --delete \
+rsync -a --chown=kwadratpl:kwadratpl --delete tools/ "$REMOTE:$DEST/tools/"
+rsync -a --chown=kwadratpl:kwadratpl --delete \
   --exclude='tests/' \
   --exclude='state.db*' \
   --exclude='.venv/' \

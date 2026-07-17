@@ -81,7 +81,12 @@ jobs:
           # файл, удалённый/переименованный в репо, оставался сиротой на проде.
           # webapp/data/listings.json НЕ трогаем — прод-данные обновляет фетчер через
           # /api/listings; commute.json — статика (районный контекст), синкается сам.
-          rsync -a --delete -e "$SSH" --exclude='_test/' --exclude='data/listings.json' webapp/ "$VPS:/opt/kwadratpl/webapp/"
-          rsync -a --delete -e "$SSH" --exclude='tests/' --exclude='state.db*' --exclude='.venv/' --exclude='__pycache__/' backend/ "$VPS:/opt/kwadratpl/backend/"
-          rsync -a --delete -e "$SSH" tools/ "$VPS:/opt/kwadratpl/tools/"
+          # --chown=kwadratpl:kwadratpl ОБЯЗАТЕЛЕН: без него rsync -a preserves
+          # owner/group С РАННЕРА (чужой uid) и на ВЕСЬ синкнутый пул файлов —
+          # включая уже существующие — что один раз уже уронило запись в
+          # webapp/data/ сервисом kwadratpl (PermissionError), т.к. scp раньше
+          # так не делал (перезаписывал контент, не трогая владельца).
+          rsync -a --chown=kwadratpl:kwadratpl --delete -e "$SSH" --exclude='_test/' --exclude='data/listings.json' webapp/ "$VPS:/opt/kwadratpl/webapp/"
+          rsync -a --chown=kwadratpl:kwadratpl --delete -e "$SSH" --exclude='tests/' --exclude='state.db*' --exclude='.venv/' --exclude='__pycache__/' backend/ "$VPS:/opt/kwadratpl/backend/"
+          rsync -a --chown=kwadratpl:kwadratpl --delete -e "$SSH" tools/ "$VPS:/opt/kwadratpl/tools/"
           $SSH "$VPS" "systemctl restart kwadratpl-api && sleep 2 && systemctl is-active kwadratpl-api"
