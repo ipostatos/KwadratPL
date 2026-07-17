@@ -13,11 +13,22 @@ cd "$(dirname "$0")"
 REMOTE="$KWADRAT_VPS"
 DEST="${KWADRAT_DEST:-/opt/kwadratpl}"
 
-scp webapp/*.html webapp/*.css webapp/*.js webapp/*.png "$REMOTE:$DEST/webapp/"
-scp -r webapp/js "$REMOTE:$DEST/webapp/"
-scp webapp/data/commute.json "$REMOTE:$DEST/webapp/data/"
-scp -r tools "$REMOTE:$DEST/"
-scp backend/*.py backend/requirements.txt "$REMOTE:$DEST/backend/"
-scp -r backend/routers "$REMOTE:$DEST/backend/"
+# rsync --delete вместо scp: scp никогда не удаляет файлы на VPS, поэтому
+# переименование/удаление файла в репо (напр. webapp/app.js при распиле на js/*)
+# оставляло осиротевший файл, который Caddy продолжал отдавать — уже дважды
+# ловили это руками. --exclude защищает рантайм-данные (listings.json на VPS
+# живёт своей жизнью, обновляется отдельно GitHub Actions; state.db/.venv —
+# бэкендный рантайм; _test/tests — дев-заглушки, в деплой не нужны).
+rsync -a --delete \
+  --exclude='_test/' \
+  --exclude='data/listings.json' \
+  webapp/ "$REMOTE:$DEST/webapp/"
+rsync -a --delete tools/ "$REMOTE:$DEST/tools/"
+rsync -a --delete \
+  --exclude='tests/' \
+  --exclude='state.db*' \
+  --exclude='.venv/' \
+  --exclude='__pycache__/' \
+  backend/ "$REMOTE:$DEST/backend/"
 ssh "$REMOTE" "systemctl restart kwadratpl-api 2>/dev/null || echo 'kwadratpl-api не установлен (см. README)'"
 echo "OK deployed to $REMOTE"
