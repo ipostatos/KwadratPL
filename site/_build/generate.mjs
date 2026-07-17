@@ -692,15 +692,16 @@ ${ogAlt}
 :root{
   color-scheme:light dark;
   --bg:#F2F2F7; --bg2:#ffffff; --card:#ffffff; --border:rgba(60,60,67,.29);
-  --text:#000000; --muted:#6c6c70; --accent:#007AFF; --accent2:#0060df;
-  --link:#0060df; /* #007AFF на белом даёт 4.02:1 — ниже WCAG AA (4.5:1) для мелкого текста;
-                      для ссылок/текста берём #0060DF (5.6:1), --accent остаётся для кнопок/иконок */
+  --text:#000000; --muted:#6c6c70; --accent:#229ED9; --accent2:#1b8ec2;
+  --link:#166a94; /* фирменный Telegram-синий #229ED9 на белом — только 3.0:1,
+                      ниже WCAG AA (4.5:1) для мелкого текста; для ссылок/текста
+                      берём затемнённый #166A94 (5.96:1), --accent для кнопок/иконок */
   --radius:20px; --radius-sm:14px; --maxw:1040px; --shadow:none;
   --nav-bg:rgba(242,242,247,.78);
 }
 @media (prefers-color-scheme:dark){
   :root{ --bg:#000000; --bg2:#1c1c1e; --card:#1c1c1e; --border:rgba(84,84,88,.65);
-    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff; --link:#0A84FF;
+    --text:#ffffff; --muted:#8e8e93; --accent:#3aaee0; --accent2:#54baea; --link:#3aaee0;
     --nav-bg:rgba(0,0,0,.72); }
 }
 *,*::before,*::after{ box-sizing:border-box; -webkit-tap-highlight-color:transparent }
@@ -744,7 +745,7 @@ p{ margin:0 }
 /* hero */
 .hero{ text-align:center; padding:56px 0 40px }
 .hero-logo{ width:112px; height:112px; display:block; margin:0 auto 22px;
-  filter:drop-shadow(0 10px 30px rgba(0,122,255,.25)) }
+  filter:drop-shadow(0 10px 30px rgba(34,158,217,.25)) }
 .eyebrow{ display:inline-block; font-size:13px; font-weight:600; letter-spacing:.02em;
   color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent);
   padding:6px 13px; border-radius:999px; margin-bottom:20px }
@@ -1102,8 +1103,8 @@ ${alts}
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <script type="application/ld+json">${ld}</script>
 <style>
-:root{ color-scheme:light dark; --bg:#F2F2F7; --card:#ffffff; --text:#000000; --muted:#6c6c70; --accent:#007AFF; --link:#0060df; --border:rgba(60,60,67,.29) }
-@media (prefers-color-scheme:dark){ :root{ --bg:#000000; --card:#1c1c1e; --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --link:#0A84FF; --border:rgba(84,84,88,.65) } }
+:root{ color-scheme:light dark; --bg:#F2F2F7; --card:#ffffff; --text:#000000; --muted:#6c6c70; --accent:#229ED9; --link:#166a94; --border:rgba(60,60,67,.29) }
+@media (prefers-color-scheme:dark){ :root{ --bg:#000000; --card:#1c1c1e; --text:#ffffff; --muted:#8e8e93; --accent:#3aaee0; --link:#3aaee0; --border:rgba(84,84,88,.65) } }
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent }
 body{ margin:0; background:var(--bg); color:var(--text); line-height:1.55;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif }
@@ -1414,13 +1415,13 @@ const CHROME_CSS = `
 :root{
   color-scheme:light dark;
   --bg:#F2F2F7; --bg2:#ffffff; --card:#ffffff; --border:rgba(60,60,67,.29);
-  --text:#000000; --muted:#6c6c70; --accent:#007AFF; --accent2:#0060df; --link:#0060df;
+  --text:#000000; --muted:#6c6c70; --accent:#229ED9; --accent2:#1b8ec2; --link:#166a94;
   --radius:20px; --radius-sm:14px; --maxw:820px; --shadow:none;
   --nav-bg:rgba(242,242,247,.78);
 }
 @media (prefers-color-scheme:dark){
   :root{ --bg:#000000; --bg2:#1c1c1e; --card:#1c1c1e; --border:rgba(84,84,88,.65);
-    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff; --link:#0A84FF;
+    --text:#ffffff; --muted:#8e8e93; --accent:#3aaee0; --accent2:#54baea; --link:#3aaee0;
     --nav-bg:rgba(0,0,0,.72); }
 }
 *,*::before,*::after{ box-sizing:border-box; -webkit-tap-highlight-color:transparent }
