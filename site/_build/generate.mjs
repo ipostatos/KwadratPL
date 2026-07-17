@@ -32,6 +32,9 @@ const SITE = {
   ],
 };
 
+// стаканчик Buy Me a Coffee для донат-кнопки (инлайн, без внешних ассетов)
+const BMC_CUP = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M5.4 4.6h13.2l-.5 2.3H5.9l-.5-2.3Z" fill="#0D0C22"/><path d="M6.4 7.5h11.2l-1.4 11a2.4 2.4 0 0 1-2.38 2.1h-3.64a2.4 2.4 0 0 1-2.38-2.1l-1.4-11Z" fill="#fff" stroke="#0D0C22" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.2 11c1.6.9 3.2-.6 4.8-.1 1.4.4 2.7.4 4.4-.3" stroke="#0D0C22" stroke-width="1.2" stroke-linecap="round"/><path d="M7.6 13.6c1.5.8 3-.5 4.5-.1 1.3.4 2.5.4 4-.2" stroke="#0D0C22" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+
 // порядок = порядок в sitemap; ru — корень и x-default
 const LANGS = [
   { code: "ru", path: "", hreflang: "ru", locale: "ru_RU", htmlLang: "ru" },
@@ -639,8 +642,8 @@ section{ padding:52px 0 }
   border-radius:var(--radius); padding:20px 24px; display:flex; flex-wrap:wrap; align-items:center;
   justify-content:center; text-align:center; gap:10px 18px }
 .donate p{ color:var(--muted); font-size:14.5px; margin:0 }
-.btn.ghost{ background:transparent; color:var(--accent); border:1px solid var(--border) }
-.btn.ghost:hover{ background:var(--bg2); color:var(--accent2); transform:none }
+.btn.bmc{ background:#FFDD00; color:#0D0C22 }
+.btn.bmc:hover{ background:#ffd400; transform:translateY(-1px) }
 
 /* footer */
 footer{ border-top:1px solid var(--border); padding:40px 0; margin-top:20px }
@@ -775,7 +778,7 @@ ${SITE.donate ? `
     <div class="wrap">
       <div class="d-box">
         <p>${esc(c.donateText)}</p>
-        <a class="btn sm ghost" href="${SITE.donate}" target="_blank" rel="noopener">${esc(c.donateCta)}</a>
+        <a class="btn sm bmc" href="${SITE.donate}" target="_blank" rel="noopener">${BMC_CUP} ${esc(c.donateCta.replace("☕", "").trim())}</a>
       </div>
     </div>
   </section>` : ""}
