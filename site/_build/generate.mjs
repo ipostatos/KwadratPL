@@ -8,6 +8,7 @@ import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
+import vm from "node:vm";
 
 const require = createRequire(import.meta.url);
 const KW = require("../../webapp/i18n.dict.js");
@@ -517,14 +518,17 @@ function page(meta) {
   const cities = SITE.cities.map((k) => CITY[k][lang]);
 
   const featureCards = c.features
-    .map(
-      (f, i) => `
-      <article class="card">
+    .map((f, i) => {
+      // фича "Гайды для арендатора" (индекс 5) ведёт на хаб /guides/ — единственная кликабельная карточка
+      const tag = i === 5 ? "a" : "article";
+      const href = i === 5 ? ` href="${url(meta.path + "guides/")}"` : "";
+      return `
+      <${tag} class="card"${href}>
         <div class="ico-wrap">${icon(FEATURE_ICONS[i])}</div>
         <h3>${esc(f.t)}</h3>
         <p>${esc(f.d)}</p>
-      </article>`
-    )
+      </${tag}>`;
+    })
     .join("");
 
   const stepItems = c.steps
@@ -537,7 +541,9 @@ function page(meta) {
     )
     .join("");
 
-  const cityChips = cities.map((n) => `<span class="chip">${esc(n)}</span>`).join("");
+  const cityChips = SITE.cities
+    .map((k) => `<a class="chip" href="${url(meta.path + "cities/" + k + "/")}">${esc(CITY[k][lang])}</a>`)
+    .join("");
 
   const faqItems = c.faq
     .map(
@@ -656,8 +662,9 @@ section{ padding:52px 0 }
 .grid{ display:grid; grid-template-columns:1fr; gap:16px }
 @media(min-width:600px){ .grid{ grid-template-columns:1fr 1fr } }
 @media(min-width:900px){ .grid{ grid-template-columns:1fr 1fr 1fr } }
-.card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
-  padding:24px; box-shadow:var(--shadow) }
+.card{ display:block; background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:24px; box-shadow:var(--shadow); transition:transform .12s ease }
+a.card:hover{ transform:translateY(-1px); border-color:var(--accent) }
 .ico-wrap{ display:inline-flex; width:44px; height:44px; border-radius:11px; align-items:center; justify-content:center;
   color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent); margin-bottom:14px }
 .card h3{ font-size:17px; font-weight:750; margin-bottom:6px }
@@ -675,8 +682,9 @@ section{ padding:52px 0 }
 
 /* cities */
 .chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px }
-.chip{ font-weight:700; font-size:15px; background:var(--card); border:1px solid var(--border);
-  padding:10px 18px; border-radius:12px }
+.chip{ display:inline-flex; font-weight:700; font-size:15px; background:var(--card); border:1px solid var(--border);
+  padding:10px 18px; border-radius:12px; transition:transform .12s ease }
+a.chip:hover{ transform:translateY(-1px); border-color:var(--accent); color:var(--accent) }
 
 /* screenshots */
 .shots{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap }
@@ -915,6 +923,9 @@ function sitemap() {
   const groups = [
     { suffix: "", priority: (m) => (m.code === "ru" ? "1.0" : "0.9"), changefreq: "daily" },
     { suffix: "privacy/", priority: () => "0.3", changefreq: "monthly" },
+    { suffix: "guides/", priority: () => "0.6", changefreq: "monthly" },
+    ...GUIDES.map((g) => ({ suffix: `guides/${g.slug}/`, priority: () => "0.7", changefreq: "monthly" })),
+    ...SITE.cities.map((c) => ({ suffix: `cities/${c}/`, priority: () => "0.7", changefreq: "weekly" })),
   ];
   const items = groups.flatMap((g) =>
     LANGS.map((meta) => {
@@ -1014,6 +1025,724 @@ ${sections}
 `;
 }
 
+// ── гайды (single source: webapp/*.html, var GUIDE / GROUPS / PHRASES / L10N) ──
+// Извлекаем инлайн-<script> каждой страницы «Полезное» и выполняем в песочнице
+// vm — так тексты живут только в webapp/, а сайт их просто зеркалит (как P выше).
+function runPageScript(file) {
+  const html = readFileSync(join(__dirname, "..", "..", "webapp", file), "utf8");
+  const m = html.match(/<script>\n"use strict";\n([\s\S]*?)\n<\/script>/);
+  if (!m) throw new Error(`guide: не нашёл инлайн <script> в webapp/${file}`);
+  const sandbox = {
+    console,
+    URLSearchParams,
+    location: { search: "" },
+    navigator: {},
+    localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
+    document: {
+      title: "",
+      getElementById() { return { style: {}, dataset: {}, classList: { toggle() {}, add() {}, remove() {} } }; },
+      querySelectorAll() { return []; },
+      querySelector() { return { classList: { add() {}, toggle() {}, remove() {} } }; },
+    },
+    I18N: { lang: "ru", t: () => "", hydrate() {} },
+    Icons: { svg: () => "", hydrate() {} },
+    Guide: { renderArticle() {}, copyText() {}, esc: (s) => String(s), pick: (d) => d.ru },
+  };
+  sandbox.window = sandbox;
+  vm.createContext(sandbox);
+  vm.runInContext(m[1], sandbox);
+  return sandbox;
+}
+
+const GSRC = {
+  kaucja: runPageScript("kaucja.html"),
+  umowa: runPageScript("umowa.html"),
+  najem: runPageScript("najem.html"),
+  checklist: runPageScript("checklist.html"),
+  phrases: runPageScript("phrases.html"),
+  koszty: runPageScript("koszty.html"),
+};
+
+// сайт поддерживает 4 языка (без 'by' — см. LANGS); pick() берёт то, что есть
+function pickLang(data, lang) { return (data && (data[lang] || data.ru)) || {}; }
+
+const GUIDES = [
+  { slug: "kaucja", icon: "wallet", type: "article", dictKey: "cellKaucjaT",
+    seo: {
+      ru: { title: "Как вернуть кауцию за квартиру в Польше — гайд и шаблон претензии",
+        desc: "Что говорит закон о kaucja, как задокументировать состояние квартиры, что считается нормальным износом и как составить wezwanie do zapłaty, если депозит не возвращают." },
+      pl: { title: "Jak odzyskać kaucję za mieszkanie — poradnik i wzór wezwania",
+        desc: "Co mówi ustawa o kaucji, jak udokumentować stan mieszkania, co to normalne zużycie i jak napisać wezwanie do zapłaty, gdy właściciel nie oddaje kaucji." },
+      ua: { title: "Як повернути кауцію за квартиру в Польщі — гайд і шаблон претензії",
+        desc: "Що каже закон про kaucja, як задокументувати стан квартири, що вважається нормальним зносом і як скласти wezwanie do zapłaty, якщо депозит не повертають." },
+      en: { title: "How to get your deposit back in Poland — guide + demand letter template",
+        desc: "Poland's kaucja law: documenting the flat's condition, what counts as normal wear, and how to write a wezwanie do zapłaty if the deposit isn't returned." },
+    } },
+  { slug: "umowa", icon: "file-text", type: "article", dictKey: "cellUmowaT",
+    seo: {
+      ru: { title: "Договор аренды в Польше: на что смотреть, red flags",
+        desc: "Разбор договора найма: обязательные пункты, за что реально отвечает арендатор, типичные ловушки владельцев и что проверить перед подписью." },
+      pl: { title: "Umowa najmu mieszkania — na co zwrócić uwagę, czerwone flagi",
+        desc: "Przewodnik po umowie najmu: obowiązkowe zapisy, za co faktycznie odpowiada najemca, typowe pułapki wynajmujących i co sprawdzić przed podpisem." },
+      ua: { title: "Договір оренди квартири в Польщі: на що дивитися, red flags",
+        desc: "Розбір договору найму: обов'язкові пункти, за що реально відповідає орендар, типові пастки власників і що перевірити перед підписом." },
+      en: { title: "Poland rental contract guide: what to check, red flags",
+        desc: "A walkthrough of a Polish lease: mandatory clauses, what tenants are actually liable for, common landlord traps, and what to check before signing." },
+    } },
+  { slug: "najem", icon: "shield-check", type: "article", dictKey: "cellNajemT",
+    seo: {
+      ru: { title: "Najem okazjonalny и meldunek: что нужно знать арендатору в Польше",
+        desc: "Чем najem okazjonalny отличается от обычного договора, зачем нужен meldunek и karta pobytu, какие вопросы задать владельцу перед арендой." },
+      pl: { title: "Najem okazjonalny i meldunek — co musi wiedzieć najemca",
+        desc: "Czym różni się najem okazjonalny od zwykłego, po co jest zameldowanie i karta pobytu, jakie pytania zadać wynajmującemu przed najmem." },
+      ua: { title: "Najem okazjonalny і meldunek: що треба знати орендарю в Польщі",
+        desc: "Чим najem okazjonalny відрізняється від звичайного договору, навіщо потрібен meldunek і karta pobytu, які питання поставити власнику." },
+      en: { title: "Najem okazjonalny & meldunek in Poland: a tenant's guide",
+        desc: "How najem okazjonalny differs from a standard lease, why meldunek and karta pobytu matter, and what to ask the landlord before renting." },
+    } },
+  { slug: "checklist", icon: "check-square", type: "checklist", dictKey: "cellCheckT",
+    seo: {
+      ru: { title: "Чек-лист осмотра квартиры перед арендой в Польше (29 пунктов)",
+        desc: "Интерактивный чек-лист: что проверить на просмотре — документы, стены и сантехника, электрика, отопление, район. Прогресс сохраняется в браузере." },
+      pl: { title: "Checklista oględzin mieszkania przed najmem (29 punktów)",
+        desc: "Interaktywna checklista: co sprawdzić podczas oglądania — dokumenty, ściany i hydraulika, elektryka, ogrzewanie, okolica. Postęp zapisuje się w przeglądarce." },
+      ua: { title: "Чек-лист огляду квартири перед орендою в Польщі (29 пунктів)",
+        desc: "Інтерактивний чек-лист: що перевірити на огляді — документи, стіни й сантехніка, електрика, опалення, район. Прогрес зберігається в браузері." },
+      en: { title: "Poland flat-viewing checklist (29 points)",
+        desc: "An interactive checklist for viewings: documents, walls and plumbing, electrics, heating, the neighbourhood. Progress is saved in your browser." },
+    } },
+  { slug: "phrases", icon: "message-circle", type: "phrases", dictKey: "cellPhrasesT",
+    seo: {
+      ru: { title: "Фразы по-польски для переписки с владельцем квартиры",
+        desc: "8 готовых сообщений на польском: отклик на объявление, вопросы перед просмотром, торг, жалоба на поломку, уведомление о выезде. Копируйте и отправляйте." },
+      pl: { title: "Gotowe wiadomości do właściciela mieszkania",
+        desc: "8 gotowych wiadomości: odpowiedź na ogłoszenie, pytania przed oglądaniem, negocjacja ceny, zgłoszenie usterki, wypowiedzenie umowy. Skopiuj i wyślij." },
+      ua: { title: "Фрази польською для листування з власником квартири",
+        desc: "8 готових повідомлень польською: відгук на оголошення, питання перед оглядом, торг, скарга на поломку, повідомлення про виїзд. Копіюйте й надсилайте." },
+      en: { title: "Ready-made Polish messages to a landlord",
+        desc: "8 ready messages in Polish: replying to a listing, questions before a viewing, price negotiation, reporting a fault, a move-out notice. Copy and send." },
+    } },
+  { slug: "koszty", icon: "calculator", type: "koszty", dictKey: "cellKosztyT",
+    seo: {
+      ru: { title: "Калькулятор аренды: сколько нужно денег на заезд в Польше",
+        desc: "Реальная стоимость аренды: czynsz, administracyjny, media, кауция и комиссия агента — сколько нужно при заезде и сколько выходит в месяц." },
+      pl: { title: "Kalkulator wprowadzki — ile pieniędzy potrzeba na start",
+        desc: "Realny koszt najmu: czynsz, czynsz administracyjny, media, kaucja i prowizja pośrednika — ile potrzeba na wprowadzkę i ile wychodzi miesięcznie." },
+      ua: { title: "Калькулятор оренди: скільки грошей треба на заїзд у Польщі",
+        desc: "Реальна вартість оренди: czynsz, administracyjny, media, кауція та комісія агента — скільки треба при заїзді і скільки виходить на місяць." },
+      en: { title: "Poland move-in cost calculator",
+        desc: "The real cost of renting: rent, building fee, utilities, deposit and agent's fee — how much cash you need up front and the true monthly cost." },
+    } },
+];
+
+const GUIDES_HUB = {
+  ru: { title: "Гайды для арендатора жилья в Польше — Kwadrat PL",
+    desc: "Бесплатные гайды: кауция, договор аренды, najem okazjonalny, чек-лист осмотра, фразы для владельца, калькулятор заезда.",
+    h1: "Гайды для арендатора", lead: "6 бесплатных гайдов от Kwadrat PL — то, что реально пригождается при съёме жилья в Польше." },
+  pl: { title: "Poradniki dla najemcy w Polsce — Kwadrat PL",
+    desc: "Darmowe poradniki: kaucja, umowa najmu, najem okazjonalny, checklista oględzin, gotowe wiadomości, kalkulator wprowadzki.",
+    h1: "Poradniki dla najemcy", lead: "6 darmowych poradników od Kwadrat PL — to, co naprawdę przydaje się przy wynajmie mieszkania w Polsce." },
+  ua: { title: "Гайди для орендаря житла в Польщі — Kwadrat PL",
+    desc: "Безкоштовні гайди: кауція, договір оренди, najem okazjonalny, чек-лист огляду, фрази для власника, калькулятор заїзду.",
+    h1: "Гайди для орендаря", lead: "6 безкоштовних гайдів від Kwadrat PL — те, що реально стає в пригоді при оренді житла в Польщі." },
+  en: { title: "Renter's guides for Poland — Kwadrat PL",
+    desc: "Free guides: deposit, rental contract, najem okazjonalny, viewing checklist, landlord messages, move-in calculator.",
+    h1: "Renter's guides", lead: "6 free guides from Kwadrat PL — the stuff that actually helps when renting a flat in Poland." },
+};
+
+// ── города: локатив ("в Варшаве"/"w Warszawie") + маркетинговый лид + FAQ ────
+const CITY_IN = {
+  warszawa:  { ru: "в Варшаве",    pl: "w Warszawie",   ua: "у Варшаві",   en: "in Warsaw" },
+  krakow:    { ru: "в Кракове",    pl: "w Krakowie",    ua: "у Кракові",   en: "in Kraków" },
+  wroclaw:   { ru: "во Вроцлаве",  pl: "we Wrocławiu",  ua: "у Вроцлаві",  en: "in Wrocław" },
+  gdansk:    { ru: "в Гданьске",   pl: "w Gdańsku",     ua: "у Гданську",  en: "in Gdańsk" },
+  poznan:    { ru: "в Познани",    pl: "w Poznaniu",    ua: "у Познані",   en: "in Poznań" },
+  lodz:      { ru: "в Лодзи",      pl: "w Łodzi",       ua: "у Лодзі",     en: "in Łódź" },
+  zakopane:  { ru: "в Закопане",   pl: "w Zakopanem",   ua: "у Закопане",  en: "in Zakopane" },
+  bialystok: { ru: "в Белостоке",  pl: "w Białymstoku", ua: "у Білостоку", en: "in Białystok" },
+};
+
+const CITY_LEAD = {
+  warszawa: {
+    ru: "Варшава — столица и крупнейший рынок аренды в Польше: сюда едут работать в корпорациях, IT и на международных проектах, а Мокотув и Воля забиты офисами. Здесь самый широкий выбор квартир и комнат, но и самые высокие цены — особенно в Śródmieście. Правобережная Прага и спальные районы вроде Bemowo и Ursynów дешевле при похожих 20–30 минутах до центра метро или трамваем.",
+    pl: "Warszawa to stolica i największy rynek najmu w Polsce: przyciąga pracą w korporacjach, IT i projektach międzynarodowych, a Mokotów i Wola są pełne biur. Tu największy wybór mieszkań i pokoi, ale i najwyższe ceny — zwłaszcza w Śródmieściu. Prawobrzeżna Praga i dzielnice sypialniane jak Bemowo czy Ursynów są tańsze przy podobnym, 20–30-minutowym dojeździe metrem lub tramwajem.",
+    ua: "Варшава — столиця і найбільший ринок оренди в Польщі: сюди їдуть працювати в корпораціях, IT та міжнародних проєктах, а Мокотув і Воля забиті офісами. Тут найширший вибір квартир і кімнат, але й найвищі ціни — особливо в Śródmieście. Правобережна Прага та спальні райони на кшталт Bemowo й Ursynów дешевші за схожих 20–30 хвилин до центру метро чи трамваєм.",
+    en: "Warsaw is Poland's capital and its biggest rental market: people move here for corporate, IT and international jobs, and Mokotów and Wola are packed with offices. It has the widest choice of flats and rooms — and the highest prices, especially in Śródmieście. Praga across the river and residential districts like Bemowo or Ursynów cost less for a similar 20–30-minute commute by metro or tram." },
+  krakow: {
+    ru: "Краков — историческая столица Малопольши и крупнейший студенческий город страны: Ягеллонский университет и десятки вузов держат спрос на комнаты и небольшие квартиры круглый год. Старый город и Казимеж — туристический центр с высокими ценами, зато Nowa Huta и Podgórze Duchackie дают нормальную квартиру заметно дешевле при удобном трамвайном сообщении.",
+    pl: "Kraków to historyczna stolica Małopolski i największe miasto studenckie w kraju: Uniwersytet Jagielloński i dziesiątki uczelni utrzymują popyt na pokoje i małe mieszkania cały rok. Stare Miasto i Kazimierz to centrum turystyczne z wysokimi cenami, za to Nowa Huta i Podgórze Duchackie dają normalne mieszkanie wyraźnie taniej przy dobrym połączeniu tramwajowym.",
+    ua: "Краків — історична столиця Малопольщі і найбільше студентське місто країни: Ягеллонський університет і десятки вишів тримають попит на кімнати й невеликі квартири цілий рік. Старе місто і Казімеж — туристичний центр із високими цінами, натомість Nowa Huta й Podgórze Duchackie дають нормальну квартиру помітно дешевше при зручному трамвайному сполученні.",
+    en: "Kraków is Małopolska's historic capital and Poland's biggest student city: the Jagiellonian University and dozens of other schools keep demand for rooms and small flats high year-round. The Old Town and Kazimierz are the touristy, pricey core, while Nowa Huta and Podgórze Duchackie offer a normal flat for noticeably less with an easy tram ride in." },
+  wroclaw: {
+    ru: "Вроцлав — один из главных IT- и аутсорс-хабов Польши: здесь офисы Nokia, HP, Google и десятков других компаний, плюс сильный студенческий сектор. Город на Одре быстро растёт, международное сообщество большое, а рынок аренды подвижный — новые объявления появляются каждый день в Krzyki, Fabryczna и Śródmieście.",
+    pl: "Wrocław to jeden z głównych hubów IT i outsourcingu w Polsce: biura Nokii, HP, Google i dziesiątek innych firm, plus silny sektor studencki. Miasto nad Odrą szybko się rozwija, społeczność międzynarodowa jest duża, a rynek najmu żywy — nowe ogłoszenia pojawiają się codziennie w Krzykach, na Fabrycznej i w Śródmieściu.",
+    ua: "Вроцлав — один із головних IT- та аутсорс-хабів Польщі: тут офіси Nokia, HP, Google і десятків інших компаній, плюс сильний студентський сектор. Місто на Одрі швидко росте, міжнародна спільнота велика, а ринок оренди рухливий — нові оголошення з'являються щодня в Krzyki, на Fabryczna і в Śródmieście.",
+    en: "Wrocław is one of Poland's main IT and outsourcing hubs, home to Nokia, HP, Google and dozens of other offices, plus a strong student scene. The city on the Oder is growing fast, its international community is large, and the rental market moves quickly — new listings appear daily in Krzyki, Fabryczna and Śródmieście." },
+  gdansk: {
+    ru: "Гданьск — часть Труймяста вместе с Сопотом и Гдыней, побережье Балтики, судостроение и растущий IT-сектор. Летом спрос подскакивает из-за туристов и посуточной аренды, зимой рынок спокойнее и выгоднее. Śródmieście и Wrzeszcz ближе к морю и дороже, спальные районы вроде Chełm и Przymorze — доступнее.",
+    pl: "Gdańsk to część Trójmiasta razem z Sopotem i Gdynią, wybrzeże Bałtyku, przemysł stoczniowy i rosnący sektor IT. Latem popyt skacze przez turystów i najem krótkoterminowy, zimą rynek jest spokojniejszy i korzystniejszy. Śródmieście i Wrzeszcz są bliżej morza i droższe, dzielnice sypialniane jak Chełm czy Przymorze — tańsze.",
+    ua: "Гданськ — частина Труймяста разом із Сопотом і Гдинею, узбережжя Балтики, суднобудування та зростаючий IT-сектор. Влітку попит підскакує через туристів і подобову оренду, взимку ринок спокійніший і вигідніший. Śródmieście і Wrzeszcz ближче до моря й дорожчі, спальні райони на кшталт Chełm і Przymorze — доступніші.",
+    en: "Gdańsk is part of the Tri-City alongside Sopot and Gdynia, on the Baltic coast, with shipbuilding and a growing IT sector. Demand spikes in summer with tourists and short-term rentals, while winter is calmer and cheaper. Śródmieście and Wrzeszcz sit closer to the sea and cost more; residential areas like Chełm or Przymorze are more affordable." },
+  poznan: {
+    ru: "Познань — деловой и логистический центр Великопольши, город международных ярмарок MTP и крупный студенческий центр с ганзейской архитектурой в центре. Рынок аренды спокойнее, чем в Варшаве или Кракове, без резких сезонных скачков цен — комнату или квартиру можно снять быстро в любое время года.",
+    pl: "Poznań to centrum biznesowe i logistyczne Wielkopolski, miasto targów międzynarodowych MTP i duży ośrodek akademicki z hanzeatycką architekturą w centrum. Rynek najmu jest spokojniejszy niż w Warszawie czy Krakowie, bez gwałtownych sezonowych skoków cen — pokój lub mieszkanie można wynająć szybko o każdej porze roku.",
+    ua: "Познань — діловий і логістичний центр Великопольщі, місто міжнародних ярмарків MTP і великий студентський центр із ганзейською архітектурою в центрі. Ринок оренди спокійніший, ніж у Варшаві чи Кракові, без різких сезонних стрибків цін — кімнату або квартиру можна зняти швидко в будь-яку пору року.",
+    en: "Poznań is Wielkopolska's business and logistics hub, home to the international MTP trade fairs and a large student population, with Hanseatic-style architecture downtown. Its rental market is calmer than Warsaw's or Kraków's, without sharp seasonal price swings — a room or flat can usually be rented quickly any time of year." },
+  lodz: {
+    ru: "Лодзь — город киношколы (её закончили Полански и Кесьлёвский) и бывшая текстильная столица Польши, которая последние годы активно перестраивается: Manufaktura и центр обновляются, растёт IT-сектор. Аренда здесь заметно дешевле, чем в Варшаве и Кракове, при хорошем железнодорожном сообщении с обеими столицами.",
+    pl: "Łódź to miasto Szkoły Filmowej (jej absolwentami są Polański i Kieślowski) i była stolica włókiennictwa w Polsce, która ostatnie lata mocno się przebudowuje: Manufaktura i centrum się odnawiają, rośnie sektor IT. Najem jest tu wyraźnie tańszy niż w Warszawie czy Krakowie, przy dobrym połączeniu kolejowym z obiema stolicami.",
+    ua: "Лодзь — місто кіношколи (її закінчили Полянскі й Кесльовський) і колишня текстильна столиця Польщі, яка останніми роками активно перебудовується: Manufaktura і центр оновлюються, зростає IT-сектор. Оренда тут помітно дешевша, ніж у Варшаві й Кракові, при хорошому залізничному сполученні з обома столицями.",
+    en: "Łódź is home to the famous Film School (alumni include Polanski and Kieślowski) and was once Poland's textile capital — it's been rebuilding fast in recent years, with Manufaktura and the city centre renewed and a growing IT sector. Rents here are noticeably lower than in Warsaw or Kraków, with good rail links to both capitals." },
+  zakopane: {
+    ru: "Закопане — туристическая столица у подножия Татр: горнолыжный сезон зимой и трекинг летом держат спрос на короткую и посуточную аренду весь год. Центр и Krupówki — самые дорогие и туристические, а Olcza, Bystre и Harenda дают более спокойное и доступное жильё в двух шагах от гор.",
+    pl: "Zakopane to turystyczna stolica u podnóża Tatr: sezon narciarski zimą i trekking latem utrzymują popyt na najem krótkoterminowy przez cały rok. Centrum i Krupówki są najdroższe i najbardziej turystyczne, a Olcza, Bystre czy Harenda dają spokojniejsze i tańsze lokum o krok od gór.",
+    ua: "Закопане — туристична столиця біля підніжжя Татр: гірськолижний сезон узимку і трекінг улітку тримають попит на коротку й подобову оренду цілий рік. Центр і Krupówki — найдорожчі й найтуристичніші, а Olcza, Bystre й Harenda дають спокійніше і доступніше житло за крок від гір.",
+    en: "Zakopane is the tourist capital at the foot of the Tatra mountains: the winter ski season and summer hiking keep demand for short and daily rentals high all year. The centre and Krupówki are the priciest, most touristy spots, while Olcza, Bystre or Harenda offer quieter, more affordable places a step from the mountains." },
+  bialystok: {
+    ru: "Белосток — крупнейший город Подляского воеводства у восточной границы, спокойный и заметно доступнее по цене, чем крупные польские мегаполисы. Университеты и медколледж держат стабильный студенческий спрос, а близость к Беларуси и Литве делает город удобной базой для тех, кто ищет тихий и бюджетный вариант.",
+    pl: "Białystok to największe miasto województwa podlaskiego przy wschodniej granicy, spokojne i wyraźnie tańsze niż duże polskie metropolie. Uczelnie i uniwersytet medyczny utrzymują stabilny popyt studencki, a bliskość Białorusi i Litwy czyni miasto wygodną bazą dla tych, którzy szukają cichej i budżetowej opcji.",
+    ua: "Білосток — найбільше місто Підляського воєводства біля східного кордону, спокійне і помітно доступніше за ціною, ніж великі польські мегаполіси. Університети й медколедж тримають стабільний студентський попит, а близькість до Білорусі й Литви робить місто зручною базою для тих, хто шукає тихий і бюджетний варіант.",
+    en: "Białystok is the largest city in Podlaskie voivodeship on Poland's eastern border — calm and noticeably cheaper than the big Polish metros. Its universities and medical college keep steady student demand, and its closeness to Belarus and Lithuania makes it a convenient base for anyone after a quiet, budget-friendly option." },
+};
+
+const CITY_SEO = {
+  ru: { title: (inCity) => `Аренда квартир и комнат ${inCity} — Kwadrat PL`,
+    desc: (inCity) => `Ищите квартиру или комнату ${inCity}: OLX, Otodom и Morizon в одном Telegram-боте. Мгновенные уведомления о новых объявлениях, справедливая цена, бесплатно.`,
+    h1: (inCity) => `Аренда жилья ${inCity}`, districts: "Районы", faqTitle: "Частые вопросы" },
+  pl: { title: (inCity) => `Wynajem mieszkań i pokoi ${inCity} — Kwadrat PL`,
+    desc: (inCity) => `Szukaj mieszkania lub pokoju ${inCity}: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia o nowych ogłoszeniach, uczciwa cena, za darmo.`,
+    h1: (inCity) => `Wynajem mieszkań ${inCity}`, districts: "Dzielnice", faqTitle: "Najczęstsze pytania" },
+  ua: { title: (inCity) => `Оренда квартир і кімнат ${inCity} — Kwadrat PL`,
+    desc: (inCity) => `Шукайте квартиру чи кімнату ${inCity}: OLX, Otodom і Morizon в одному Telegram-боті. Миттєві сповіщення про нові оголошення, справедлива ціна, безкоштовно.`,
+    h1: (inCity) => `Оренда житла ${inCity}`, districts: "Райони", faqTitle: "Часті запитання" },
+  en: { title: (inCity) => `Flats and rooms for rent ${inCity} — Kwadrat PL`,
+    desc: (inCity) => `Find a flat or room ${inCity}: OLX, Otodom and Morizon in one Telegram bot. Instant alerts on new listings, fair-price check, free to use.`,
+    h1: (inCity) => `Renting a home ${inCity}`, districts: "Districts", faqTitle: "FAQ" },
+};
+
+function cityFaq(lang, inCity) {
+  const T = {
+    ru: [
+      ["Сколько стоит аренда квартиры {c}?", "Цены зависят от района, площади и типа жилья — комната стоит меньше квартиры, а центр дороже окраин. Бот показывает у каждого объявления бейдж «ниже/выше рынка района» на основе собранных данных, так что справедливую цену видно сразу, без ручного сравнения."],
+      ["Как быстро появляются новые объявления {c}?", "Данные с OLX, Otodom и Morizon обновляются каждые несколько минут. Подпишитесь на свой поиск в боте — и новые квартиры и комнаты придут в чат раньше, чем их разберут."],
+      ["Можно ли снять комнату {c}, а не всю квартиру?", "Да, бот собирает отдельно квартиры, комнаты и посуточную аренду по всем 8 городам. В настройках поиска можно выбрать нужный тип жилья."],
+    ],
+    pl: [
+      ["Ile kosztuje wynajem mieszkania {c}?", "Ceny zależą od dzielnicy, metrażu i typu lokum — pokój kosztuje mniej niż mieszkanie, a centrum drożej niż peryferie. Bot pokazuje przy każdym ogłoszeniu znacznik „poniżej/powyżej rynku dzielnicy” na podstawie zebranych danych, więc uczciwą cenę widać od razu, bez ręcznego porównywania."],
+      ["Jak szybko pojawiają się nowe ogłoszenia {c}?", "Dane z OLX, Otodom i Morizon odświeżają się co kilka minut. Zasubskrybuj swoje wyszukiwanie w bocie — nowe mieszkania i pokoje trafią na czat, zanim inni je rozchwytają."],
+      ["Czy można wynająć pokój {c}, a nie całe mieszkanie?", "Tak, bot zbiera osobno mieszkania, pokoje i noclegi krótkoterminowe we wszystkich 8 miastach. W ustawieniach wyszukiwania wybierzesz odpowiedni typ lokum."],
+    ],
+    ua: [
+      ["Скільки коштує оренда квартири {c}?", "Ціни залежать від району, площі й типу житла — кімната коштує менше за квартиру, а центр дорожче за околиці. Бот показує біля кожного оголошення бейдж «нижче/вище ринку району» на основі зібраних даних, тож справедливу ціну видно одразу, без ручного порівняння."],
+      ["Як швидко з'являються нові оголошення {c}?", "Дані з OLX, Otodom і Morizon оновлюються кожні кілька хвилин. Підпишіться на свій пошук у боті — і нові квартири та кімнати прийдуть у чат раніше, ніж їх розберуть."],
+      ["Чи можна орендувати кімнату {c}, а не всю квартиру?", "Так, бот збирає окремо квартири, кімнати й подобову оренду в усіх 8 містах. У налаштуваннях пошуку можна вибрати потрібний тип житла."],
+    ],
+    en: [
+      ["How much does renting a flat cost {c}?", "Prices depend on the district, size and type of home — a room costs less than a flat, and the centre costs more than the outskirts. The bot shows a below/above district-market badge on every listing based on its own data, so you can spot a fair price instantly."],
+      ["How fast do new listings appear {c}?", "Data from OLX, Otodom and Morizon refreshes every few minutes. Subscribe to your search in the bot and new flats and rooms will reach your chat before anyone else snaps them up."],
+      ["Can I rent a room {c} instead of a whole flat?", "Yes — the bot tracks flats, rooms and short stays separately across all 8 cities. Pick the type you want in the search filters."],
+    ],
+  };
+  return (T[lang] || T.ru).map(([q, a]) => ({ q: q.replace("{c}", inCity), a: a.replace("{c}", inCity) }));
+}
+
+// CITIES (районы) — единый источник webapp/js/core.js, как CITY_NAMES выше
+const CITY_DISTRICTS = (() => {
+  const core = readFileSync(join(__dirname, "..", "..", "webapp", "js", "core.js"), "utf8");
+  const m = core.match(/var CITIES = (\{[\s\S]*?\n  \});/);
+  if (!m) throw new Error("CITY_DISTRICTS: не нашёл CITIES в webapp/js/core.js");
+  return new Function("return " + m[1])();
+})();
+
+// ── общий «каркас» для гайдов и городских страниц ───────────────────────────
+function altLinksAt(pathSuffix) {
+  const links = LANGS.map((l) => `<link rel="alternate" hreflang="${l.hreflang}" href="${url(l.path + pathSuffix)}">`);
+  links.push(`<link rel="alternate" hreflang="x-default" href="${url(pathSuffix)}">`);
+  return links.join("\n");
+}
+
+function langSwitcherAt(currentCode, pathSuffix) {
+  return LANGS.map((l) => {
+    const on = l.code === currentCode;
+    const label = l.code.toUpperCase();
+    return on
+      ? `<span class="lang on" aria-current="true">${label}</span>`
+      : `<a class="lang" href="${url(l.path + pathSuffix)}" hreflang="${l.hreflang}">${label}</a>`;
+  }).join("");
+}
+
+const CHROME_CSS = `
+:root{
+  --bg:#ffffff; --bg2:#f5f8fb; --card:#ffffff; --border:#e4eaf0;
+  --text:#0e1621; --muted:#5b6b7b; --accent:#229ED9; --accent2:#1b8ec2;
+  --radius:16px; --maxw:820px; --shadow:0 1px 2px rgba(16,32,48,.04),0 8px 24px rgba(16,32,48,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0e1621; --bg2:#131f2b; --card:#17212b; --border:#26313d;
+    --text:#e7edf3; --muted:#93a4b4; --accent:#3aaee0; --accent2:#54baea;
+    --shadow:0 1px 2px rgba(0,0,0,.2),0 10px 30px rgba(0,0,0,.35); }
+}
+*,*::before,*::after{ box-sizing:border-box }
+html{ scroll-behavior:smooth; -webkit-text-size-adjust:100% }
+body{ margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+  -webkit-font-smoothing:antialiased }
+a{ color:inherit; text-decoration:none }
+h1,h2,h3{ line-height:1.25; text-wrap:balance; margin:0 }
+p{ margin:0 }
+.wrap{ max-width:var(--maxw); margin:0 auto; padding:0 20px }
+.ico{ width:22px; height:22px; stroke-width:2 }
+.top{ position:sticky; top:0; z-index:10; background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(1.4) blur(10px); border-bottom:1px solid var(--border) }
+.top .wrap{ display:flex; align-items:center; gap:16px; height:60px; max-width:1040px }
+.brand{ display:flex; align-items:center; gap:9px; font-weight:800; font-size:18px; letter-spacing:-.01em }
+.brand .mark{ width:34px; height:34px; border-radius:50%; display:inline-block; object-fit:contain }
+.langs{ margin-left:auto; display:flex; gap:6px }
+.lang{ font-size:13px; font-weight:700; color:var(--muted); padding:6px 10px; border-radius:8px;
+  display:inline-flex; align-items:center; justify-content:center; min-height:44px; min-width:44px }
+.lang:hover{ color:var(--text); background:var(--bg2) }
+.lang.on{ color:var(--accent) }
+.top .cta{ display:none }
+@media(min-width:720px){ .top .cta{ display:inline-flex } }
+.btn{ display:inline-flex; align-items:center; gap:9px; font-weight:700; font-size:16px;
+  padding:13px 22px; border-radius:12px; background:var(--accent); color:#fff;
+  transition:transform .12s ease, background .12s ease; white-space:nowrap; border:0; cursor:pointer;
+  font-family:inherit }
+.btn:hover{ background:var(--accent2); transform:translateY(-1px) }
+.btn svg{ width:20px; height:20px }
+.btn.sm{ font-size:14px; padding:9px 15px }
+.btn.ghost{ background:var(--bg2); color:var(--text); border:1px solid var(--border) }
+.btn.ghost:hover{ background:var(--card) }
+main{ padding:36px 0 60px }
+.crumb{ font-size:13px; color:var(--muted); margin-bottom:18px; display:flex; gap:6px; flex-wrap:wrap }
+.crumb a{ color:var(--accent) }
+.art-h1{ font-size:clamp(26px,4.6vw,38px); font-weight:850; letter-spacing:-.02em; margin-bottom:10px }
+.art-lead{ color:var(--muted); font-size:16px; margin-bottom:8px }
+.art-cta{ margin:22px 0 30px; display:flex; flex-wrap:wrap; gap:12px; align-items:center }
+.gsec{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:22px 24px; box-shadow:var(--shadow); margin-bottom:16px }
+.gsec .h2{ font-size:19px; font-weight:780; margin-bottom:10px }
+.gp{ font-size:15px; line-height:1.65; margin:0 0 10px; color:var(--text) }
+.gp:last-child{ margin-bottom:0 }
+.gl{ font-size:15px; line-height:1.65; margin:0 0 10px; padding-left:22px; color:var(--text) }
+.gl li{ margin-bottom:7px }
+.gwarn{ background:color-mix(in srgb, #e3b341 16%, transparent); border:1px solid color-mix(in srgb, #e3b341 40%, transparent);
+  border-radius:12px; padding:12px 16px; font-size:14px; margin-top:10px }
+.gtpl{ margin-top:12px }
+.gtpl-label{ font-size:12.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px; font-weight:700 }
+.gtpl-box{ position:relative; background:var(--bg2); border:1px solid var(--border); border-radius:12px; overflow:hidden }
+.gtpl pre{ margin:0; padding:16px; white-space:pre-wrap; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; line-height:1.55 }
+.gtpl .btn{ margin:0 16px 16px }
+.foot-note{ color:var(--muted); font-size:13px; text-align:center; margin:26px 0 0 }
+/* checklist */
+.prog{ display:flex; align-items:center; gap:12px; margin-bottom:18px }
+.prog .meter{ flex:1; height:8px; border-radius:99px; background:var(--bg2); border:1px solid var(--border); overflow:hidden }
+.prog .meter i{ display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); width:0; transition:width .2s ease }
+.prog .pct{ font-weight:800; font-size:14px; min-width:44px; text-align:right }
+.chk{ display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);
+  cursor:pointer; font-size:14.5px; line-height:1.5 }
+.chk:last-child{ border-bottom:0 }
+.chk input{ margin-top:3px; width:18px; height:18px; accent-color:var(--accent); flex:0 0 auto }
+.chk.on span{ color:var(--muted); text-decoration:line-through }
+/* koszty */
+.frow3{ display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap }
+.frow3 .fcol{ flex:1 1 140px }
+.flabel{ display:block; font-size:12.5px; font-weight:700; color:var(--muted); margin-bottom:6px }
+.finput{ width:100%; padding:11px 13px; border-radius:10px; border:1px solid var(--border);
+  background:var(--bg2); color:var(--text); font-size:15px; font-family:inherit }
+.seg{ display:flex; gap:6px }
+.seg button{ flex:1; padding:10px 6px; border-radius:9px; border:1px solid var(--border); background:var(--bg2);
+  color:var(--text); font-weight:700; font-size:13.5px; cursor:pointer; font-family:inherit }
+.seg button.active{ background:var(--accent); border-color:var(--accent); color:#fff }
+.res{ text-align:center; padding:16px 0 }
+.res .big{ font-size:30px; font-weight:800; color:var(--accent) }
+.res .lbl{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px }
+.breakdown .row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border); font-size:14.5px }
+.breakdown .row:last-child{ border-bottom:0; font-weight:800 }
+/* phrases */
+.tr-label{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:10px 0 4px; font-weight:700 }
+.tr-text{ font-style:italic; color:var(--muted) }
+/* guides hub + city chips/faq (переиспользуем имена классов из главной) */
+.grid2{ display:grid; grid-template-columns:1fr; gap:14px }
+@media(min-width:640px){ .grid2{ grid-template-columns:1fr 1fr } }
+.hcard{ display:flex; gap:14px; align-items:flex-start; background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); transition:transform .12s ease; color:inherit }
+.hcard:hover{ transform:translateY(-1px) }
+.hcard .ico-wrap{ flex:0 0 auto; display:inline-flex; width:40px; height:40px; border-radius:10px; align-items:center; justify-content:center;
+  color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent) }
+.hcard h3{ font-size:16px; font-weight:750; margin-bottom:4px }
+.hcard p{ font-size:13.5px; color:var(--muted) }
+.chips{ display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 30px }
+.chip{ font-weight:700; font-size:14px; background:var(--card); border:1px solid var(--border); padding:9px 15px; border-radius:11px }
+.sec-h{ font-size:clamp(20px,3vw,26px); font-weight:820; letter-spacing:-.01em; margin:34px 0 14px }
+.faq-list{ display:grid; gap:10px }
+.faq{ background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden }
+.faq summary{ cursor:pointer; padding:15px 18px; font-weight:700; font-size:15px; list-style:none;
+  display:flex; justify-content:space-between; align-items:center; gap:12px }
+.faq summary::-webkit-details-marker{ display:none }
+.faq summary::after{ content:"+"; color:var(--accent); font-size:20px; font-weight:400; line-height:1 }
+.faq[open] summary::after{ content:"\\2013" }
+.faq-a{ padding:0 18px 16px; color:var(--muted); font-size:14px }
+footer{ border-top:1px solid var(--border); padding:36px 0; margin-top:20px }
+.foot-grid{ display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; align-items:flex-start; max-width:1040px; margin:0 auto; padding:0 20px }
+.foot-about{ max-width:420px; color:var(--muted); font-size:14px }
+.foot-about .brand{ margin-bottom:10px; color:var(--text) }
+.foot-langs{ display:flex; gap:6px; flex-wrap:wrap }
+.foot-langs .lang{ border:1px solid var(--border) }
+.foot-legal{ margin-top:26px; color:var(--muted); font-size:12.5px; border-top:1px solid var(--border); padding-top:18px; max-width:1040px; margin-left:auto; margin-right:auto; padding-left:20px; padding-right:20px }
+`;
+
+function chromeOpen(meta, { title, desc, canonical, altHtml, jsonLd }) {
+  const ogAlt = LANGS.filter((l) => l.code !== meta.code)
+    .map((l) => `<meta property="og:locale:alternate" content="${l.locale}">`).join("\n");
+  const c = C[meta.code];
+  return `<!DOCTYPE html>
+<html lang="${meta.htmlLang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${canonical}">
+${altHtml}
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#229ED9">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="${esc(SITE.name)}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:url" content="${canonical}">
+<meta property="og:image" content="${url("og.png")}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="${meta.locale}">
+${ogAlt}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(desc)}">
+<meta name="twitter:image" content="${url("og.png")}">
+<script type="application/ld+json">${jsonLd}</script>
+<style>${CHROME_CSS}</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="${url(meta.path)}" aria-label="${esc(SITE.name)}">
+      <img class="mark" src="/logo.webp" alt="" width="34" height="34"> ${esc(SITE.name)}
+    </a>
+    <nav class="langs" aria-label="${esc(c.footLang)}">${langSwitcherAt(meta.code, meta._suffix || "")}</nav>
+    <a class="btn sm cta" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} Telegram</a>
+  </div>
+</header>
+<main><div class="wrap">`;
+}
+
+function chromeClose(meta) {
+  const c = C[meta.code];
+  return `</div></main>
+<footer>
+  <div class="foot-grid">
+    <div class="foot-about">
+      <div class="brand"><img class="mark" src="/logo.webp" alt="" width="34" height="34"> ${esc(SITE.name)}</div>
+      <p>${esc(c.footAbout)}</p>
+      <p style="margin-top:8px">${esc(OWNER_LINE[meta.code])}</p>
+    </div>
+    <div>
+      <div style="font-weight:700;margin-bottom:10px">${esc(c.footLang)}</div>
+      <div class="foot-langs">${langSwitcherAt(meta.code, meta._suffix || "")}</div>
+    </div>
+  </div>
+  <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)} · <a href="${url(meta.path + "privacy/")}" style="color:var(--accent)">${esc(PRIVACY_LABEL[meta.code])}</a>${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(c.donateCta)}</a>` : ""}</div>
+</footer>
+</body>
+</html>
+`;
+}
+
+// ── рендер контента гайдов ───────────────────────────────────────────────────
+function pick2(obj, lang) { return (obj && (obj[lang] ?? obj.ru)) ?? ""; }
+
+function renderGuideSections(sections, lang) {
+  return (sections || []).map((sec) => {
+    let out = '<div class="gsec">';
+    if (sec.h) out += `<div class="h2">${sec.h}</div>`;
+    (sec.p || []).forEach((t) => { out += `<p class="gp">${t}</p>`; });
+    if (sec.list) {
+      const tag = sec.num ? "ol" : "ul";
+      out += `<${tag} class="gl">${sec.list.map((i) => `<li>${i}</li>`).join("")}</${tag}>`;
+    }
+    if (sec.warn) out += `<div class="gwarn">⚠️ ${sec.warn}</div>`;
+    if (sec.tpl) {
+      out += `<div class="gtpl"><div class="gtpl-label">${esc(sec.tpl.label)}</div>
+        <div class="gtpl-box"><pre>${esc(sec.tpl.text)}</pre>
+        <button type="button" class="btn sm ghost" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText); this.textContent='✓'">${esc(pick2(KW.DICT.copyBtn, lang))}</button></div></div>`;
+    }
+    return out + "</div>";
+  }).join("");
+}
+
+function renderChecklist(lang) {
+  const { SUB, FOOT, GROUPS } = GSRC.checklist;
+  const sub = pick2(SUB, lang);
+  const foot = pick2(FOOT, lang);
+  const groups = GROUPS.map((g, gi) => {
+    const items = g.items.map((it, ii) => {
+      const id = `${gi}.${ii}`;
+      return `<label class="chk" data-id="${id}"><input type="checkbox" data-id="${id}"><span>${esc(pick2(it, lang))}</span></label>`;
+    }).join("");
+    return `<div class="gsec"><div class="h2">${esc(pick2(g.h, lang))}</div>${items}</div>`;
+  }).join("");
+  const resetLabel = esc(pick2(KW.DICT.resetBtn, lang));
+  const script = `
+<script>
+(function () {
+  "use strict";
+  var KEY = "kw_check";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  var boxes = document.querySelectorAll(".chk input");
+  function total() { return boxes.length; }
+  function done() { return Object.keys(state).filter(function (k) { return state[k]; }).length; }
+  function progress() {
+    var pct = total() ? Math.round(done() / total() * 100) : 0;
+    document.getElementById("bar").style.width = pct + "%";
+    document.getElementById("pct").textContent = pct + "%";
+  }
+  boxes.forEach(function (cb) {
+    var id = cb.dataset.id;
+    cb.checked = !!state[id];
+    if (cb.checked) cb.closest(".chk").classList.add("on");
+    cb.addEventListener("change", function () {
+      state[id] = cb.checked;
+      localStorage.setItem(KEY, JSON.stringify(state));
+      cb.closest(".chk").classList.toggle("on", cb.checked);
+      progress();
+    });
+  });
+  document.getElementById("chkReset").addEventListener("click", function () {
+    state = {};
+    localStorage.removeItem(KEY);
+    boxes.forEach(function (cb) { cb.checked = false; cb.closest(".chk").classList.remove("on"); });
+    progress();
+  });
+  progress();
+})();
+</script>`;
+  return `<p class="art-lead">${esc(sub)}</p>
+<div class="prog"><div class="meter"><i id="bar"></i></div><div class="pct" id="pct">0%</div></div>
+${groups}
+<button type="button" class="btn ghost" id="chkReset">${resetLabel}</button>
+<p class="foot-note">${esc(foot)}</p>${script}`;
+}
+
+function renderPhrases(lang) {
+  const { SUB, FOOT, PHRASES, TR_LABEL } = GSRC.phrases;
+  const sub = pick2(SUB, lang);
+  const foot = pick2(FOOT, lang);
+  const cards = PHRASES.map((p) => {
+    const note = pick2(p.n, lang);
+    const tr = lang !== "pl" && p.tr ? pick2(p.tr, lang) : "";
+    return `<div class="gsec">
+      <div class="h2">${esc(pick2(p.t, lang))}</div>
+      ${note ? `<p class="gp" style="color:var(--muted)">${esc(note)}</p>` : ""}
+      ${tr ? `<div class="tr-label">${esc(pick2(TR_LABEL, lang))}</div><p class="gp tr-text">${esc(tr)}</p>` : ""}
+      <div class="gtpl-box"><pre>${esc(p.pl)}</pre>
+      <button type="button" class="btn sm ghost" onclick="navigator.clipboard.writeText(this.previousElementSibling.innerText); this.textContent='✓'">${esc(pick2(KW.DICT.copyBtn, lang))}</button></div>
+    </div>`;
+  }).join("");
+  return `<p class="art-lead">${esc(sub)}</p>${cards}<p class="foot-note">${esc(foot)}</p>`;
+}
+
+function renderKoszty(lang) {
+  const L10N = GSRC.koszty.L10N;
+  const t = (k) => esc(pick2(L10N[k], lang));
+  const script = `
+<script>
+(function () {
+  "use strict";
+  var kMult = 1, pMult = 0;
+  function val(id) { return +document.getElementById(id).value || 0; }
+  function zl(n) { return n.toLocaleString("pl-PL") + " zł"; }
+  function calc() {
+    var czynsz = val("k_czynsz"), admin = val("k_admin"), media = val("k_media");
+    var month = czynsz + admin + media;
+    var kaucja = czynsz * kMult;
+    var prow = Math.round(czynsz * pMult);
+    var start = month + kaucja + prow;
+    document.getElementById("k_startSum").textContent = month ? zl(start) : "—";
+    document.getElementById("k_monthSum").textContent = month ? zl(month) : "—";
+    document.getElementById("k_bd").innerHTML = month ?
+      '<div class="row"><span>${t("firstMonth")}</span><b>' + zl(month) + "</b></div>" +
+      '<div class="row"><span>${t("kaucjaRow")} (' + kMult + "×)</span><b>" + zl(kaucja) + "</b></div>" +
+      (prow ? '<div class="row"><span>${t("prowRow")}</span><b>' + zl(prow) + "</b></div>" : "") +
+      '<div class="row"><span>${t("totalRow")}</span><b>' + zl(start) + "</b></div>" : "";
+  }
+  ["k_czynsz", "k_admin", "k_media"].forEach(function (id) { document.getElementById(id).oninput = calc; });
+  document.querySelectorAll("#k_segK button").forEach(function (b) {
+    b.onclick = function () { kMult = +b.dataset.k; document.querySelectorAll("#k_segK button").forEach(function (x) { x.classList.toggle("active", x === b); }); calc(); };
+  });
+  document.querySelectorAll("#k_segP button").forEach(function (b) {
+    b.onclick = function () { pMult = +b.dataset.p; document.querySelectorAll("#k_segP button").forEach(function (x) { x.classList.toggle("active", x === b); }); calc(); };
+  });
+  document.querySelector('#k_segK [data-k="1"]').classList.add("active");
+  document.querySelector('#k_segP [data-p="0"]').classList.add("active");
+  var q = +new URLSearchParams(location.search).get("czynsz");
+  if (q > 0) document.getElementById("k_czynsz").value = Math.round(q);
+  calc();
+})();
+</script>`;
+  return `<p class="art-lead">${t("sub")}</p>
+<div class="gsec">
+  <div class="frow3">
+    <div class="fcol"><label class="flabel">${t("czynsz")}</label><input class="finput" type="number" id="k_czynsz" placeholder="3000" min="0" step="100"></div>
+    <div class="fcol"><label class="flabel">${t("admin")}</label><input class="finput" type="number" id="k_admin" placeholder="700" min="0" step="50"></div>
+  </div>
+  <div class="frow3">
+    <div class="fcol"><label class="flabel">${t("media")}</label><input class="finput" type="number" id="k_media" placeholder="350" min="0" step="50"></div>
+    <div class="fcol"><label class="flabel">${t("kaucja")}</label><div class="seg" id="k_segK"><button type="button" data-k="1">1×</button><button type="button" data-k="2">2×</button><button type="button" data-k="3">3×</button></div></div>
+  </div>
+  <div class="frow3">
+    <div class="fcol"><label class="flabel">${t("prow")}</label><div class="seg" id="k_segP"><button type="button" data-p="0">${t("none")}</button><button type="button" data-p="0.5">50%</button><button type="button" data-p="1">100%</button></div></div>
+  </div>
+</div>
+<div class="gsec">
+  <div class="res"><div class="lbl">${t("start")}</div><div class="big" id="k_startSum">—</div></div>
+  <div class="breakdown" id="k_bd"></div>
+</div>
+<div class="gsec">
+  <div class="res" style="padding:8px 0"><div class="lbl">${t("monthly")}</div><div class="big" style="font-size:22px" id="k_monthSum">—</div></div>
+</div>
+<p class="foot-note">${t("foot")}</p>${script}`;
+}
+
+// ── страница гайда ───────────────────────────────────────────────────────────
+function guidePage(meta, guide) {
+  const lang = meta.code;
+  const suffix = `guides/${guide.slug}/`;
+  const seo = guide.seo[lang] || guide.seo.ru;
+  const canonical = url(meta.path + suffix);
+  const src = GSRC[guide.slug];
+  const h1 = pick2(KW.DICT[guide.dictKey], lang);
+  let lead = "";
+  let bodyInner = "";
+  if (guide.type === "article") {
+    const g = pickLang(src.GUIDE, lang);
+    lead = g.sub || "";
+    bodyInner = renderGuideSections(g.sections, lang);
+  } else if (guide.type === "checklist") {
+    bodyInner = renderChecklist(lang);
+  } else if (guide.type === "phrases") {
+    bodyInner = renderPhrases(lang);
+  } else if (guide.type === "koszty") {
+    bodyInner = renderKoszty(lang);
+  }
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "Article", "@id": canonical + "#article", headline: h1, description: seo.desc,
+        inLanguage: meta.hreflang, dateModified: BUILD_DATE, url: canonical, mainEntityOfPage: canonical,
+        publisher: { "@id": SITE.domain + "/#org" } },
+      { "@type": "BreadcrumbList", "@id": canonical + "#breadcrumb", itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE.name, item: url(meta.path) },
+        { "@type": "ListItem", position: 2, name: GUIDES_HUB[lang].h1, item: url(meta.path + "guides/") },
+        { "@type": "ListItem", position: 3, name: h1, item: canonical },
+      ] },
+    ],
+  });
+  const chromeMeta = { ...meta, _suffix: suffix };
+  return chromeOpen(chromeMeta, { title: seo.title, desc: seo.desc, canonical, altHtml: altLinksAt(suffix), jsonLd }) +
+    `<div class="crumb"><a href="${url(meta.path)}">${esc(SITE.name)}</a> / <a href="${url(meta.path + "guides/")}">${esc(GUIDES_HUB[lang].h1)}</a> / <span>${esc(h1)}</span></div>
+    <h1 class="art-h1">${esc(h1)}</h1>
+    ${lead ? `<p class="art-lead">${esc(lead)}</p>` : ""}
+    <div class="art-cta"><a class="btn" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} ${esc(C[lang].ctaPrimary)}</a></div>
+    ${bodyInner}` +
+    chromeClose(chromeMeta);
+}
+
+function guidesHubPage(meta) {
+  const lang = meta.code;
+  const hub = GUIDES_HUB[lang];
+  const suffix = "guides/";
+  const canonical = url(meta.path + suffix);
+  const cards = GUIDES.map((g) => {
+    const src = GSRC[g.slug];
+    let teaser = (g.seo[lang] || g.seo.ru).desc;
+    if (g.type === "article") teaser = pickLang(src.GUIDE, lang).sub || teaser;
+    else if (g.type === "checklist" || g.type === "phrases") teaser = pick2(src.SUB, lang) || teaser;
+    else if (g.type === "koszty") teaser = pick2(src.L10N.sub, lang) || teaser;
+    return `<a class="hcard" href="${url(meta.path + "guides/" + g.slug + "/")}">
+      <span class="ico-wrap">${icon(g.icon)}</span>
+      <span><h3>${esc(pick2(KW.DICT[g.dictKey], lang))}</h3><p>${esc(teaser)}</p></span>
+    </a>`;
+  }).join("");
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "CollectionPage", "@id": canonical + "#page", url: canonical, name: hub.title, description: hub.desc, inLanguage: meta.hreflang, dateModified: BUILD_DATE },
+      { "@type": "BreadcrumbList", "@id": canonical + "#breadcrumb", itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE.name, item: url(meta.path) },
+        { "@type": "ListItem", position: 2, name: hub.h1, item: canonical },
+      ] },
+    ],
+  });
+  const chromeMeta = { ...meta, _suffix: suffix };
+  return chromeOpen(chromeMeta, { title: hub.title, desc: hub.desc, canonical, altHtml: altLinksAt(suffix), jsonLd }) +
+    `<div class="crumb"><a href="${url(meta.path)}">${esc(SITE.name)}</a> / <span>${esc(hub.h1)}</span></div>
+    <h1 class="art-h1">${esc(hub.h1)}</h1>
+    <p class="art-lead">${esc(hub.lead)}</p>
+    <div class="grid2" style="margin-top:22px">${cards}</div>` +
+    chromeClose(chromeMeta);
+}
+
+// ── городская страница ───────────────────────────────────────────────────────
+function cityPage(meta, slug) {
+  const lang = meta.code;
+  const suffix = `cities/${slug}/`;
+  const canonical = url(meta.path + suffix);
+  const inCity = CITY_IN[slug][lang];
+  const name = CITY[slug][lang];
+  const seo = CITY_SEO[lang];
+  const title = seo.title(inCity);
+  const desc = seo.desc(inCity);
+  const h1 = seo.h1(inCity);
+  const lead = CITY_LEAD[slug][lang];
+  const districts = CITY_DISTRICTS[slug].districts;
+  const chips = districts.map((d) => `<span class="chip">${esc(d)}</span>`).join("");
+  const faq = cityFaq(lang, inCity);
+  const faqHtml = faq.map((f, i) => `
+    <details class="faq" id="faq-${i + 1}">
+      <summary><span role="heading" aria-level="3">${esc(f.q)}</span></summary>
+      <div class="faq-a">${esc(f.a)}</div>
+    </details>`).join("");
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "WebPage", "@id": canonical + "#webpage", url: canonical, name: title, description: desc,
+        inLanguage: meta.hreflang, dateModified: BUILD_DATE, about: { "@type": "City", name } },
+      { "@type": "FAQPage", "@id": canonical + "#faq", inLanguage: meta.hreflang,
+        mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+      { "@type": "BreadcrumbList", "@id": canonical + "#breadcrumb", itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE.name, item: url(meta.path) },
+        { "@type": "ListItem", position: 2, name, item: canonical },
+      ] },
+    ],
+  });
+  const chromeMeta = { ...meta, _suffix: suffix };
+  return chromeOpen(chromeMeta, { title, desc, canonical, altHtml: altLinksAt(suffix), jsonLd }) +
+    `<div class="crumb"><a href="${url(meta.path)}">${esc(SITE.name)}</a> / <span>${esc(name)}</span></div>
+    <h1 class="art-h1">${esc(h1)}</h1>
+    <p class="art-lead">${esc(lead)}</p>
+    <div class="art-cta"><a class="btn" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} ${esc(C[lang].ctaPrimary)}</a></div>
+    <h2 class="sec-h">${esc(seo.districts)}</h2>
+    <div class="chips">${chips}</div>
+    <h2 class="sec-h">${esc(seo.faqTitle)}</h2>
+    <div class="faq-list">${faqHtml}</div>` +
+    chromeClose(chromeMeta);
+}
+
 const robots = `User-agent: *
 Allow: /
 
@@ -1030,6 +1759,24 @@ for (const meta of LANGS) {
   mkdirSync(privDir, { recursive: true });
   writeFileSync(join(privDir, "index.html"), privacyPage(meta));
   count += 2;
+
+  const guidesDir = join(dir, "guides");
+  mkdirSync(guidesDir, { recursive: true });
+  writeFileSync(join(guidesDir, "index.html"), guidesHubPage(meta));
+  count += 1;
+  for (const g of GUIDES) {
+    const gDir = join(guidesDir, g.slug);
+    mkdirSync(gDir, { recursive: true });
+    writeFileSync(join(gDir, "index.html"), guidePage(meta, g));
+    count += 1;
+  }
+
+  for (const slug of SITE.cities) {
+    const cDir = join(dir, "cities", slug);
+    mkdirSync(cDir, { recursive: true });
+    writeFileSync(join(cDir, "index.html"), cityPage(meta, slug));
+    count += 1;
+  }
 }
 writeFileSync(join(OUT, "sitemap.xml"), sitemap());
 writeFileSync(join(OUT, "robots.txt"), robots);
