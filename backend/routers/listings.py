@@ -13,7 +13,8 @@ import time
 from fastapi import APIRouter, Header, HTTPException, Request
 
 import bot as bot_module
-from config import INGEST_TOKEN, LISTINGS_PATH, in_quiet, log
+import community as community_module
+from config import COMMUNITY_CHAT_ID, COMMUNITY_LANG, INGEST_TOKEN, LISTINGS_PATH, in_quiet, log
 from db import db
 from matching import matches
 
@@ -141,6 +142,26 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
                 c.executemany(
                     "INSERT OR IGNORE INTO pending(user_id, listing_id, ts) VALUES(?,?,?)",
                     buffered)
-    log.info("ingest: %d listings, %d fresh, %d users notified%s",
-             len(listings), len(fresh), notified, " (bootstrap)" if first_run else "")
-    return {"accepted": len(listings), "fresh": len(fresh), "notified_users": notified}
+
+    posted = 0
+    if not first_run and fresh and COMMUNITY_CHAT_ID:
+        # паблик-чат-фид находок — независим от подписок (rows), поэтому
+        # не внутри "if ... and rows" выше; выключен по умолчанию (см. config.py)
+        with db() as c:
+            already = {r["listing_id"] for r in
+                       c.execute("SELECT listing_id FROM community_posts")}
+            c.execute("DELETE FROM community_posts WHERE ts < ?", (now - 60 * 86400,))
+        market = community_module.build_market(listings)
+        deals = community_module.pick_deals(fresh, market, already)
+        if deals:
+            with db() as c:
+                c.executemany(
+                    "INSERT OR IGNORE INTO community_posts(listing_id, ts) VALUES(?,?)",
+                    [(str(l["id"]), now) for l, _pct in deals])
+            _spawn(bot_module.notify_community(COMMUNITY_CHAT_ID, COMMUNITY_LANG, deals))
+            posted = len(deals)
+
+    log.info("ingest: %d listings, %d fresh, %d users notified, %d community posts%s",
+             len(listings), len(fresh), notified, posted, " (bootstrap)" if first_run else "")
+    return {"accepted": len(listings), "fresh": len(fresh), "notified_users": notified,
+            "community_posts": posted}

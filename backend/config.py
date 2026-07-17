@@ -45,6 +45,15 @@ FETCHER_REPO = os.environ.get("FETCHER_REPO", "ipostatos/kwadratpl-fetcher")
 FETCHER_WORKFLOW = os.environ.get("FETCHER_WORKFLOW", "fetch.yml")
 STALE_MIN = int(os.environ.get("STALE_MIN", "35"))
 
+# ── паблик-чат-фид находок (community.py) ──────────────────────────────────
+# Бот должен быть админом группы/супергруппы с правом отправки сообщений.
+# Пусто = фича выключена (ничего не постим, ingest её не вызывает). chat_id
+# группы — отрицательное число, Telegram отдаёт его в getUpdates/getChat
+# после того как бот добавлен в группу (или через любой @getidsbot).
+_raw_chat = os.environ.get("COMMUNITY_CHAT_ID", "").strip()
+COMMUNITY_CHAT_ID = int(_raw_chat) if _raw_chat.lstrip("-").isdigit() else None
+COMMUNITY_LANG = os.environ.get("COMMUNITY_LANG", "ru")
+
 # ── тихие часы (Europe/Warsaw) ─────────────────────────────────────────────
 TZ = ZoneInfo("Europe/Warsaw")
 

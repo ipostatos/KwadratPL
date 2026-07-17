@@ -22,6 +22,13 @@ T = {
             "ua": "Нове оголошення за вашою підпискою",
             "by": "Новая аб'ява па вашай падпісцы",
             "en": "New listing matching your alert"},
+    # паблик-чат-фид находок (community.py) — {pct} без знака, знак минус
+    # добавляет заголовок сам, эмодзи-заголовок уже сигналит суть
+    "deal": {"ru": "Находка: на {pct}% ниже рынка района",
+             "pl": "Okazja: {pct}% poniżej rynku dzielnicy",
+             "ua": "Знахідка: на {pct}% нижче ринку району",
+             "by": "Знаходка: на {pct}% ніжэй рынку раёна",
+             "en": "Deal: {pct}% below district market"},
     "more": {"ru": "…и ещё {n} — смотрите в приложении",
              "pl": "…i jeszcze {n} — zobacz w aplikacji",
              "ua": "…і ще {n} — дивіться в застосунку",
@@ -33,27 +40,27 @@ T = {
     "unit_short": {"ru": "zł/сутки", "pl": "zł/dobę", "ua": "zł/доба", "by": "zł/суткі", "en": "zł/day"},
     "start": {
         "ru": "👋 Привет! Я Kwadrat PL — новый опыт поиска жилья в Польше.\n\n"
-              "🏠 Квартиры, комнаты и посуточное жильё в 6 городах, живые объявления с OLX, Otodom и Morizon.\n"
+              "🏠 Квартиры, комнаты и посуточное жильё в 8 городах, живые объявления с OLX, Otodom и Morizon.\n"
               "🔔 Подпишитесь на поиск в приложении — новые объявления придут прямо сюда.\n"
               "📚 Внутри — гайды: кауция, договор, готовые фразы по-польски.\n\n"
               "Пусть дом найдётся! 🏠",
         "pl": "👋 Cześć! Jestem Kwadrat PL — nowe doświadczenie szukania mieszkania w Polsce.\n\n"
-              "🏠 Mieszkania, pokoje i noclegi w 6 miastach, ogłoszenia na żywo z OLX, Otodom i Morizon.\n"
+              "🏠 Mieszkania, pokoje i noclegi w 8 miastach, ogłoszenia na żywo z OLX, Otodom i Morizon.\n"
               "🔔 Subskrybuj wyszukiwanie w aplikacji — nowe ogłoszenia trafią prosto tutaj.\n"
               "📚 W środku przewodniki: kaucja, umowa, gotowe wiadomości.\n\n"
               "Niech dom się znajdzie! 🏠",
         "ua": "👋 Привіт! Я Kwadrat PL — новий досвід пошуку житла в Польщі.\n\n"
-              "🏠 Квартири, кімнати й подобове житло у 6 містах, живі оголошення з OLX, Otodom і Morizon.\n"
+              "🏠 Квартири, кімнати й подобове житло у 8 містах, живі оголошення з OLX, Otodom і Morizon.\n"
               "🔔 Підпишіться на пошук у застосунку — нові оголошення надійдуть просто сюди.\n"
               "📚 Усередині — гайди: кауція, договір, готові фрази польською.\n\n"
               "Хай дім знайдеться! 🏠",
         "by": "👋 Прывітанне! Я Kwadrat PL — новы досвед пошуку жылля ў Польшчы.\n\n"
-              "🏠 Кватэры, пакоі і пасутачнае жыллё ў 6 гарадах, жывыя аб'явы з OLX, Otodom і Morizon.\n"
+              "🏠 Кватэры, пакоі і пасутачнае жыллё ў 8 гарадах, жывыя аб'явы з OLX, Otodom і Morizon.\n"
               "🔔 Падпішыцеся на пошук у праграме — новыя аб'явы прыйдуць проста сюды.\n"
               "📚 Унутры — гайды: задатак, дамова, гатовыя фразы па-польску.\n\n"
               "Няхай дом знойдзецца! 🏠",
         "en": "👋 Hi! I'm Kwadrat PL — a new way to find a home in Poland.\n\n"
-              "🏠 Flats, rooms and short stays in 6 cities, live listings from OLX, Otodom and Morizon.\n"
+              "🏠 Flats, rooms and short stays in 8 cities, live listings from OLX, Otodom and Morizon.\n"
               "🔔 Subscribe to a search in the app — new listings will arrive right here.\n"
               "📚 Inside: guides on deposits, contracts and ready-made Polish messages.\n\n"
               "May your home find you! 🏠",
@@ -143,7 +150,7 @@ def sub_label(s: dict, lang: str) -> str:
     return " · ".join(html.escape(str(p)) for p in parts)
 
 
-def fmt_listing(l: dict, lang: str, sub: dict | None = None) -> str:
+def fmt_listing(l: dict, lang: str, sub: dict | None = None, deal_pct: float | None = None) -> str:
     # ВСЁ из данных объявления экранируем: parse_mode=HTML, а title/district
     # исходно пишут авторы объявлений на OLX (символ '<' валил бы send_message)
     unit = T["unit_short" if l.get("type") == "short" else "unit_long"][lang]
@@ -172,7 +179,11 @@ def fmt_listing(l: dict, lang: str, sub: dict | None = None) -> str:
         tags.append(_OWNER_LBL["agency"][lang])
     elif l.get("agency") is False:
         tags.append(_OWNER_LBL["private"][lang])
-    lines = [f"🔔 <b>{T['new'][lang]}</b>", "", head]
+    if deal_pct is not None:
+        header = T["deal"][lang].format(pct=round(abs(deal_pct) * 100))
+        lines = [f"🔥 <b>{header}</b>", "", head]
+    else:
+        lines = [f"🔔 <b>{T['new'][lang]}</b>", "", head]
     if specs:
         lines.append(" · ".join(specs))
     lines.append("📍 " + html.escape(place))

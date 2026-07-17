@@ -42,17 +42,23 @@ def make_init_data(uid=1001, lang="ru"):
 
 @pytest.fixture(autouse=True)
 def fresh_db():
-    """Чистая БД перед каждым тестом."""
-    for suf in ("", "-wal", "-shm"):
-        try:
-            os.remove(os.environ["STATE_DB"] + suf)
-        except OSError:
-            pass
+    """Чистая БД перед каждым тестом. Раньше удаляли файл state.db* и
+    пересоздавали — на Windows sqlite в WAL-режиме может ещё держать файл
+    залоченным (ОС release'ит хендл не синхронно с закрытием Python-объекта),
+    os.remove() тогда молча проглатывался через except OSError, и предыдущий
+    тест иногда протекал в следующий (ловится только если тесты переиспользуют
+    одни и те же id — так вскрылось на test_community.py). SQL DELETE вместо
+    удаления файла — надёжно кроссплатформенно, не зависит от таймингов ОС."""
+    backend.init_db()
+    with backend.db() as c:
+        tables = [r[0] for r in c.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
+        for t in tables:
+            c.execute(f"DELETE FROM {t}")
     try:
         os.remove(os.environ["LISTINGS_PATH"])
     except OSError:
         pass
-    backend.init_db()
     yield
 
 

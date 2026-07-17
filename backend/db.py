@@ -86,3 +86,9 @@ def init_db():
             user_id INTEGER NOT NULL,
             created INTEGER
         )""")
+        # идемпотентность паблик-чат-фида находок (community.py): не постить
+        # один и тот же лот дважды при повторном инжесте
+        c.execute("""CREATE TABLE IF NOT EXISTS community_posts(
+            listing_id TEXT PRIMARY KEY,
+            ts INTEGER
+        )""")

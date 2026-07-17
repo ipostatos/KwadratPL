@@ -172,6 +172,46 @@ async def notify_user(user_id: int, lang: str, hits: list):
             pass
 
 
+async def notify_community(chat_id: int, lang: str, deals: list):
+    # deals: [(объявление, deal_pct), ...] — паблик-фид находок (community.py).
+    # Публикуем в общий чат не спеша (0.3с между постами) — это витрина,
+    # не персональный алерт, спешить некуда, и группу легко забанить за флуд.
+    for l, pct in deals:
+        url = safe_listing_url(l.get("url"))
+        kb = None
+        if url:
+            kb = InlineKeyboardMarkup(inline_keyboard=[[
+                InlineKeyboardButton(text=T["open"][lang], url=url)]])
+        text = fmt_listing(l, lang, deal_pct=pct)
+        ph = l.get("photo")
+        photo = ph if isinstance(ph, str) and ph.startswith("https://") else None
+        try:
+            if photo:
+                await bot.send_photo(chat_id, photo=photo, caption=text,
+                                     parse_mode="HTML", reply_markup=kb)
+            else:
+                await bot.send_message(
+                    chat_id, text, parse_mode="HTML", reply_markup=kb,
+                    link_preview_options=LinkPreviewOptions(is_disabled=True))
+            await asyncio.sleep(0.3)
+        except TelegramForbiddenError:
+            log.warning("community post: bot kicked from chat %s", chat_id)
+            return
+        except TelegramRetryAfter as e:
+            await asyncio.sleep(e.retry_after + 0.5)
+        except Exception as e:
+            if photo:
+                log.info("community post %s: photo failed, fallback to text: %s", l.get("id"), e)
+                try:
+                    await bot.send_message(
+                        chat_id, text, parse_mode="HTML", reply_markup=kb,
+                        link_preview_options=LinkPreviewOptions(is_disabled=True))
+                except Exception as e2:
+                    log.warning("community post %s failed: %s", l.get("id"), e2)
+            else:
+                log.warning("community post %s failed: %s", l.get("id"), e)
+
+
 async def digest_loop():
     """Раз в 5 минут: пользователям, у которых тихое окно закончилось и есть
     накопленный буфер, шлём одну утреннюю сводку и чистим буфер."""

@@ -85,6 +85,7 @@
 |---|---|---|
 | 1 | **GH_DISPATCH_TOKEN** — fine-grained PAT (Actions RW только на `kwadratpl-fetcher`) → в `/opt/kwadratpl/.env` + `systemctl restart kwadratpl-api` | Вотчдог свежести: авто-дёргание фетчера, конец 2-часовым паузам уведомлений. **Главный блокер продукта** |
 | 2 | **GSC-доступ:** проперти kwadratpl.pl → Настройки → Пользователи → добавить `claude-seo@gmp-demo-project-902607244.iam.gserviceaccount.com` (Owner) | API-мониторинг индексации: URL Inspection, Search Analytics, статус sitemap |
+| 3 | **Паблик-чат-фид находок** (community.py, готово и задеплоено, но выключено): создать публичную супергруппу в Telegram, добавить `@KwadratPLBot` админом с правом отправки сообщений, узнать её chat_id (отрицательное число — любой `@getidsbot` или `getUpdates` после того как бот получит там сообщение), прописать `COMMUNITY_CHAT_ID` (+опционально `COMMUNITY_LANG`, дефолт `ru`) в `/opt/kwadratpl/.env` + `systemctl restart kwadratpl-api` | Бот начнёт публиковать в группу объявления ≥12% дешевле медианы района/города (тот же алгоритм, что бейдж «ниже рынка» в приложении) — живая витрина находок + growth-канал, задел под будущие Community/Ephemeral-фичи Bot API 10.2 |
 
 ## 4. Планы и приоритеты
 
