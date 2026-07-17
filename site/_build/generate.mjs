@@ -24,7 +24,7 @@ const BUILD_DATE = new Date().toISOString().slice(0, 10); // дата генер
 // зеркалят тот же контент, отдельного трекинга per-гайд создания нет
 const GUIDE_PUBLISHED = "2026-07-13";
 // подпись "обновлено" под заголовком гайда — freshness-сигнал для читателя и AI-краулеров
-const UPDATED_LABEL = { ru: "Обновлено", ua: "Оновлено", pl: "Zaktualizowano", en: "Updated" };
+const UPDATED_LABEL = { ru: "Обновлено", ua: "Оновлено", by: "Абноўлена", pl: "Zaktualizowano", en: "Updated" };
 
 // локализация юзер-видимых строк виджет-кода (исходник widget/ остаётся RU)
 const WIDGET_STR = {
@@ -34,6 +34,12 @@ const WIDGET_STR = {
     "подходящих": "відповідних",
     " новых за сутки": " нових за добу",
     "обновлено ": "оновлено ",
+  },
+  by: {
+    "Нет связи или токен неверный. Обновите /widget в боте.": "Няма сувязі альбо токен няправільны. Абнавіце /widget у боце.",
+    "подходящих": "прыдатных",
+    " новых за сутки": " новых за суткі",
+    "обновлено ": "абноўлена ",
   },
   pl: {
     "Нет связи или токен неверный. Обновите /widget в боте.": "Brak połączenia lub błędny token. Odśwież /widget w bocie.",
@@ -52,6 +58,7 @@ const WIDGET_STR = {
 const OWNER_LINE = {
   ru: "Независимый проект одного разработчика, не агентство. Вопросы и баги — в чат бота.",
   ua: "Незалежний проєкт одного розробника, не агентство. Питання й баги — у чат бота.",
+  by: "Незалежны праект аднаго распрацоўшчыка, не агенцтва. Пытанні і памылкі — у чат бота.",
   pl: "Niezależny projekt jednego dewelopera, nie agencja. Pytania i błędy — na czacie bota.",
   en: "An independent one-developer project, not an agency. Questions and bugs — in the bot chat.",
 };
@@ -71,6 +78,18 @@ const WIDGET_COMMENT = {
 //   3. Впишіть свій токен у TOKEN нижче (отримати: /widget у боті).
 //   4. Домашній екран → віджет Scriptable (small або medium) → цей скрипт.
 // Підтримує small, medium та екран блокування. Тап відкриває Mini App.
+${FRAME}`,
+  by: `${FRAME}
+// Kwadrat PL — віджэт для Scriptable (iOS). Сапраўдны віджэт на хатнім экране
+// без App Store і Apple Developer. Даныя бярэ з нашага сервера па асабістым
+// віджэт-токене (каманда /widget у @KwadratPLBot).
+//
+// Усталяванне:
+//   1. Пастаўце бясплатны дадатак Scriptable з App Store.
+//   2. Новы скрыпт → устаўце ўвесь гэты файл.
+//   3. Упішыце свой токен у TOKEN ніжэй (атрымаць: /widget у боце).
+//   4. Хатні экран → віджэт Scriptable (small альбо medium) → гэты скрыпт.
+// Падтрымлівае small, medium і экран блакіроўкі. Тап адкрывае Mini App.
 ${FRAME}`,
   pl: `${FRAME}
 // Kwadrat PL — widżet dla Scriptable (iOS). Prawdziwy widżet na ekranie głównym
@@ -130,6 +149,7 @@ const BMC_CUP = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" ari
 const LANGS = [
   { code: "ru", path: "", hreflang: "ru", locale: "ru_RU", htmlLang: "ru" },
   { code: "ua", path: "ua/", hreflang: "uk", locale: "uk_UA", htmlLang: "uk" },
+  { code: "by", path: "by/", hreflang: "be", locale: "be_BY", htmlLang: "be" },
   { code: "pl", path: "pl/", hreflang: "pl", locale: "pl_PL", htmlLang: "pl" },
   { code: "en", path: "en/", hreflang: "en", locale: "en_US", htmlLang: "en" },
 ];
@@ -425,6 +445,78 @@ const C = {
     footAbout: "Kwadrat PL — finding rental homes in Poland, with a 5-language interface. OLX, Otodom and Morizon in one Telegram bot.",
     footLang: "Language",
     footRights: "Not a real-estate agency. All listings belong to their sources.",
+  },
+  by: {
+    title: "Арэнда жылля ў Польшчы без пасярэднікаў — бот Kwadrat PL",
+    desc: "Пошук арэнды кватэр і пакояў у Польшчы: OLX, Otodom і Morizon у адным Telegram-боце. Імгненныя апавяшчэнні, справядлівая цана, AI-разбор. Бясплатна.",
+    eyebrow: "Telegram-бот для арэнды ў Польшчы",
+    h1: "Арэнда жылля ў Польшчы: хай дом знойдзецца сам",
+    lead: "Kwadrat PL збірае свежыя аб'явы з OLX, Otodom і Morizon у адзін Telegram-бот. Падпішыцеся на пошук — новыя кватэры і пакоі прыйдуць проста ў чат, раней за іншых.",
+    ctaPrimary: "Адкрыць бота ў Telegram",
+    ctaNote: "Без рэгістрацыі · 5 моў · унутры Telegram",
+    donateText: "Kwadrat PL бясплатны і без рэкламы. Донаты ідуць на аплату дамена і сервера.",
+    donateCta: "Падтрымаць праект ☕",
+    trust: ["Бясплатна", "Прамыя аб'явы, без агенцтваў", "Абнаўленне ~5 хвілін", "AI-разбор + анты-скам"],
+    featuresTitle: "Чаму Kwadrat PL",
+    features: [
+      { t: "Пошук па 3 пляцоўках адразу", d: "Кватэры, пакоі і пасутачна з OLX, Otodom і Morizon. Аднолькавыя аб'явы з розных сайтаў аб'ядноўваюцца — без дублікатаў у стужцы." },
+      { t: "Імгненныя апавяшчэнні", d: "Падпішыцеся на свой пошук — новае прыдатнае жыллё прыходзіць у чат за хвіліны. Ціхія гадзіны ноччу і паўза камандай /off." },
+      { t: "Справядлівая цана і анты-скам", d: "Бэйдж «ніжэй/вышэй рынку раёна» па нашых даных і папярэджанне пра падазрона танныя аб'явы — тыповая прынада шахраяў." },
+      { t: "AI-разбор аб'явы", d: "Адна кнопка: пераклад аб'явы на вашу мову, выжымка галоўнага і ацэнка рызыкі шахрайства па тэксце." },
+      { t: "Калькулятар пераезду", d: "Колькі грошай трэба на старце: арэнда, czynsz, media, кауцыя і камісія — лічым усё адразу, без сюрпрызаў." },
+      { t: "Гайды для арандатара", d: "Як вярнуць кауцыю (з гатовым шаблонам прэтэнзіі), дамова без пастак, чэк-ліст агляду і гатовыя фразы гаспадару па-польску." },
+    ],
+    stepsTitle: "Як гэта працуе",
+    steps: [
+      { t: "Адкрыйце бота", d: "Націсніце кнопку і запусціце Kwadrat PL у Telegram — праграма адкрыецца проста ў чаце." },
+      { t: "Наладзьце пошук", d: "Абярыце горад, тып арэнды, цану і фільтры. Вынік абнаўляецца імгненна." },
+      { t: "Атрымлівайце новае першымі", d: "Падпішыцеся — і свежыя аб'явы будуць прыходзіць у чат раней, чым іх разбяруць." },
+    ],
+    shotsTitle: "Як гэта выглядае",
+    shotsLead: "Пошук, справядлівая цана і поўны кошт уваходу — усё ўнутры Telegram.",
+    altHome: "Галоўны экран Kwadrat PL: пошук арэнды жылля ў 8 гарадах Польшчы",
+    altCards: "Спіс кватэр на арэнду з фота, цаной і бэйджам «ніжэй рынку»",
+    altSheet: "Картка аб'явы: кошт уваходу — арэнда і кауцыя — і крыніца",
+    widgetTitle: "Віджэт на хатні экран iPhone",
+    widgetLead: "Колькі прыдатных кватэр і свежыя цэны — проста на экране, не адкрываючы Telegram. Праз бясплатны дадатак Scriptable, без плацяжоў App Store і акаунта распрацоўшчыка.",
+    widgetImgAlt: "Віджэт Kwadrat PL на хатнім экране iPhone: колькасць прыдатных кватэр і цэны арэнды",
+    widgetStepsTitle: "Як усталяваць",
+    widgetSteps: [
+      "Усталюйце бясплатны дадатак Scriptable з App Store.",
+      "Напішыце нашаму боту каманду /widget — ён дашле ваш асабісты токен.",
+      "У Scriptable націсніце «+», выдаліце змест і ўстаўце код віджэта (кнопка ніжэй).",
+      "Упішыце свой токен у радок TOKEN замест PASTE_TOKEN_HERE.",
+      "Націсніце ▶ унізе — з'явіцца прэв'ю віджэта.",
+      "На хатнім экране: доўгі тап → «+» → Scriptable → абярыце памер → дадайце. Потым доўгі тап па віджэце → «Змяніць віджэт» → у полі Script абярыце гэты скрыпт.",
+    ],
+    widgetCodeShow: "Паказаць код віджэта",
+    widgetCopy: "Скапіраваць код",
+    widgetUseTitle: "Як карыстацца",
+    widgetUse: [
+      "Тап па віджэце адкрывае дадатак.",
+      "Віджэт абнаўляецца па раскладзе iOS (прыблізна раз у 15–30 хвілін) — гэта абмежаванне ўсіх віджэтаў, не толькі нашага.",
+      "Свежыя кватэры ўсё роўна прыходзяць імгненна звычайным апавяшчэннем бота.",
+    ],
+    citiesTitle: "Гарады Польшчы",
+    citiesLead: "Арэнда кватэр і пакояў у 8 гарадах Польшчы:",
+    faqTitle: "Частыя пытанні",
+    faq: [
+      { q: "Гэта бясплатна?", a: "Так, цалкам. Пошук, апавяшчэнні, гайды і калькулятар — без платы і без рэгістрацыі." },
+      { q: "Адкуль аб'явы?", a: "Мы збіраем публічныя аб'явы з OLX, Otodom і Morizon і абнаўляем іх кожныя некалькі хвілін. Аднолькавыя лоты з розных сайтаў аб'ядноўваюцца." },
+      { q: "Што такое AI-разбор?", a: "Кнопка ў картцы аб'явы: перакладае тэкст на вашу мову, робіць кароткую выжымку і ацэньвае рызыку шахрайства па апісанні." },
+      { q: "На якіх мовах працуе?", a: "Руская, украінская, беларуская, польская і англійская. Мова пераключаецца проста ў дадатку." },
+      { q: "Як зразумець, што цана справядлівая?", a: "Бот лічыць медыянную цану за м² па раёне і тыпе жылля з уласных даных і паказвае, наколькі аб'ява танней ці даражэй за рынак. Медыяна бярэцца з выбаркі мінімум з 6 аб'яў; калі па раёне даных мала, выкарыстоўваецца медыяна па горадзе. Даныя абнаўляюцца з кожным абнаўленнем базы." },
+      { q: "Ці трэба ўсталёўваць дадатак?", a: "Не. Kwadrat PL працуе ўнутры Telegram як Mini App — нічога ставіць не трэба." },
+      { q: "Ці ёсць віджэт для iPhone?", a: "Так. Праз бясплатны дадатак Scriptable можна паставіць на хатні экран віджэт з колькасцю прыдатных кватэр і свежымі цэнамі — без плацяжоў App Store. Пакрокавая інструкцыя вышэй." },
+    ],
+    finalTitle: "Хай дом знойдзецца!",
+    finalLead: "Адкрыйце Kwadrat PL і падпішыцеся на свой пошук — новае жыллё прыйдзе само.",
+    finalCta: "Адкрыць бота ў Telegram",
+    otherBotsTitle: "Іншыя боты аўтара",
+    botDesc: { issa: "Падрыхтоўка да ліцэнзіі шкіпера (ISSA Inshore Skipper), SRC-радыё і польскіх правоў — трэнажор з інтэрвальным паўтарэннем." },
+    footAbout: "Kwadrat PL — пошук арэнды жылля ў Польшчы на 5 мовах: руская, украінская, беларуская, польская, англійская. OLX, Otodom, Morizon у адным боце.",
+    footLang: "Мова",
+    footRights: "Не з'яўляецца агенцтвам нерухомасці. Усе аб'явы належаць іх крыніцам.",
   },
 };
 
@@ -1093,6 +1185,8 @@ const GUIDES = [
         desc: "Що каже закон про kaucja, як задокументувати стан квартири, що вважається нормальним зносом і як скласти wezwanie do zapłaty, якщо депозит не повертають." },
       en: { title: "How to get your deposit back in Poland — guide + demand letter template",
         desc: "Poland's kaucja law: documenting the flat's condition, what counts as normal wear, and how to write a wezwanie do zapłaty if the deposit isn't returned." },
+      by: { title: "Як вярнуць кауцыю за кватэру ў Польшчы — гайд і шаблон прэтэнзіі",
+        desc: "Што кажа закон пра kaucja, як задакументаваць стан кватэры, што лічыцца нармальным зносам і як скласці wezwanie do zapłaty, калі дэпазіт не вяртаюць." },
     } },
   { slug: "umowa", icon: "file-text", type: "article", dictKey: "cellUmowaT",
     seo: {
@@ -1104,6 +1198,8 @@ const GUIDES = [
         desc: "Розбір договору найму: обов'язкові пункти, за що реально відповідає орендар, типові пастки власників і що перевірити перед підписом." },
       en: { title: "Poland rental contract guide: what to check, red flags",
         desc: "A walkthrough of a Polish lease: mandatory clauses, what tenants are actually liable for, common landlord traps, and what to check before signing." },
+      by: { title: "Дамова арэнды ў Польшчы: на што глядзець, red flags",
+        desc: "Разбор дамовы найму: абавязковыя пункты, за што рэальна адказвае арандатар, тыповыя пасткі гаспадароў і што праверыць перад подпісам." },
     } },
   { slug: "najem", icon: "shield-check", type: "article", dictKey: "cellNajemT",
     seo: {
@@ -1115,6 +1211,8 @@ const GUIDES = [
         desc: "Чим najem okazjonalny відрізняється від звичайного договору, навіщо потрібен meldunek і karta pobytu, які питання поставити власнику." },
       en: { title: "Najem okazjonalny & meldunek in Poland: a tenant's guide",
         desc: "How najem okazjonalny differs from a standard lease, why meldunek and karta pobytu matter, and what to ask the landlord before renting." },
+      by: { title: "Najem okazjonalny і meldunek: што трэба ведаць арандатару ў Польшчы",
+        desc: "Чым najem okazjonalny адрозніваецца ад звычайнай дамовы, навошта патрэбны meldunek і karta pobytu, якія пытанні задаць гаспадару перад арэндай." },
     } },
   { slug: "checklist", icon: "check-square", type: "checklist", dictKey: "cellCheckT",
     seo: {
@@ -1126,6 +1224,8 @@ const GUIDES = [
         desc: "Інтерактивний чек-лист: що перевірити на огляді — документи, стіни й сантехніка, електрика, опалення, район. Прогрес зберігається в браузері." },
       en: { title: "Poland flat-viewing checklist (29 points)",
         desc: "An interactive checklist for viewings: documents, walls and plumbing, electrics, heating, the neighbourhood. Progress is saved in your browser." },
+      by: { title: "Чэк-ліст агляду кватэры перад арэндай у Польшчы (29 пунктаў)",
+        desc: "Інтэрактыўны чэк-ліст: што праверыць на аглядзе — дакументы, сцены і сантэхніка, электрыка, ацяпленне, раён. Прагрэс захоўваецца ў браўзеры." },
     } },
   { slug: "phrases", icon: "message-circle", type: "phrases", dictKey: "cellPhrasesT",
     seo: {
@@ -1137,6 +1237,8 @@ const GUIDES = [
         desc: "8 готових повідомлень польською: відгук на оголошення, питання перед оглядом, торг, скарга на поломку, повідомлення про виїзд. Копіюйте й надсилайте." },
       en: { title: "Ready-made Polish messages to a landlord",
         desc: "8 ready messages in Polish: replying to a listing, questions before a viewing, price negotiation, reporting a fault, a move-out notice. Copy and send." },
+      by: { title: "Фразы па-польску для перапіскі з гаспадаром кватэры",
+        desc: "8 гатовых паведамленняў на польскай: водгук на аб'яву, пытанні перад аглядам, торг, скарга на паломку, паведамленне пра выезд. Капіруйце і адпраўляйце." },
     } },
   { slug: "koszty", icon: "calculator", type: "koszty", dictKey: "cellKosztyT",
     seo: {
@@ -1148,6 +1250,8 @@ const GUIDES = [
         desc: "Реальна вартість оренди: czynsz, administracyjny, media, кауція та комісія агента — скільки треба при заїзді і скільки виходить на місяць." },
       en: { title: "Poland move-in cost calculator",
         desc: "The real cost of renting: rent, building fee, utilities, deposit and agent's fee — how much cash you need up front and the true monthly cost." },
+      by: { title: "Калькулятар арэнды: колькі трэба грошай на пераезд у Польшчы",
+        desc: "Рэальны кошт арэнды: czynsz, administracyjny, media, кауцыя і камісія агента — колькі трэба пры пераездзе і колькі выходзіць на месяц." },
     } },
 ];
 
@@ -1164,18 +1268,21 @@ const GUIDES_HUB = {
   en: { title: "Renter's guides for Poland — Kwadrat PL",
     desc: "Free guides: deposit, rental contract, najem okazjonalny, viewing checklist, landlord messages, move-in calculator.",
     h1: "Renter's guides", lead: "6 free guides from Kwadrat PL — the stuff that actually helps when renting a flat in Poland." },
+  by: { title: "Гайды для арандатара жылля ў Польшчы — Kwadrat PL",
+    desc: "Бясплатныя гайды: кауцыя, дамова арэнды, najem okazjonalny, чэк-ліст агляду, фразы для гаспадара, калькулятар пераезду.",
+    h1: "Гайды для арандатара", lead: "6 бясплатных гайдаў ад Kwadrat PL — тое, што рэальна спатрэбіцца пры арэндзе жылля ў Польшчы." },
 };
 
 // ── города: локатив ("в Варшаве"/"w Warszawie") + маркетинговый лид + FAQ ────
 const CITY_IN = {
-  warszawa:  { ru: "в Варшаве",    pl: "w Warszawie",   ua: "у Варшаві",   en: "in Warsaw" },
-  krakow:    { ru: "в Кракове",    pl: "w Krakowie",    ua: "у Кракові",   en: "in Kraków" },
-  wroclaw:   { ru: "во Вроцлаве",  pl: "we Wrocławiu",  ua: "у Вроцлаві",  en: "in Wrocław" },
-  gdansk:    { ru: "в Гданьске",   pl: "w Gdańsku",     ua: "у Гданську",  en: "in Gdańsk" },
-  poznan:    { ru: "в Познани",    pl: "w Poznaniu",    ua: "у Познані",   en: "in Poznań" },
-  lodz:      { ru: "в Лодзи",      pl: "w Łodzi",       ua: "у Лодзі",     en: "in Łódź" },
-  zakopane:  { ru: "в Закопане",   pl: "w Zakopanem",   ua: "у Закопане",  en: "in Zakopane" },
-  bialystok: { ru: "в Белостоке",  pl: "w Białymstoku", ua: "у Білостоку", en: "in Białystok" },
+  warszawa:  { ru: "в Варшаве",    pl: "w Warszawie",   ua: "у Варшаві",   by: "у Варшаве",   en: "in Warsaw" },
+  krakow:    { ru: "в Кракове",    pl: "w Krakowie",    ua: "у Кракові",   by: "у Кракаве",   en: "in Kraków" },
+  wroclaw:   { ru: "во Вроцлаве",  pl: "we Wrocławiu",  ua: "у Вроцлаві",  by: "ва Уроцлаве", en: "in Wrocław" },
+  gdansk:    { ru: "в Гданьске",   pl: "w Gdańsku",     ua: "у Гданську",  by: "у Гданьску",  en: "in Gdańsk" },
+  poznan:    { ru: "в Познани",    pl: "w Poznaniu",    ua: "у Познані",   by: "у Познані",   en: "in Poznań" },
+  lodz:      { ru: "в Лодзи",      pl: "w Łodzi",       ua: "у Лодзі",     by: "у Лодзі",     en: "in Łódź" },
+  zakopane:  { ru: "в Закопане",   pl: "w Zakopanem",   ua: "у Закопане",  by: "у Закапане",  en: "in Zakopane" },
+  bialystok: { ru: "в Белостоке",  pl: "w Białymstoku", ua: "у Білостоку", by: "у Беластоку", en: "in Białystok" },
 };
 
 const CITY_LEAD = {
@@ -1183,41 +1290,49 @@ const CITY_LEAD = {
     ru: "Варшава — столица и крупнейший рынок аренды в Польше: сюда едут работать в корпорациях, IT и на международных проектах, а Мокотув и Воля забиты офисами. Здесь самый широкий выбор квартир и комнат, но и самые высокие цены — особенно в Śródmieście. Правобережная Прага и спальные районы вроде Bemowo и Ursynów дешевле при похожих 20–30 минутах до центра метро или трамваем.",
     pl: "Warszawa to stolica i największy rynek najmu w Polsce: przyciąga pracą w korporacjach, IT i projektach międzynarodowych, a Mokotów i Wola są pełne biur. Tu największy wybór mieszkań i pokoi, ale i najwyższe ceny — zwłaszcza w Śródmieściu. Prawobrzeżna Praga i dzielnice sypialniane jak Bemowo czy Ursynów są tańsze przy podobnym, 20–30-minutowym dojeździe metrem lub tramwajem.",
     ua: "Варшава — столиця і найбільший ринок оренди в Польщі: сюди їдуть працювати в корпораціях, IT та міжнародних проєктах, а Мокотув і Воля забиті офісами. Тут найширший вибір квартир і кімнат, але й найвищі ціни — особливо в Śródmieście. Правобережна Прага та спальні райони на кшталт Bemowo й Ursynów дешевші за схожих 20–30 хвилин до центру метро чи трамваєм.",
+    by: "Варшава — сталіца і найбуйнейшы рынак арэнды ў Польшчы: сюды едуць працаваць у карпарацыях, IT і на міжнародных праектах, а Мокатув і Воля забітыя офісамі. Тут самы шырокі выбар кватэр і пакояў, але і самыя высокія цэны — асабліва ў Śródmieście. Правабярэжная Прага і спальныя раёны накшталт Bemowo і Ursynów танней пры падобных 20–30 хвілінах да цэнтра метро ці трамваем.",
     en: "Warsaw is Poland's capital and its biggest rental market: people move here for corporate, IT and international jobs, and Mokotów and Wola are packed with offices. It has the widest choice of flats and rooms — and the highest prices, especially in Śródmieście. Praga across the river and residential districts like Bemowo or Ursynów cost less for a similar 20–30-minute commute by metro or tram." },
   krakow: {
     ru: "Краков — историческая столица Малопольши и крупнейший студенческий город страны: Ягеллонский университет и десятки вузов держат спрос на комнаты и небольшие квартиры круглый год. Старый город и Казимеж — туристический центр с высокими ценами, зато Nowa Huta и Podgórze Duchackie дают нормальную квартиру заметно дешевле при удобном трамвайном сообщении.",
     pl: "Kraków to historyczna stolica Małopolski i największe miasto studenckie w kraju: Uniwersytet Jagielloński i dziesiątki uczelni utrzymują popyt na pokoje i małe mieszkania cały rok. Stare Miasto i Kazimierz to centrum turystyczne z wysokimi cenami, za to Nowa Huta i Podgórze Duchackie dają normalne mieszkanie wyraźnie taniej przy dobrym połączeniu tramwajowym.",
     ua: "Краків — історична столиця Малопольщі і найбільше студентське місто країни: Ягеллонський університет і десятки вишів тримають попит на кімнати й невеликі квартири цілий рік. Старе місто і Казімеж — туристичний центр із високими цінами, натомість Nowa Huta й Podgórze Duchackie дають нормальну квартиру помітно дешевше при зручному трамвайному сполученні.",
+    by: "Кракаў — гістарычная сталіца Малапольшчы і найбуйнейшы студэнцкі горад краіны: Ягелонскі ўніверсітэт і дзясяткі ВНУ трымаюць попыт на пакоі і невялікія кватэры круглы год. Стары горад і Казімеж — турыстычны цэнтр з высокімі цэнамі, затое Nowa Huta і Podgórze Duchackie даюць звычайную кватэру прыкметна танней пры зручным трамвайным злучэнні.",
     en: "Kraków is Małopolska's historic capital and Poland's biggest student city: the Jagiellonian University and dozens of other schools keep demand for rooms and small flats high year-round. The Old Town and Kazimierz are the touristy, pricey core, while Nowa Huta and Podgórze Duchackie offer a normal flat for noticeably less with an easy tram ride in." },
   wroclaw: {
     ru: "Вроцлав — один из главных IT- и аутсорс-хабов Польши: здесь офисы Nokia, HP, Google и десятков других компаний, плюс сильный студенческий сектор. Город на Одре быстро растёт, международное сообщество большое, а рынок аренды подвижный — новые объявления появляются каждый день в Krzyki, Fabryczna и Śródmieście.",
     pl: "Wrocław to jeden z głównych hubów IT i outsourcingu w Polsce: biura Nokii, HP, Google i dziesiątek innych firm, plus silny sektor studencki. Miasto nad Odrą szybko się rozwija, społeczność międzynarodowa jest duża, a rynek najmu żywy — nowe ogłoszenia pojawiają się codziennie w Krzykach, na Fabrycznej i w Śródmieściu.",
     ua: "Вроцлав — один із головних IT- та аутсорс-хабів Польщі: тут офіси Nokia, HP, Google і десятків інших компаній, плюс сильний студентський сектор. Місто на Одрі швидко росте, міжнародна спільнота велика, а ринок оренди рухливий — нові оголошення з'являються щодня в Krzyki, на Fabryczna і в Śródmieście.",
+    by: "Уроцлаў — адзін з галоўных IT- і аўтсорс-хабаў Польшчы: тут офісы Nokia, HP, Google і дзясяткаў іншых кампаній, плюс моцны студэнцкі сектар. Горад на Одры хутка расце, міжнародная супольнасць вялікая, а рынак арэнды рухавы — новыя аб'явы з'яўляюцца штодня ў Krzyki, Fabryczna і Śródmieście.",
     en: "Wrocław is one of Poland's main IT and outsourcing hubs, home to Nokia, HP, Google and dozens of other offices, plus a strong student scene. The city on the Oder is growing fast, its international community is large, and the rental market moves quickly — new listings appear daily in Krzyki, Fabryczna and Śródmieście." },
   gdansk: {
     ru: "Гданьск — часть Труймяста вместе с Сопотом и Гдыней, побережье Балтики, судостроение и растущий IT-сектор. Летом спрос подскакивает из-за туристов и посуточной аренды, зимой рынок спокойнее и выгоднее. Śródmieście и Wrzeszcz ближе к морю и дороже, спальные районы вроде Chełm и Przymorze — доступнее.",
     pl: "Gdańsk to część Trójmiasta razem z Sopotem i Gdynią, wybrzeże Bałtyku, przemysł stoczniowy i rosnący sektor IT. Latem popyt skacze przez turystów i najem krótkoterminowy, zimą rynek jest spokojniejszy i korzystniejszy. Śródmieście i Wrzeszcz są bliżej morza i droższe, dzielnice sypialniane jak Chełm czy Przymorze — tańsze.",
     ua: "Гданськ — частина Труймяста разом із Сопотом і Гдинею, узбережжя Балтики, суднобудування та зростаючий IT-сектор. Влітку попит підскакує через туристів і подобову оренду, взимку ринок спокійніший і вигідніший. Śródmieście і Wrzeszcz ближче до моря й дорожчі, спальні райони на кшталт Chełm і Przymorze — доступніші.",
+    by: "Гданьск — частка Труймяста разам з Сопатам і Гдыняй, узбярэжжа Балтыкі, суднабудаванне і растучы IT-сектар. Улетку попыт рэзка расце праз турыстаў і пасутачную арэнду, узімку рынак спакайнейшы і выгаднейшы. Śródmieście і Wrzeszcz бліжэй да мора і даражэйшыя, спальныя раёны накшталт Chełm і Przymorze — даступнейшыя.",
     en: "Gdańsk is part of the Tri-City alongside Sopot and Gdynia, on the Baltic coast, with shipbuilding and a growing IT sector. Demand spikes in summer with tourists and short-term rentals, while winter is calmer and cheaper. Śródmieście and Wrzeszcz sit closer to the sea and cost more; residential areas like Chełm or Przymorze are more affordable." },
   poznan: {
     ru: "Познань — деловой и логистический центр Великопольши, город международных ярмарок MTP и крупный студенческий центр с ганзейской архитектурой в центре. Рынок аренды спокойнее, чем в Варшаве или Кракове, без резких сезонных скачков цен — комнату или квартиру можно снять быстро в любое время года.",
     pl: "Poznań to centrum biznesowe i logistyczne Wielkopolski, miasto targów międzynarodowych MTP i duży ośrodek akademicki z hanzeatycką architekturą w centrum. Rynek najmu jest spokojniejszy niż w Warszawie czy Krakowie, bez gwałtownych sezonowych skoków cen — pokój lub mieszkanie można wynająć szybko o każdej porze roku.",
     ua: "Познань — діловий і логістичний центр Великопольщі, місто міжнародних ярмарків MTP і великий студентський центр із ганзейською архітектурою в центрі. Ринок оренди спокійніший, ніж у Варшаві чи Кракові, без різких сезонних стрибків цін — кімнату або квартиру можна зняти швидко в будь-яку пору року.",
+    by: "Познань — дзелавы і лагістычны цэнтр Вялікапольшчы, горад міжнародных кірмашоў MTP і буйны студэнцкі цэнтр з ганзейскай архітэктурай у цэнтры. Рынак арэнды спакайнейшы, чым у Варшаве ці Кракаве, без рэзкіх сезонных скачкоў цэн — пакой ці кватэру можна зняць хутка ў любую пару года.",
     en: "Poznań is Wielkopolska's business and logistics hub, home to the international MTP trade fairs and a large student population, with Hanseatic-style architecture downtown. Its rental market is calmer than Warsaw's or Kraków's, without sharp seasonal price swings — a room or flat can usually be rented quickly any time of year." },
   lodz: {
     ru: "Лодзь — город киношколы (её закончили Полански и Кесьлёвский) и бывшая текстильная столица Польши, которая последние годы активно перестраивается: Manufaktura и центр обновляются, растёт IT-сектор. Аренда здесь заметно дешевле, чем в Варшаве и Кракове, при хорошем железнодорожном сообщении с обеими столицами.",
     pl: "Łódź to miasto Szkoły Filmowej (jej absolwentami są Polański i Kieślowski) i była stolica włókiennictwa w Polsce, która ostatnie lata mocno się przebudowuje: Manufaktura i centrum się odnawiają, rośnie sektor IT. Najem jest tu wyraźnie tańszy niż w Warszawie czy Krakowie, przy dobrym połączeniu kolejowym z obiema stolicami.",
     ua: "Лодзь — місто кіношколи (її закінчили Полянскі й Кесльовський) і колишня текстильна столиця Польщі, яка останніми роками активно перебудовується: Manufaktura і центр оновлюються, зростає IT-сектор. Оренда тут помітно дешевша, ніж у Варшаві й Кракові, при хорошому залізничному сполученні з обома столицями.",
+    by: "Лодзь — горад кінашколы (яе скончылі Поляньскі і Кес'лёўскі) і былая тэкстыльная сталіца Польшчы, якая апошнія гады актыўна перабудоўваецца: Manufaktura і цэнтр абнаўляюцца, расце IT-сектар. Арэнда тут прыкметна таннейшая, чым у Варшаве і Кракаве, пры добрым чыгуначным злучэнні з абедзвюма сталіцамі.",
     en: "Łódź is home to the famous Film School (alumni include Polanski and Kieślowski) and was once Poland's textile capital — it's been rebuilding fast in recent years, with Manufaktura and the city centre renewed and a growing IT sector. Rents here are noticeably lower than in Warsaw or Kraków, with good rail links to both capitals." },
   zakopane: {
     ru: "Закопане — туристическая столица у подножия Татр: горнолыжный сезон зимой и трекинг летом держат спрос на короткую и посуточную аренду весь год. Центр и Krupówki — самые дорогие и туристические, а Olcza, Bystre и Harenda дают более спокойное и доступное жильё в двух шагах от гор.",
     pl: "Zakopane to turystyczna stolica u podnóża Tatr: sezon narciarski zimą i trekking latem utrzymują popyt na najem krótkoterminowy przez cały rok. Centrum i Krupówki są najdroższe i najbardziej turystyczne, a Olcza, Bystre czy Harenda dają spokojniejsze i tańsze lokum o krok od gór.",
     ua: "Закопане — туристична столиця біля підніжжя Татр: гірськолижний сезон узимку і трекінг улітку тримають попит на коротку й подобову оренду цілий рік. Центр і Krupówki — найдорожчі й найтуристичніші, а Olcza, Bystre й Harenda дають спокійніше і доступніше житло за крок від гір.",
+    by: "Закапанэ — турыстычная сталіца ля падножжа Татраў: горналыжны сезон узімку і трэкінг улетку трымаюць попыт на кароткую і пасутачную арэнду цэлы год. Цэнтр і Krupówki — самыя дарагія і турыстычныя, а Olcza, Bystre ці Harenda даюць спакайнейшае і даступнейшае жыллё за крок ад гор.",
     en: "Zakopane is the tourist capital at the foot of the Tatra mountains: the winter ski season and summer hiking keep demand for short and daily rentals high all year. The centre and Krupówki are the priciest, most touristy spots, while Olcza, Bystre or Harenda offer quieter, more affordable places a step from the mountains." },
   bialystok: {
     ru: "Белосток — крупнейший город Подляского воеводства у восточной границы, спокойный и заметно доступнее по цене, чем крупные польские мегаполисы. Университеты и медколледж держат стабильный студенческий спрос, а близость к Беларуси и Литве делает город удобной базой для тех, кто ищет тихий и бюджетный вариант.",
     pl: "Białystok to największe miasto województwa podlaskiego przy wschodniej granicy, spokojne i wyraźnie tańsze niż duże polskie metropolie. Uczelnie i uniwersytet medyczny utrzymują stabilny popyt studencki, a bliskość Białorusi i Litwy czyni miasto wygodną bazą dla tych, którzy szukają cichej i budżetowej opcji.",
     ua: "Білосток — найбільше місто Підляського воєводства біля східного кордону, спокійне і помітно доступніше за ціною, ніж великі польські мегаполіси. Університети й медколедж тримають стабільний студентський попит, а близькість до Білорусі й Литви робить місто зручною базою для тих, хто шукає тихий і бюджетний варіант.",
+    by: "Беласток — найбуйнейшы горад Падляшскага ваяводства ля ўсходняй мяжы, спакойны і прыкметна даступнейшы па цане, чым буйныя польскія мегаполісы. Універсітэты і медкаледж трымаюць стабільны студэнцкі попыт, а блізкасць да Беларусі і Літвы робіць горад зручнай базай для тых, хто шукае ціхі і бюджэтны варыянт.",
     en: "Białystok is the largest city in Podlaskie voivodeship on Poland's eastern border — calm and noticeably cheaper than the big Polish metros. Its universities and medical college keep steady student demand, and its closeness to Belarus and Lithuania makes it a convenient base for anyone after a quiet, budget-friendly option." },
 };
 
@@ -1234,6 +1349,9 @@ const CITY_SEO = {
   en: { title: (inCity) => `Flats and rooms for rent ${inCity} — Kwadrat PL`,
     desc: (inCity) => `Find a flat or room ${inCity}: OLX, Otodom and Morizon in one Telegram bot. Instant alerts on new listings, fair-price check, free to use.`,
     h1: (inCity) => `Renting a home ${inCity}`, districts: "Districts", faqTitle: "FAQ" },
+  by: { title: (inCity) => `Арэнда кватэр і пакояў ${inCity} — Kwadrat PL`,
+    desc: (inCity) => `Шукайце кватэру ці пакой ${inCity}: OLX, Otodom і Morizon у адным Telegram-боце. Імгненныя апавяшчэнні пра новыя аб'явы, справядлівая цана, бясплатна.`,
+    h1: (inCity) => `Арэнда жылля ${inCity}`, districts: "Раёны", faqTitle: "Частыя пытанні" },
 };
 
 function cityFaq(lang, inCity) {
@@ -1257,6 +1375,11 @@ function cityFaq(lang, inCity) {
       ["How much does renting a flat cost {c}?", "Prices depend on the district, size and type of home — a room costs less than a flat, and the centre costs more than the outskirts. The bot shows a below/above district-market badge on every listing based on its own data, so you can spot a fair price instantly."],
       ["How fast do new listings appear {c}?", "Data from OLX, Otodom and Morizon refreshes every few minutes. Subscribe to your search in the bot and new flats and rooms will reach your chat before anyone else snaps them up."],
       ["Can I rent a room {c} instead of a whole flat?", "Yes — the bot tracks flats, rooms and short stays separately across all 8 cities. Pick the type you want in the search filters."],
+    ],
+    by: [
+      ["Колькі каштуе арэнда кватэры {c}?", "Цэны залежаць ад раёна, плошчы і тыпу жылля — пакой каштуе менш за кватэру, а цэнтр даражэй за ўскраіны. Бот паказвае каля кожнай аб'явы бэйдж «ніжэй/вышэй рынку раёна» на аснове сабраных даных, так што справядлівую цану відаць адразу, без ручнога параўнання."],
+      ["Як хутка з'яўляюцца новыя аб'явы {c}?", "Даныя з OLX, Otodom і Morizon абнаўляюцца кожныя некалькі хвілін. Падпішыцеся на свой пошук у боце — і новыя кватэры і пакоі прыйдуць у чат раней, чым іх разбяруць."],
+      ["Ці можна зняць пакой {c}, а не ўсю кватэру?", "Так, бот збірае асобна кватэры, пакоі і пасутачную арэнду па ўсіх 8 гарадах. У наладах пошуку можна выбраць патрэбны тып жылля."],
     ],
   };
   return (T[lang] || T.ru).map(([q, a]) => ({ q: q.replace("{c}", inCity), a: a.replace("{c}", inCity) }));
