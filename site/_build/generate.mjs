@@ -20,6 +20,11 @@ const OUT = join(__dirname, "..");
 // код виджета берём из единого источника — repo/widget/kwadrat-widget.js
 const WIDGET_CODE = readFileSync(join(__dirname, "..", "..", "widget", "kwadrat-widget.js"), "utf8");
 const BUILD_DATE = new Date().toISOString().slice(0, 10); // дата генерации = дата деплоя
+// дата первой публикации раздела «Полезное» в webapp (2026-07-13) — гайды на сайте
+// зеркалят тот же контент, отдельного трекинга per-гайд создания нет
+const GUIDE_PUBLISHED = "2026-07-13";
+// подпись "обновлено" под заголовком гайда — freshness-сигнал для читателя и AI-краулеров
+const UPDATED_LABEL = { ru: "Обновлено", ua: "Оновлено", pl: "Zaktualizowano", en: "Updated" };
 
 // локализация юзер-видимых строк виджет-кода (исходник widget/ остаётся RU)
 const WIDGET_STR = {
@@ -1331,6 +1336,7 @@ main{ padding:32px 0 60px }
 .crumb{ font-size:13px; color:var(--muted); margin-bottom:18px; display:flex; gap:6px; flex-wrap:wrap }
 .crumb a{ color:var(--accent) }
 .art-h1{ font-size:clamp(26px,4.6vw,36px); font-weight:750; letter-spacing:-.025em; margin-bottom:10px }
+.art-updated{ color:var(--muted); font-size:12.5px; margin-bottom:14px }
 .art-lead{ color:var(--muted); font-size:16px; margin-bottom:8px }
 .art-cta{ margin:22px 0 28px; display:flex; flex-wrap:wrap; gap:12px; align-items:center }
 /* гайды — Settings-стиль: плоские сгруппированные блоки, hairline-бордер, без тени */
@@ -1668,8 +1674,9 @@ function guidePage(meta, guide) {
     "@context": "https://schema.org",
     "@graph": [
       { "@type": "Article", "@id": canonical + "#article", headline: h1, description: seo.desc,
-        inLanguage: meta.hreflang, dateModified: BUILD_DATE, url: canonical, mainEntityOfPage: canonical,
-        publisher: { "@id": SITE.domain + "/#org" } },
+        inLanguage: meta.hreflang, datePublished: GUIDE_PUBLISHED, dateModified: BUILD_DATE,
+        url: canonical, mainEntityOfPage: canonical,
+        author: { "@id": SITE.domain + "/#org" }, publisher: { "@id": SITE.domain + "/#org" } },
       { "@type": "BreadcrumbList", "@id": canonical + "#breadcrumb", itemListElement: [
         { "@type": "ListItem", position: 1, name: SITE.name, item: url(meta.path) },
         { "@type": "ListItem", position: 2, name: GUIDES_HUB[lang].h1, item: url(meta.path + "guides/") },
@@ -1681,6 +1688,7 @@ function guidePage(meta, guide) {
   return chromeOpen(chromeMeta, { title: seo.title, desc: seo.desc, canonical, altHtml: altLinksAt(suffix), jsonLd }) +
     `<div class="crumb"><a href="${url(meta.path)}">${esc(SITE.name)}</a> / <a href="${url(meta.path + "guides/")}">${esc(GUIDES_HUB[lang].h1)}</a> / <span>${esc(h1)}</span></div>
     <h1 class="art-h1">${esc(h1)}</h1>
+    <p class="art-updated">${esc(UPDATED_LABEL[lang])}: <time datetime="${BUILD_DATE}">${BUILD_DATE}</time></p>
     ${lead ? `<p class="art-lead">${esc(lead)}</p>` : ""}
     <div class="art-cta"><a class="btn" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} ${esc(C[lang].ctaPrimary)}</a></div>
     ${bodyInner}` +
@@ -1768,11 +1776,67 @@ function cityPage(meta, slug) {
     chromeClose(chromeMeta);
 }
 
+// AI-краулеры перечислены явно (сайт и так открыт '*' — это фиксирует намерение
+// на будущее: если кто-то добавит точечный Disallow, эти строки не потеряются)
+const AI_CRAWLERS = [
+  "GPTBot", "OAI-SearchBot", "ChatGPT-User",       // OpenAI
+  "ClaudeBot", "Claude-User", "Claude-SearchBot",  // Anthropic
+  "PerplexityBot", "Perplexity-User",              // Perplexity
+  "Google-Extended", "Applebot-Extended",          // Gemini / Apple Intelligence
+  "Bingbot",                                        // Bing Copilot
+];
 const robots = `User-agent: *
 Allow: /
 
+${AI_CRAWLERS.map((ua) => `User-agent: ${ua}\nAllow: /`).join("\n\n")}
+
 Sitemap: ${url("sitemap.xml")}
 `;
+
+// ── llms.txt — единый источник данных с сайтом (гайды/города/FAQ не расходятся) ──
+function llmsTxt() {
+  const en = C.en;
+  const guidesLines = GUIDES.map((g) => {
+    const seo = g.seo.en;
+    return `- [${pick2(KW.DICT[g.dictKey], "en")}](${url("guides/" + g.slug + "/")}): ${seo.desc}`;
+  }).join("\n");
+  const citiesLines = SITE.cities.map((slug) => `- [${CITY[slug].en}](${url("cities/" + slug + "/")}): ${CITY_LEAD[slug].en}`).join("\n");
+  const faqLines = en.faq.map((f) => `Q: ${f.q}\nA: ${f.a}`).join("\n\n");
+  return `# ${SITE.name}
+
+> ${en.desc}
+
+## What it does
+${en.features.map((f) => `- ${f.t}: ${f.d}`).join("\n")}
+
+## Key facts
+- Price: completely free, no sign-up, no app to install — runs inside Telegram.
+- Cities covered: ${SITE.cities.map((s) => CITY[s].en).join(", ")}.
+- Listing sources: OLX, Otodom, Morizon (public listings only).
+- Interface languages: Russian, Ukrainian, Belarusian, Polish, English.
+- Update frequency: new listings pulled and pushed within minutes.
+- Not a real-estate agency; listings remain the property of their original source sites.
+
+## Renter guides
+${guidesLines}
+
+## Cities
+${citiesLines}
+
+## FAQ
+${faqLines}
+
+## Links
+- Telegram bot: ${SITE.bot}
+- Website: ${url("")} (RU) · ${url("pl/")} (PL) · ${url("ua/")} (UA) · ${url("en/")} (EN)
+- Guides hub: ${url("guides/")}
+- Privacy policy: ${url("privacy/")}
+- Support the project: ${SITE.donate}
+
+## Last updated
+${BUILD_DATE}
+`;
+}
 
 // ── запись ───────────────────────────────────────────────────────────────────
 let count = 0;
@@ -1805,6 +1869,7 @@ for (const meta of LANGS) {
 }
 writeFileSync(join(OUT, "sitemap.xml"), sitemap());
 writeFileSync(join(OUT, "robots.txt"), robots);
+writeFileSync(join(OUT, "llms.txt"), llmsTxt());
 
 console.log(`OK: ${count} страниц + sitemap.xml + robots.txt → ${OUT}`);
 console.log("Языки:", LANGS.map((l) => l.hreflang).join(", "));

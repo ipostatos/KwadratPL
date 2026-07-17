@@ -1,50 +1,67 @@
 # Kwadrat PL
 
-> Free Telegram Mini App for finding rental housing (flats and rooms) in Poland. It aggregates fresh, direct listings from OLX, Otodom and Morizon into one bot, merges duplicate listings across portals, and pushes instant chat alerts. Built for Russian-, Ukrainian-, Belarusian-, Polish- and English-speaking renters — especially migrants — who want to rent directly, without agencies or middlemen.
+> Find flats and rooms for rent in Poland: OLX, Otodom and Morizon in one Telegram bot. Instant alerts, fair-price check, AI breakdown. Free to use.
 
 ## What it does
-- Aggregated search across OLX, Otodom and Morizon; the same listing across sites is merged (no duplicates in the feed).
-- Instant chat alerts when a new matching flat or room appears, typically within a few minutes of publication.
-- Fair-price check: a below/above district-market badge computed from the bot's own listing data (median price per m² by district and home type, minimum sample of 6 listings).
-- Anti-scam warning on suspiciously cheap listings, a common bait tactic.
-- AI listing breakdown (powered by Claude): translates a listing into the user's language, summarizes it, and scores scam risk from the description text.
-- Move-in cost calculator: rent, czynsz, utilities, deposit (kaucja) and agent fee, in one estimate.
-- Renter guides: deposit refund (with a ready-to-send demand-letter template), rental-contract red flags, a viewing checklist, and ready-made Polish messages to landlords.
-- Optional iOS home-screen widget (via the free Scriptable app) showing matching-listing count and latest prices.
+- Search 3 portals at once: Flats, rooms and short stays from OLX, Otodom and Morizon. The same listing across sites is merged — no duplicates in your feed.
+- Instant alerts: Subscribe to your search and matching homes reach your chat within minutes. Quiet hours at night and pause with /off.
+- Fair price & anti-scam: A below/above district-market badge from our own data, plus a warning on suspiciously cheap listings — a classic scam bait.
+- AI listing breakdown: One button: translate the listing into your language, summarise the essentials and score the scam risk from the text.
+- Move-in calculator: How much cash you need upfront: rent, czynsz, utilities, deposit and agent fee — all counted at once, no surprises.
+- Renter guides: How to get your deposit back (with a ready demand letter), contract red flags, a viewing checklist and ready Polish messages to the owner.
 
 ## Key facts
 - Price: completely free, no sign-up, no app to install — runs inside Telegram.
-- Cities covered: Warszawa, Kraków, Wrocław, Gdańsk, Poznań, Łódź, Zakopane, Białystok.
+- Cities covered: Warsaw, Kraków, Wrocław, Gdańsk, Poznań, Łódź, Zakopane, Białystok.
 - Listing sources: OLX, Otodom, Morizon (public listings only).
 - Interface languages: Russian, Ukrainian, Belarusian, Polish, English.
 - Update frequency: new listings pulled and pushed within minutes.
 - Not a real-estate agency; listings remain the property of their original source sites.
 
+## Renter guides
+- [Get your deposit back](https://kwadratpl.pl/guides/kaucja/): Poland's kaucja law: documenting the flat's condition, what counts as normal wear, and how to write a wezwanie do zapłaty if the deposit isn't returned.
+- [Rental contract guide](https://kwadratpl.pl/guides/umowa/): A walkthrough of a Polish lease: mandatory clauses, what tenants are actually liable for, common landlord traps, and what to check before signing.
+- [Contract & documents](https://kwadratpl.pl/guides/najem/): How najem okazjonalny differs from a standard lease, why meldunek and karta pobytu matter, and what to ask the landlord before renting.
+- [Viewing checklist](https://kwadratpl.pl/guides/checklist/): An interactive checklist for viewings: documents, walls and plumbing, electrics, heating, the neighbourhood. Progress is saved in your browser.
+- [Messages to landlord](https://kwadratpl.pl/guides/phrases/): 8 ready messages in Polish: replying to a listing, questions before a viewing, price negotiation, reporting a fault, a move-out notice. Copy and send.
+- [Move-in calculator](https://kwadratpl.pl/guides/koszty/): The real cost of renting: rent, building fee, utilities, deposit and agent's fee — how much cash you need up front and the true monthly cost.
+
+## Cities
+- [Warsaw](https://kwadratpl.pl/cities/warszawa/): Warsaw is Poland's capital and its biggest rental market: people move here for corporate, IT and international jobs, and Mokotów and Wola are packed with offices. It has the widest choice of flats and rooms — and the highest prices, especially in Śródmieście. Praga across the river and residential districts like Bemowo or Ursynów cost less for a similar 20–30-minute commute by metro or tram.
+- [Kraków](https://kwadratpl.pl/cities/krakow/): Kraków is Małopolska's historic capital and Poland's biggest student city: the Jagiellonian University and dozens of other schools keep demand for rooms and small flats high year-round. The Old Town and Kazimierz are the touristy, pricey core, while Nowa Huta and Podgórze Duchackie offer a normal flat for noticeably less with an easy tram ride in.
+- [Wrocław](https://kwadratpl.pl/cities/wroclaw/): Wrocław is one of Poland's main IT and outsourcing hubs, home to Nokia, HP, Google and dozens of other offices, plus a strong student scene. The city on the Oder is growing fast, its international community is large, and the rental market moves quickly — new listings appear daily in Krzyki, Fabryczna and Śródmieście.
+- [Gdańsk](https://kwadratpl.pl/cities/gdansk/): Gdańsk is part of the Tri-City alongside Sopot and Gdynia, on the Baltic coast, with shipbuilding and a growing IT sector. Demand spikes in summer with tourists and short-term rentals, while winter is calmer and cheaper. Śródmieście and Wrzeszcz sit closer to the sea and cost more; residential areas like Chełm or Przymorze are more affordable.
+- [Poznań](https://kwadratpl.pl/cities/poznan/): Poznań is Wielkopolska's business and logistics hub, home to the international MTP trade fairs and a large student population, with Hanseatic-style architecture downtown. Its rental market is calmer than Warsaw's or Kraków's, without sharp seasonal price swings — a room or flat can usually be rented quickly any time of year.
+- [Łódź](https://kwadratpl.pl/cities/lodz/): Łódź is home to the famous Film School (alumni include Polanski and Kieślowski) and was once Poland's textile capital — it's been rebuilding fast in recent years, with Manufaktura and the city centre renewed and a growing IT sector. Rents here are noticeably lower than in Warsaw or Kraków, with good rail links to both capitals.
+- [Zakopane](https://kwadratpl.pl/cities/zakopane/): Zakopane is the tourist capital at the foot of the Tatra mountains: the winter ski season and summer hiking keep demand for short and daily rentals high all year. The centre and Krupówki are the priciest, most touristy spots, while Olcza, Bystre or Harenda offer quieter, more affordable places a step from the mountains.
+- [Białystok](https://kwadratpl.pl/cities/bialystok/): Białystok is the largest city in Podlaskie voivodeship on Poland's eastern border — calm and noticeably cheaper than the big Polish metros. Its universities and medical college keep steady student demand, and its closeness to Belarus and Lithuania makes it a convenient base for anyone after a quiet, budget-friendly option.
+
 ## FAQ
-Q: Is Kwadrat PL free?
-A: Yes, fully. Search, alerts, guides and the move-in calculator are all free, with no fees and no sign-up.
+Q: Is it free?
+A: Yes, fully. Search, alerts, guides and the calculator — no fees and no sign-up.
 
-Q: Where do the listings come from?
-A: Public listings from OLX, Otodom and Morizon, refreshed every few minutes. Identical listings posted on multiple sites are merged into one entry.
+Q: Where do listings come from?
+A: We gather public listings from OLX, Otodom and Morizon and refresh them every few minutes. The same offer across sites is merged.
 
-Q: What is the AI listing breakdown?
-A: A one-tap feature on each listing card that translates it into the user's language, writes a short summary, and estimates scam risk from the listing text.
+Q: What is the AI breakdown?
+A: A button on each listing: it translates the text into your language, writes a short summary and scores the scam risk from the description.
 
-Q: Which languages does Kwadrat PL support?
-A: Russian, Ukrainian, Belarusian, Polish and English, switchable at any time inside the app.
+Q: Which languages are supported?
+A: English, Polish, Ukrainian, Belarusian and Russian. You switch the language right inside the app.
 
-Q: How does Kwadrat PL know if a price is fair?
-A: It computes the median price per m² for each district and home type from its own listing data (minimum sample of 6 listings, city-wide fallback) and shows how far a listing sits below or above that median.
+Q: How do I know the price is fair?
+A: The bot computes the median price per m² by district and home type from its own data and shows how far a listing sits below or above the market. The median needs a sample of at least 6 listings; when a district has too little data, the city-wide median is used. Figures refresh with every database update.
 
 Q: Do I need to install an app?
-A: No. Kwadrat PL runs entirely inside Telegram as a Mini App.
+A: No. Kwadrat PL runs inside Telegram as a Mini App — nothing to install.
 
-Q: Is there an iPhone home-screen widget?
-A: Yes, via the free Scriptable app (no App Store payment needed), showing matching-listing count and current prices.
+Q: Is there an iPhone widget?
+A: Yes. Via the free Scriptable app you can add a home-screen widget showing the number of matching flats and the latest prices — no App Store payments. Step-by-step guide above.
 
 ## Links
 - Telegram bot: https://t.me/KwadratPLBot
 - Website: https://kwadratpl.pl/ (RU) · https://kwadratpl.pl/pl/ (PL) · https://kwadratpl.pl/ua/ (UA) · https://kwadratpl.pl/en/ (EN)
+- Guides hub: https://kwadratpl.pl/guides/
 - Privacy policy: https://kwadratpl.pl/privacy/
 - Support the project: https://buymeacoffee.com/ipostatos
 
