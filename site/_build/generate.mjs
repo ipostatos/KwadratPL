@@ -601,12 +601,14 @@ ${ogAlt}
   color-scheme:light dark;
   --bg:#F2F2F7; --bg2:#ffffff; --card:#ffffff; --border:rgba(60,60,67,.29);
   --text:#000000; --muted:#6c6c70; --accent:#007AFF; --accent2:#0060df;
+  --link:#0060df; /* #007AFF на белом даёт 4.02:1 — ниже WCAG AA (4.5:1) для мелкого текста;
+                      для ссылок/текста берём #0060DF (5.6:1), --accent остаётся для кнопок/иконок */
   --radius:20px; --radius-sm:14px; --maxw:1040px; --shadow:none;
   --nav-bg:rgba(242,242,247,.78);
 }
 @media (prefers-color-scheme:dark){
   :root{ --bg:#000000; --bg2:#1c1c1e; --card:#1c1c1e; --border:rgba(84,84,88,.65);
-    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff;
+    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff; --link:#0A84FF;
     --nav-bg:rgba(0,0,0,.72); }
 }
 *,*::before,*::after{ box-sizing:border-box; -webkit-tap-highlight-color:transparent }
@@ -644,7 +646,7 @@ p{ margin:0 }
 .btn:active{ transform:scale(.96); opacity:.85 }
 .btn svg{ width:19px; height:19px }
 .btn.sm{ font-size:14px; padding:9px 16px }
-.btn.ghost{ background:var(--bg2); color:var(--accent); border:.5px solid var(--border) }
+.btn.ghost{ background:var(--bg2); color:var(--link); border:.5px solid var(--border) }
 .btn.ghost:hover{ background:var(--card) }
 
 /* hero */
@@ -715,7 +717,7 @@ a.chip:active{ transform:scale(.96); opacity:.75 }
 .wg-h{ font-size:18px; font-weight:750; margin:22px 0 10px }
 .wuse{ margin:0; padding-left:20px; display:grid; gap:8px; color:var(--muted); font-size:15px }
 .wcode{ margin-top:6px; background:var(--card); border:.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden }
-.wcode summary{ cursor:pointer; padding:14px 18px; font-weight:590; color:var(--accent); list-style:none }
+.wcode summary{ cursor:pointer; padding:14px 18px; font-weight:590; color:var(--link); list-style:none }
 .wcode summary::-webkit-details-marker{ display:none }
 .wcode-inner{ position:relative; border-top:.5px solid var(--border) }
 .wcopy{ position:absolute; top:10px; right:10px; z-index:1; font-size:12px; font-weight:600;
@@ -922,7 +924,7 @@ ${SITE.donate ? `
         <div class="foot-langs">${langSwitcher(lang)}</div>
       </div>
     </div>
-    <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)} · <a href="${url(meta.path + "privacy/")}" style="color:var(--accent)">${esc(PRIVACY_LABEL[lang])}</a>${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(c.donateCta)}</a>` : ""}</div>
+    <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)} · <a href="${url(meta.path + "privacy/")}" style="color:var(--link)">${esc(PRIVACY_LABEL[lang])}</a>${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--link)">${esc(c.donateCta)}</a>` : ""}</div>
   </div>
 </footer>
 
@@ -1008,8 +1010,8 @@ ${alts}
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <script type="application/ld+json">${ld}</script>
 <style>
-:root{ color-scheme:light dark; --bg:#F2F2F7; --card:#ffffff; --text:#000000; --muted:#6c6c70; --accent:#007AFF; --border:rgba(60,60,67,.29) }
-@media (prefers-color-scheme:dark){ :root{ --bg:#000000; --card:#1c1c1e; --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --border:rgba(84,84,88,.65) } }
+:root{ color-scheme:light dark; --bg:#F2F2F7; --card:#ffffff; --text:#000000; --muted:#6c6c70; --accent:#007AFF; --link:#0060df; --border:rgba(60,60,67,.29) }
+@media (prefers-color-scheme:dark){ :root{ --bg:#000000; --card:#1c1c1e; --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --link:#0A84FF; --border:rgba(84,84,88,.65) } }
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent }
 body{ margin:0; background:var(--bg); color:var(--text); line-height:1.55;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif }
@@ -1020,7 +1022,7 @@ h2{ font-size:19px; font-weight:600; letter-spacing:-.015em; margin:28px 0 8px }
 ul{ margin:0; padding-left:22px }
 li{ margin:6px 0 }
 p{ margin:8px 0 }
-a{ color:var(--accent); text-decoration:none }
+a{ color:var(--link); text-decoration:none }
 .back{ display:inline-block; margin-top:32px; font-weight:590 }
 .upd{ color:var(--muted); font-size:13px; margin-top:24px }
 </style>
@@ -1289,13 +1291,13 @@ const CHROME_CSS = `
 :root{
   color-scheme:light dark;
   --bg:#F2F2F7; --bg2:#ffffff; --card:#ffffff; --border:rgba(60,60,67,.29);
-  --text:#000000; --muted:#6c6c70; --accent:#007AFF; --accent2:#0060df;
+  --text:#000000; --muted:#6c6c70; --accent:#007AFF; --accent2:#0060df; --link:#0060df;
   --radius:20px; --radius-sm:14px; --maxw:820px; --shadow:none;
   --nav-bg:rgba(242,242,247,.78);
 }
 @media (prefers-color-scheme:dark){
   :root{ --bg:#000000; --bg2:#1c1c1e; --card:#1c1c1e; --border:rgba(84,84,88,.65);
-    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff;
+    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff; --link:#0A84FF;
     --nav-bg:rgba(0,0,0,.72); }
 }
 *,*::before,*::after{ box-sizing:border-box; -webkit-tap-highlight-color:transparent }
@@ -1330,11 +1332,11 @@ p{ margin:0 }
 .btn:active{ transform:scale(.96); opacity:.85 }
 .btn svg{ width:19px; height:19px }
 .btn.sm{ font-size:14px; padding:9px 16px }
-.btn.ghost{ background:var(--bg2); color:var(--accent); border:.5px solid var(--border) }
+.btn.ghost{ background:var(--bg2); color:var(--link); border:.5px solid var(--border) }
 .btn.ghost:hover{ background:var(--card) }
 main{ padding:32px 0 60px }
 .crumb{ font-size:13px; color:var(--muted); margin-bottom:18px; display:flex; gap:6px; flex-wrap:wrap }
-.crumb a{ color:var(--accent) }
+.crumb a{ color:var(--link) }
 .art-h1{ font-size:clamp(26px,4.6vw,36px); font-weight:750; letter-spacing:-.025em; margin-bottom:10px }
 .art-updated{ color:var(--muted); font-size:12.5px; margin-bottom:14px }
 .art-lead{ color:var(--muted); font-size:16px; margin-bottom:8px }
@@ -1486,7 +1488,7 @@ function chromeClose(meta) {
       <div class="foot-langs">${langSwitcherAt(meta.code, meta._suffix || "")}</div>
     </div>
   </div>
-  <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)} · <a href="${url(meta.path + "privacy/")}" style="color:var(--accent)">${esc(PRIVACY_LABEL[meta.code])}</a>${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(c.donateCta)}</a>` : ""}</div>
+  <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)} · <a href="${url(meta.path + "privacy/")}" style="color:var(--link)">${esc(PRIVACY_LABEL[meta.code])}</a>${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--link)">${esc(c.donateCta)}</a>` : ""}</div>
 </footer>
 </body>
 </html>

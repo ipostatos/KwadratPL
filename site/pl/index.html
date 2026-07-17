@@ -39,12 +39,14 @@
   color-scheme:light dark;
   --bg:#F2F2F7; --bg2:#ffffff; --card:#ffffff; --border:rgba(60,60,67,.29);
   --text:#000000; --muted:#6c6c70; --accent:#007AFF; --accent2:#0060df;
+  --link:#0060df; /* #007AFF на белом даёт 4.02:1 — ниже WCAG AA (4.5:1) для мелкого текста;
+                      для ссылок/текста берём #0060DF (5.6:1), --accent остаётся для кнопок/иконок */
   --radius:20px; --radius-sm:14px; --maxw:1040px; --shadow:none;
   --nav-bg:rgba(242,242,247,.78);
 }
 @media (prefers-color-scheme:dark){
   :root{ --bg:#000000; --bg2:#1c1c1e; --card:#1c1c1e; --border:rgba(84,84,88,.65);
-    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff;
+    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff; --link:#0A84FF;
     --nav-bg:rgba(0,0,0,.72); }
 }
 *,*::before,*::after{ box-sizing:border-box; -webkit-tap-highlight-color:transparent }
@@ -82,7 +84,7 @@ p{ margin:0 }
 .btn:active{ transform:scale(.96); opacity:.85 }
 .btn svg{ width:19px; height:19px }
 .btn.sm{ font-size:14px; padding:9px 16px }
-.btn.ghost{ background:var(--bg2); color:var(--accent); border:.5px solid var(--border) }
+.btn.ghost{ background:var(--bg2); color:var(--link); border:.5px solid var(--border) }
 .btn.ghost:hover{ background:var(--card) }
 
 /* hero */
@@ -153,7 +155,7 @@ a.chip:active{ transform:scale(.96); opacity:.75 }
 .wg-h{ font-size:18px; font-weight:750; margin:22px 0 10px }
 .wuse{ margin:0; padding-left:20px; display:grid; gap:8px; color:var(--muted); font-size:15px }
 .wcode{ margin-top:6px; background:var(--card); border:.5px solid var(--border); border-radius:var(--radius-sm); overflow:hidden }
-.wcode summary{ cursor:pointer; padding:14px 18px; font-weight:590; color:var(--accent); list-style:none }
+.wcode summary{ cursor:pointer; padding:14px 18px; font-weight:590; color:var(--link); list-style:none }
 .wcode summary::-webkit-details-marker{ display:none }
 .wcode-inner{ position:relative; border-top:.5px solid var(--border) }
 .wcopy{ position:absolute; top:10px; right:10px; z-index:1; font-size:12px; font-weight:600;
@@ -542,7 +544,7 @@ Script.complete();
         <div class="foot-langs"><a class="lang" href="https://kwadratpl.pl/" hreflang="ru">RU</a><a class="lang" href="https://kwadratpl.pl/ua/" hreflang="uk">UA</a><span class="lang on" aria-current="true">PL</span><a class="lang" href="https://kwadratpl.pl/en/" hreflang="en">EN</a></div>
       </div>
     </div>
-    <div class="foot-legal">© Kwadrat PL · To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł. · <a href="https://kwadratpl.pl/pl/privacy/" style="color:var(--accent)">Polityka prywatności</a> · <a href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener" style="color:var(--accent)">Wesprzyj projekt ☕</a></div>
+    <div class="foot-legal">© Kwadrat PL · To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł. · <a href="https://kwadratpl.pl/pl/privacy/" style="color:var(--link)">Polityka prywatności</a> · <a href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener" style="color:var(--link)">Wesprzyj projekt ☕</a></div>
   </div>
 </footer>
 

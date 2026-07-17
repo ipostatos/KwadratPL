@@ -37,13 +37,13 @@
 :root{
   color-scheme:light dark;
   --bg:#F2F2F7; --bg2:#ffffff; --card:#ffffff; --border:rgba(60,60,67,.29);
-  --text:#000000; --muted:#6c6c70; --accent:#007AFF; --accent2:#0060df;
+  --text:#000000; --muted:#6c6c70; --accent:#007AFF; --accent2:#0060df; --link:#0060df;
   --radius:20px; --radius-sm:14px; --maxw:820px; --shadow:none;
   --nav-bg:rgba(242,242,247,.78);
 }
 @media (prefers-color-scheme:dark){
   :root{ --bg:#000000; --bg2:#1c1c1e; --card:#1c1c1e; --border:rgba(84,84,88,.65);
-    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff;
+    --text:#ffffff; --muted:#8e8e93; --accent:#0A84FF; --accent2:#409cff; --link:#0A84FF;
     --nav-bg:rgba(0,0,0,.72); }
 }
 *,*::before,*::after{ box-sizing:border-box; -webkit-tap-highlight-color:transparent }
@@ -78,11 +78,11 @@ p{ margin:0 }
 .btn:active{ transform:scale(.96); opacity:.85 }
 .btn svg{ width:19px; height:19px }
 .btn.sm{ font-size:14px; padding:9px 16px }
-.btn.ghost{ background:var(--bg2); color:var(--accent); border:.5px solid var(--border) }
+.btn.ghost{ background:var(--bg2); color:var(--link); border:.5px solid var(--border) }
 .btn.ghost:hover{ background:var(--card) }
 main{ padding:32px 0 60px }
 .crumb{ font-size:13px; color:var(--muted); margin-bottom:18px; display:flex; gap:6px; flex-wrap:wrap }
-.crumb a{ color:var(--accent) }
+.crumb a{ color:var(--link) }
 .art-h1{ font-size:clamp(26px,4.6vw,36px); font-weight:750; letter-spacing:-.025em; margin-bottom:10px }
 .art-updated{ color:var(--muted); font-size:12.5px; margin-bottom:14px }
 .art-lead{ color:var(--muted); font-size:16px; margin-bottom:8px }
@@ -215,7 +215,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
       <div class="foot-langs"><a class="lang" href="https://kwadratpl.pl/guides/" hreflang="ru">RU</a><a class="lang" href="https://kwadratpl.pl/ua/guides/" hreflang="uk">UA</a><span class="lang on" aria-current="true">PL</span><a class="lang" href="https://kwadratpl.pl/en/guides/" hreflang="en">EN</a></div>
     </div>
   </div>
-  <div class="foot-legal">© Kwadrat PL · To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł. · <a href="https://kwadratpl.pl/pl/privacy/" style="color:var(--accent)">Polityka prywatności</a> · <a href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener" style="color:var(--accent)">Wesprzyj projekt ☕</a></div>
+  <div class="foot-legal">© Kwadrat PL · To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł. · <a href="https://kwadratpl.pl/pl/privacy/" style="color:var(--link)">Polityka prywatności</a> · <a href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener" style="color:var(--link)">Wesprzyj projekt ☕</a></div>
 </footer>
 </body>
 </html>
