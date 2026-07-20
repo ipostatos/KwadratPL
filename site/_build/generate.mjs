@@ -19,6 +19,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "..");
 // код виджета берём из единого источника — repo/widget/kwadrat-widget.js
 const WIDGET_CODE = readFileSync(join(__dirname, "..", "..", "widget", "kwadrat-widget.js"), "utf8");
+const SHOTS_VER = "2";   // bump при замене скриншотов (immutable-кэш)
 const BUILD_DATE = new Date().toISOString().slice(0, 10); // дата генерации = дата деплоя
 // дата первой публикации раздела «Полезное» в webapp (2026-07-13) — гайды на сайте
 // зеркалят тот же контент, отдельного трекинга per-гайд создания нет
@@ -956,8 +957,8 @@ footer{ border-top:.5px solid var(--border); padding:40px 0; margin-top:20px }
           <a class="btn" href="${url(meta.path + TOOL_SLUG)}">📍 ${esc(TOOL[lang].btn)}</a>
         </div>
         <figure class="tool-img"><a href="${url(meta.path + TOOL_SLUG)}"><picture>
-          <source srcset="/shots/shot-loc-dark.webp" media="(prefers-color-scheme: dark)">
-          <img src="/shots/shot-loc.webp" width="760" height="1645" loading="lazy" alt="${esc(c.altLoc)}">
+          <source srcset="/shots/shot-loc-dark.webp?v=${SHOTS_VER}" media="(prefers-color-scheme: dark)">
+          <img src="/shots/shot-loc.webp?v=${SHOTS_VER}" width="760" height="1645" loading="lazy" alt="${esc(c.altLoc)}">
         </picture></a></figure>
       </div>
     </div>
@@ -976,8 +977,8 @@ footer{ border-top:.5px solid var(--border); padding:40px 0; margin-top:20px }
       <p class="sec-lead">${esc(c.shotsLead)}</p>
       <div class="shots">${["home", "cards", "map", "loc"].map((s) => `
         <figure class="shot"><picture>
-          <source srcset="/shots/shot-${s}-dark.webp" media="(prefers-color-scheme: dark)">
-          <img src="/shots/shot-${s}.webp" width="760" height="1645" loading="lazy" alt="${esc(c["alt" + s[0].toUpperCase() + s.slice(1)])}">
+          <source srcset="/shots/shot-${s}-dark.webp?v=${SHOTS_VER}" media="(prefers-color-scheme: dark)">
+          <img src="/shots/shot-${s}.webp?v=${SHOTS_VER}" width="760" height="1645" loading="lazy" alt="${esc(c["alt" + s[0].toUpperCase() + s.slice(1)])}">
         </picture></figure>`).join("")}
       </div>
     </div>
