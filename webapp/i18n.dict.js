@@ -293,7 +293,9 @@
     kKindergarten:{ ru: "Детский сад", pl: "Przedszkole", ua: "Дитячий садок", by: "Дзіцячы сад", en: "Kindergarten" },
     kPark:       { ru: "Парк", pl: "Park", ua: "Парк", by: "Парк", en: "Park" },
     kForest:     { ru: "Лес", pl: "Las", ua: "Ліс", by: "Лес", en: "Forest" },
-    kGreen:      { ru: "Сквер", pl: "Skwer", ua: "Сквер", by: "Сквер", en: "Green space" }
+    kGreen:      { ru: "Сквер", pl: "Skwer", ua: "Сквер", by: "Сквер", en: "Green space" },
+    locSpec:     { ru: "Локация", pl: "Lokalizacja", ua: "Локація", by: "Лакацыя", en: "Location" },
+    locApprox:   { ru: "Точный адрес в объявлении не указан — оценка по приблизительной точке.", pl: "Dokładny adres nie został podany — ocena według przybliżonego punktu.", ua: "Точна адреса в оголошенні не вказана — оцінка за приблизною точкою.", by: "Дакладны адрас у аб'яве не пазначаны — ацэнка па прыблізнай кропцы.", en: "The listing doesn't include an exact address — score based on an approximate point." }
   };
 
   return { LANGS: LANGS, CITY_NAMES: CITY_NAMES, DICT: DICT };

@@ -354,6 +354,8 @@ function openSheet(id) {
     [I18N.t("area"), l.area != null ? l.area + " m²" : null],
     [I18N.t("floor"), l.floor],
     [I18N.t("toCenter"), _commute ? _commute.min + " " + I18N.t("minShort") : null],
+    // предрасчитанная оценка локации (geo_enrich, только точные координаты)
+    [I18N.t("locSpec"), l.locScore != null ? "📍 " + l.locScore + "/100" : null],
     [I18N.t("published"), App.timeAgo(l.ts)]
   ].filter(function (s) { return s[1] != null; });
   var descr = l.descr || (l.title ? "" : I18N.t("descr"));
@@ -372,11 +374,15 @@ function openSheet(id) {
     }).join("") +
     "</div>" +
     App.priceInsight(l) +
-    // оценка локации: пока только Варшава; точных координат у объявления нет —
-    // передаём улицу (если есть) или район, страница сама геокодит
+    // оценка локации (пока только Варшава): с координатами от geo_enrich идём
+    // сразу в точку (+честная пометка точности), без них — геокод по улице/району
     (l.city === "warszawa"
-      ? '<a class="btn ghost" style="margin-top:12px" href="lokacja.html?q=' +
-        encodeURIComponent((l.street || l.district || "") + ", Warszawa") +
+      ? '<a class="btn ghost" style="margin-top:12px" href="' +
+        (l.lat != null && l.lon != null
+          ? "lokacja.html?lat=" + l.lat + "&lon=" + l.lon +
+            "&prec=" + encodeURIComponent(l.geoPrec || "")
+          : "lokacja.html?q=" +
+            encodeURIComponent((l.street || l.district || "") + ", Warszawa")) +
         '"><span class="emi">' + Icons.svg("map-pin") + "</span> " +
         App.esc(I18N.t("locT")) + "</a>"
       : "") +

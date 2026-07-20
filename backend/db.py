@@ -105,3 +105,15 @@ def init_db():
             day TEXT PRIMARY KEY,
             calls INTEGER DEFAULT 0
         )""")
+        # геоданные варшавских объявлений (geo_enrich.py): координаты, точность
+        # (point/approx/address/street/district/unknown), предрасчитанная оценка
+        # локации; инжест мерджит это в listings.json
+        c.execute("""CREATE TABLE IF NOT EXISTS geo_listings(
+            id TEXT PRIMARY KEY,
+            lat REAL,
+            lon REAL,
+            precision TEXT,
+            score INTEGER,
+            score_ts INTEGER,
+            ts INTEGER
+        )""")

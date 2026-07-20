@@ -67,6 +67,7 @@
         <div class="score-info">
           <div class="score-verdict" id="rVerdict"></div>
           <div class="score-addr" id="rAddr"></div>
+          <div class="score-addr hidden" id="rApprox" style="color:var(--warn)"></div>
         </div>
       </div>
       <div id="rCats"></div>
@@ -220,6 +221,10 @@ function render(d, label) {
   v.className = "score-verdict v-" + d.verdict;
   $("#rAddr").textContent = label || d.label || (d.lat.toFixed(4) + ", " + d.lon.toFixed(4));
   if (label && d.label && label !== d.label) $("#rAddr").textContent = label;
+  var ap = $("#rApprox");
+  ap.textContent = approxPrec ? I18N.t("locApprox") : "";
+  ap.classList.toggle("hidden", !approxPrec);
+  approxPrec = false;   // ручной повторный поиск на странице — уже точная точка
 
   $("#rCats").innerHTML = CATS.map(function (c) {
     var cat = d.categories[c[0]];
@@ -240,9 +245,12 @@ function render(d, label) {
   if (typeof haptic === "function") haptic("success");
 }
 
-// ── входные параметры: ?q= (из шторки объявления) или ?lat=&lon= ──
+// ── входные параметры: ?q= (из шторки объявления) или ?lat=&lon=&prec= ──
+var approxPrec = false;   // честность: точка из объявления может быть приблизительной
 (function () {
   var p = new URLSearchParams(location.search);
+  var prec = p.get("prec") || "";
+  approxPrec = prec !== "" && prec !== "point" && prec !== "address" && prec !== "street";
   if (p.get("lat") && p.get("lon")) {
     score(parseFloat(p.get("lat")), parseFloat(p.get("lon")), null);
   } else if (p.get("q")) {

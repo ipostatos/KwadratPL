@@ -37,6 +37,7 @@ from matching import _clean_sub, matches  # noqa: F401 (re-export для тес�
 from routers import analyze, health, listings, location, subs, widget
 from texts import CITY, fmt_listing, lang_of, sub_label  # noqa: F401 (re-export для тестов)
 from fetch_watchdog import watchdog_loop
+from geo_enrich import enrich_loop
 
 
 @asynccontextmanager
@@ -53,11 +54,13 @@ async def lifespan(app: FastAPI):
     task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
     digest = asyncio.create_task(digest_loop())
     watchdog = asyncio.create_task(watchdog_loop())
+    enricher = asyncio.create_task(enrich_loop())
     log.info("bot polling started; listings at %s", LISTINGS_PATH)
     yield
     task.cancel()
     digest.cancel()
     watchdog.cancel()
+    enricher.cancel()
     await bot.session.close()
 
 

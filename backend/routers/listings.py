@@ -83,6 +83,23 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
                 l["oldPrice"] = prev
                 drops += 1
 
+        # 2b) геоданные из geo_listings (фоновый geo_enrich): координаты,
+        #     точность и предрасчитанная оценка локации попадают в публичный
+        #     listings.json только здесь — файл вне инжеста не переписывается
+        with db() as c:
+            geo_rows = {r["id"]: r for r in c.execute(
+                "SELECT id, lat, lon, precision, score FROM geo_listings "
+                "WHERE lat IS NOT NULL")}
+        for l in listings:
+            g = geo_rows.get(str(l.get("id") or ""))
+            if not g:
+                continue
+            if not isinstance(l.get("lat"), (int, float)):
+                l["lat"], l["lon"] = g["lat"], g["lon"]
+            l["geoPrec"] = l.get("geoPrec") or g["precision"]
+            if g["score"] is not None:
+                l["locScore"] = g["score"]
+
         # 3) запись файла (уже с проставленным oldPrice) — в тред
         await asyncio.to_thread(_write_listings, payload)
 
