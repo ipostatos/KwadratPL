@@ -372,6 +372,14 @@ function openSheet(id) {
     }).join("") +
     "</div>" +
     App.priceInsight(l) +
+    // оценка локации: пока только Варшава; точных координат у объявления нет —
+    // передаём улицу (если есть) или район, страница сама геокодит
+    (l.city === "warszawa"
+      ? '<a class="btn ghost" style="margin-top:12px" href="lokacja.html?q=' +
+        encodeURIComponent((l.street || l.district || "") + ", Warszawa") +
+        '"><span class="emi">' + Icons.svg("map-pin") + "</span> " +
+        App.esc(I18N.t("locT")) + "</a>"
+      : "") +
     (descr ? '<p class="muted" style="font-size:var(--fs-sm)">' + App.esc(descr) + "</p>" : "") +
     '<div style="display:flex; gap:8px; margin-top:12px">' +
     '<button class="btn" id="btnContact"><span class="emi">' +

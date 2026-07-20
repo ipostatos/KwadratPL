@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kwadrat PL — Оценка локации</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script>
+<style>
+  /* — страница оценки локации — */
+  .searchbar{ display:flex; gap:var(--sp-2); margin-bottom:var(--sp-2) }
+  .searchbar input{ flex:1 }
+  .searchbar .btn{ width:auto; flex:0 0 auto }
+  .cands{ display:flex; flex-direction:column; gap:6px; margin-bottom:var(--sp-2) }
+  .cands .cand{ text-align:left; background:var(--card); border:1px solid var(--border);
+    color:var(--text); border-radius:var(--r-sm); padding:10px 12px; font-size:var(--fs-sm);
+    cursor:pointer; font-family:inherit }
+  .cands .cand:active{ transform:scale(.99) }
+  #map{ height:250px; border-radius:var(--r-lg); border:1px solid var(--border);
+    margin-bottom:var(--sp-4); z-index:0 }
+  .map-dark .leaflet-tile{ filter:invert(1) hue-rotate(180deg) brightness(.92) saturate(.7) }
+  .map-dark .leaflet-container{ background:#111 }
+
+  /* результат */
+  .score-head{ display:flex; align-items:center; gap:var(--sp-4); margin-bottom:var(--sp-3) }
+  .score-num{ font-size:44px; font-weight:800; line-height:1; min-width:74px; text-align:center }
+  .score-num small{ display:block; font-size:var(--fs-xs); font-weight:400; color:var(--hint) }
+  .score-info{ flex:1; min-width:0 }
+  .score-verdict{ font-size:var(--fs-h2); font-weight:800 }
+  .score-addr{ color:var(--hint); font-size:var(--fs-sm); margin-top:2px; line-height:1.4 }
+  .v-excellent{ color:var(--ok) } .v-good{ color:var(--ok) }
+  .v-average{ color:var(--warn) } .v-weak{ color:var(--bad) }
+  .catrow{ margin-bottom:var(--sp-3) }
+  .catrow .cr-top{ display:flex; justify-content:space-between; align-items:baseline;
+    font-size:var(--fs-sm); margin-bottom:5px }
+  .catrow .cr-top b{ font-variant-numeric:tabular-nums }
+  .objlist{ margin:6px 0 0; padding:0; list-style:none; font-size:var(--fs-xs);
+    color:var(--hint); line-height:1.6 }
+  .objlist b{ color:var(--text); font-weight:600 }
+</style>
+</head>
+<body>
+  <h1 data-i18n="locT"></h1>
+  <p class="sub" data-i18n="locSub"></p>
+
+  <div class="searchbar">
+    <input type="text" id="q" autocomplete="off">
+    <button class="btn" id="go"></button>
+  </div>
+  <div class="cands hidden" id="cands"></div>
+  <p class="muted" style="font-size:var(--fs-xs); margin:0 0 8px" data-i18n="locMapHint"></p>
+
+  <div id="map"></div>
+
+  <div id="state" class="state hidden"></div>
+  <div id="result" class="hidden">
+    <div class="card" style="margin-bottom:var(--sp-3)">
+      <div class="score-head">
+        <div class="score-num"><span id="rScore">–</span><small>/ 100</small></div>
+        <div class="score-info">
+          <div class="score-verdict" id="rVerdict"></div>
+          <div class="score-addr" id="rAddr"></div>
+        </div>
+      </div>
+      <div id="rCats"></div>
+    </div>
+  </div>
+
+  <p class="foot"><span data-i18n="locData"></span><br><span data-i18n="locLegal"></span></p>
+
+<script>
+"use strict";
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.title = "Kwadrat PL — " + I18N.t("locT");
+
+var $ = function (s) { return document.querySelector(s); };
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+// API: Mini App живёт на том же хосте, что и бэкенд; зеркало на Vercel без
+// /api ходит на VPS напрямую (CORS-allowlist на бэке это разрешает)
+var API = /\.vercel\.app$/.test(location.hostname)
+  ? "https://kwadratpl-46-224-220-94.sslip.io" : "";
+
+var KINDL = { metro: "kMetro", rail: "kRail", tram: "kTram", bus: "kBus",
+  grocery: "kGrocery", pharmacy: "kPharmacy", health: "kHealth", food: "kFood",
+  services: "kServices", sport: "kSport", vet: "kVet", playground: "kPlayground",
+  mall: "kMall", marketplace: "kMarketplace", school: "kSchool",
+  kindergarten: "kKindergarten", park: "kPark", forest: "kForest", green: "kGreen" };
+var CATS = [["transport", "catTransport", "🚇"], ["infra", "catInfra", "🛒"],
+  ["schools", "catSchools", "🏫"], ["green", "catGreen", "🌳"]];
+var CAT_TONE = { transport: "#3390ec", infra: "#e0a13a", schools: "#8e7bef", green: "#4caf72" };
+
+$("#go").textContent = I18N.t("locBtn");
+$("#q").placeholder = I18N.t("locInput");
+
+// ── карта ──
+var tg = window.Telegram && window.Telegram.WebApp;
+var isDark = tg && tg.colorScheme ? tg.colorScheme === "dark"
+  : matchMedia("(prefers-color-scheme: dark)").matches;
+if (isDark) document.body.classList.add("map-dark");
+var map = L.map("map", { attributionControl: true, zoomControl: false })
+  .setView([52.2318, 21.006], 11);
+L.control.zoom({ position: "bottomright" }).addTo(map);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 18, attribution: "&copy; OpenStreetMap"
+}).addTo(map);
+var marker = null, circle = null, pins = [];
+
+map.on("click", function (e) {
+  if (typeof haptic === "function") haptic("light");
+  score(e.latlng.lat, e.latlng.lng, null);
+});
+
+// ── состояния ──
+function setState(msgKey) {
+  var el = $("#state");
+  if (!msgKey) { el.classList.add("hidden"); return; }
+  el.textContent = I18N.t(msgKey);
+  el.classList.remove("hidden");
+  $("#result").classList.add("hidden");
+}
+function apiErrKey(status, detail) {
+  if (status === 400) return "locOnlyWaw";
+  if (status === 429) return "locRate";
+  if (status === 503 && detail === "daily_capacity") return "locBusy";
+  return "locErr";
+}
+
+// ── геокодинг ──
+var busy = false;
+function lookup() {
+  var q = $("#q").value.trim();
+  if (q.length < 2 || busy) return;
+  busy = true;
+  $("#cands").classList.add("hidden");
+  setState("locLoad");
+  fetch(API + "/api/location/geocode?q=" + encodeURIComponent(q) + "&lang=" + I18N.lang)
+    .then(function (r) {
+      if (!r.ok) return r.json().then(function (d) { throw { s: r.status, d: d && d.detail }; });
+      return r.json();
+    })
+    .then(function (d) {
+      busy = false;
+      var res = d.results || [];
+      if (!res.length) { setState("locNotFound"); return; }
+      if (res.length === 1) { score(res[0].lat, res[0].lon, res[0].label); return; }
+      setState(null);
+      var box = $("#cands");
+      box.innerHTML = "";
+      res.forEach(function (c) {
+        var b = document.createElement("button");
+        b.className = "cand";
+        b.textContent = c.label;
+        b.onclick = function () {
+          box.classList.add("hidden");
+          score(c.lat, c.lon, c.label);
+        };
+        box.appendChild(b);
+      });
+      box.classList.remove("hidden");
+    })
+    .catch(function (e) { busy = false; setState(apiErrKey(e.s, e.d)); });
+}
+$("#go").onclick = lookup;
+$("#q").addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+
+// ── оценка ──
+function score(lat, lon, label) {
+  if (busy === "score") return;
+  busy = "score";
+  setState("locLoad");
+  fetch(API + "/api/location/score?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) +
+        "&lang=" + I18N.lang)
+    .then(function (r) {
+      if (!r.ok) return r.json().then(function (d) { throw { s: r.status, d: d && d.detail }; });
+      return r.json();
+    })
+    .then(function (d) { busy = false; render(d, label); })
+    .catch(function (e) { busy = false; setState(apiErrKey(e.s, e.d)); });
+}
+
+function render(d, label) {
+  setState(null);
+  // карта: маркер + рабочий радиус + пины объектов
+  if (marker) map.removeLayer(marker);
+  if (circle) map.removeLayer(circle);
+  pins.forEach(function (p) { map.removeLayer(p); });
+  pins = [];
+  marker = L.marker([d.lat, d.lon]).addTo(map);
+  circle = L.circle([d.lat, d.lon], { radius: d.radius || 1200, weight: 1,
+    color: "#3390ec", opacity: .5, fillOpacity: .05 }).addTo(map);
+  CATS.forEach(function (c) {
+    (d.categories[c[0]].objects || []).forEach(function (o) {
+      if (o.lat == null) return;
+      var p = L.circleMarker([o.lat, o.lon], { radius: 5, weight: 1, color: "#fff",
+        fillColor: CAT_TONE[c[0]], fillOpacity: .95 })
+        .bindTooltip((o.name ? esc(o.name) + " · " : "") + esc(I18N.t(KINDL[o.kind] || o.kind)) +
+                     " · " + o.dist + " m");
+      p.addTo(map);
+      pins.push(p);
+    });
+  });
+  map.setView([d.lat, d.lon], 14);
+
+  $("#rScore").textContent = d.score;
+  var v = $("#rVerdict");
+  v.textContent = I18N.t("verdict" + d.verdict.charAt(0).toUpperCase() + d.verdict.slice(1));
+  v.className = "score-verdict v-" + d.verdict;
+  $("#rAddr").textContent = label || d.label || (d.lat.toFixed(4) + ", " + d.lon.toFixed(4));
+  if (label && d.label && label !== d.label) $("#rAddr").textContent = label;
+
+  $("#rCats").innerHTML = CATS.map(function (c) {
+    var cat = d.categories[c[0]];
+    var objs = (cat.objects || []).slice(0, 3).map(function (o) {
+      return "<li><b>" + (o.name ? esc(o.name) : esc(I18N.t(KINDL[o.kind] || o.kind))) +
+        "</b> · " + esc(I18N.t(KINDL[o.kind] || o.kind)).toLowerCase() + " · " + o.dist + " m</li>";
+    }).join("");
+    return '<div class="catrow">' +
+      '<div class="cr-top"><span>' + c[2] + " " + esc(I18N.t(c[1])) + "</span><b>" +
+      cat.score + "</b></div>" +
+      '<div class="meter"><i style="width:' + cat.score + '%; background:' + CAT_TONE[c[0]] + '"></i></div>' +
+      (objs ? '<ul class="objlist">' + objs + "</ul>" : "") +
+      "</div>";
+  }).join("");
+  $("#result").classList.remove("hidden");
+  if (typeof haptic === "function") haptic("success");
+}
+
+// ── входные параметры: ?q= (из шторки объявления) или ?lat=&lon= ──
+(function () {
+  var p = new URLSearchParams(location.search);
+  if (p.get("lat") && p.get("lon")) {
+    score(parseFloat(p.get("lat")), parseFloat(p.get("lon")), null);
+  } else if (p.get("q")) {
+    $("#q").value = p.get("q");
+    lookup();
+  }
+})();
+</script>
+</body>
+</html>

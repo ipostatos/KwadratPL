@@ -45,6 +45,16 @@ FETCHER_REPO = os.environ.get("FETCHER_REPO", "ipostatos/kwadratpl-fetcher")
 FETCHER_WORKFLOW = os.environ.get("FETCHER_WORKFLOW", "fetch.yml")
 STALE_MIN = int(os.environ.get("STALE_MIN", "35"))
 
+# ── Google Places (New) — доп. слой оценки локаций (geo.py) ────────────────
+# Пусто = слой выключен, инструмент работает на чистом OSM. При заданном ключе
+# КАЖДЫЙ живой вызов Places считается в SQLite (places_usage) и жёстко
+# блокируется дневным и месячным лимитами — защита от сюрпризов в счёте GCP.
+# Дефолты консервативные: 100/день и 2500/мес при free tier ~5000 вызовов
+# Nearby Search Pro в месяц — даже полный месячный лимит остаётся бесплатным.
+GOOGLE_PLACES_KEY = os.environ.get("GOOGLE_PLACES_KEY", "")
+PLACES_DAILY_LIMIT = int(os.environ.get("PLACES_DAILY_LIMIT", "100"))
+PLACES_MONTHLY_LIMIT = int(os.environ.get("PLACES_MONTHLY_LIMIT", "2500"))
+
 # ── паблик-чат-фид находок (community.py) ──────────────────────────────────
 # Бот должен быть админом группы/супергруппы с правом отправки сообщений.
 # Пусто = фича выключена (ничего не постим, ingest её не вызывает). chat_id

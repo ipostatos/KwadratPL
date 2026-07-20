@@ -92,3 +92,16 @@ def init_db():
             listing_id TEXT PRIMARY KEY,
             ts INTEGER
         )""")
+        # кэш оценки локаций (geo.py): геокодинг Nominatim ("g:"/"r:") и POI
+        # Overpass ("p:") — повторный запрос адреса внешние API не дёргает
+        c.execute("""CREATE TABLE IF NOT EXISTS geo_cache(
+            key TEXT PRIMARY KEY,
+            data TEXT NOT NULL,
+            ts INTEGER
+        )""")
+        # счётчик живых вызовов Google Places по дням — жёсткий блокер бюджета
+        # (geo.py), переживает рестарт, месячный лимит = SUM по месяцу
+        c.execute("""CREATE TABLE IF NOT EXISTS places_usage(
+            day TEXT PRIMARY KEY,
+            calls INTEGER DEFAULT 0
+        )""")
