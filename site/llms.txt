@@ -1,6 +1,6 @@
 # Kwadrat PL
 
-> Find flats and rooms for rent in Poland: OLX, Otodom and Morizon in one Telegram bot. Instant alerts, fair-price check, AI breakdown. Free to use.
+> Flats and rooms for rent in Poland: OLX, Otodom and Morizon in one bot. Warsaw listings map and location score, instant alerts, AI breakdown. Free.
 
 ## What it does
 - Search 3 portals at once: Flats, rooms and short stays from OLX, Otodom and Morizon. The same listing across sites is merged — no duplicates in your feed.

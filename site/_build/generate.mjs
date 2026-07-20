@@ -139,6 +139,8 @@ const SITE = {
   // кросс-промо: другие боты автора (описание — в C[lang].botDesc[id])
   bots: [
     { id: "issa", name: "ISSA Trainer", url: "https://t.me/issa_test_bot", emoji: "⛵" },
+    { id: "flygo", name: "FlyGO", url: "https://t.me/FlyPLBot", emoji: "✈️" },
+    { id: "obshak", name: "Общак", url: "https://t.me/ObshakPLbot", emoji: "💰" },
   ],
 };
 
@@ -160,7 +162,7 @@ const FEATURE_ICONS = ["search", "bell", "shield-check", "zap", "calculator", "b
 const C = {
   ru: {
     title: "Аренда жилья в Польше без посредников — бот Kwadrat PL",
-    desc: "Поиск аренды квартир и комнат в Польше: OLX, Otodom и Morizon в одном Telegram-боте. Мгновенные уведомления, справедливая цена, AI-разбор. Бесплатно.",
+    desc: "Аренда квартир и комнат в Польше: OLX, Otodom и Morizon в одном боте. Карта объявлений и оценка локации Варшавы, уведомления, AI-разбор. Бесплатно.",
     eyebrow: "Telegram-бот для аренды в Польше",
     h1: "Аренда жилья в Польше: пусть дом найдётся сам",
     lead: "Kwadrat PL собирает свежие объявления с OLX, Otodom и Morizon в один Telegram-бот. Подпишитесь на поиск — новые квартиры и комнаты придут прямо в чат, раньше других.",
@@ -226,14 +228,18 @@ const C = {
     finalLead: "Откройте Kwadrat PL и подпишитесь на свой поиск — новое жильё придёт само.",
     finalCta: "Открыть бота в Telegram",
     otherBotsTitle: "Другие боты автора",
-    botDesc: { issa: "Подготовка к лицензии шкипера (ISSA Inshore Skipper), SRC-радио и польским правам — тренажёр с интервальным повторением." },
+    botDesc: {
+      issa: "Подготовка к лицензии шкипера (ISSA Inshore Skipper), SRC-радио и польским правам — тренажёр с интервальным повторением.",
+      flygo: "Дешёвые перелёты из Польши: Ryanair и Wizz Air, умные склейки маршрутов и уведомления о падении цен.",
+      obshak: "Совместные расходы компании без неловкости: AI-сканер чеков, «кто кому сколько» и расчёт в один тап.",
+    },
     footAbout: "Kwadrat PL — поиск аренды жилья в Польше на 5 языках: русский, украинский, белорусский, польский, английский. OLX, Otodom, Morizon в одном боте.",
     footLang: "Язык",
     footRights: "Не является агентством недвижимости. Все объявления принадлежат их источникам.",
   },
   ua: {
     title: "Оренда житла в Польщі без посередників — бот Kwadrat PL",
-    desc: "Пошук оренди квартир і кімнат у Польщі: OLX, Otodom і Morizon в одному Telegram-боті. Миттєві сповіщення, справедлива ціна, AI-розбір. Безкоштовно.",
+    desc: "Оренда квартир і кімнат у Польщі: OLX, Otodom і Morizon в одному боті. Мапа оголошень і оцінка локації Варшави, сповіщення, AI-розбір. Безкоштовно.",
     eyebrow: "Telegram-бот для оренди в Польщі",
     h1: "Оренда житла в Польщі: хай дім знайдеться сам",
     lead: "Kwadrat PL збирає свіжі оголошення з OLX, Otodom і Morizon в один Telegram-бот. Підпишіться на пошук — нові квартири й кімнати надійдуть просто в чат, раніше за інших.",
@@ -299,14 +305,18 @@ const C = {
     finalLead: "Відкрийте Kwadrat PL і підпишіться на свій пошук — нове житло надійде саме.",
     finalCta: "Відкрити бота в Telegram",
     otherBotsTitle: "Інші боти автора",
-    botDesc: { issa: "Підготовка до ліцензії шкіпера (ISSA Inshore Skipper), SRC-радіо та польських прав — тренажер з інтервальним повторенням." },
+    botDesc: {
+      issa: "Підготовка до ліцензії шкіпера (ISSA Inshore Skipper), SRC-радіо та польських прав — тренажер з інтервальним повторенням.",
+      flygo: "Дешеві перельоти з Польщі: Ryanair і Wizz Air, розумні стикування маршрутів і сповіщення про падіння цін.",
+      obshak: "Спільні витрати компанії без незручності: AI-сканер чеків, «хто кому скільки» і розрахунок в один тап.",
+    },
     footAbout: "Kwadrat PL — пошук оренди житла в Польщі 5 мовами: українська, російська, білоруська, польська, англійська. OLX, Otodom, Morizon в одному боті.",
     footLang: "Мова",
     footRights: "Не є агентством нерухомості. Усі оголошення належать їхнім джерелам.",
   },
   pl: {
     title: "Wynajem mieszkań w Polsce bez pośredników — bot Kwadrat PL",
-    desc: "Szukaj mieszkań i pokoi na wynajem: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia, uczciwa cena, analiza AI. Za darmo.",
+    desc: "Mieszkania i pokoje na wynajem: OLX, Otodom i Morizon w jednym bocie. Mapa ogłoszeń i ocena lokalizacji w Warszawie, powiadomienia, analiza AI. Za darmo.",
     eyebrow: "Bot Telegram do wynajmu w Polsce",
     h1: "Wynajem mieszkania w Polsce — niech dom znajdzie się sam",
     lead: "Kwadrat PL zbiera świeże ogłoszenia z OLX, Otodom i Morizon w jednym bocie Telegram. Zasubskrybuj wyszukiwanie — nowe mieszkania i pokoje trafią prosto na czat, szybciej niż do innych.",
@@ -372,14 +382,18 @@ const C = {
     finalLead: "Otwórz Kwadrat PL i zasubskrybuj swoje wyszukiwanie — nowe lokum przyjdzie samo.",
     finalCta: "Otwórz bota w Telegramie",
     otherBotsTitle: "Inne boty autora",
-    botDesc: { issa: "Przygotowanie do licencji sternika (ISSA Inshore Skipper), radia SRC i polskich patentów — trenażer z powtórkami interwałowymi." },
+    botDesc: {
+      issa: "Przygotowanie do licencji sternika (ISSA Inshore Skipper), radia SRC i polskich patentów — trenażer z powtórkami interwałowymi.",
+      flygo: "Tanie loty z Polski: Ryanair i Wizz Air, sprytne łączenie tras i powiadomienia o spadkach cen.",
+      obshak: "Wspólne wydatki ekipy bez skrępowania: skaner paragonów AI, „kto komu ile” i rozliczenie jednym tapnięciem.",
+    },
     footAbout: "Kwadrat PL — wyszukiwanie mieszkań na wynajem w Polsce, 5 języków interfejsu. OLX, Otodom i Morizon w jednym bocie Telegram.",
     footLang: "Język",
     footRights: "To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł.",
   },
   en: {
     title: "Rent a home in Poland without agents — Kwadrat PL bot",
-    desc: "Find flats and rooms for rent in Poland: OLX, Otodom and Morizon in one Telegram bot. Instant alerts, fair-price check, AI breakdown. Free to use.",
+    desc: "Flats and rooms for rent in Poland: OLX, Otodom and Morizon in one bot. Warsaw listings map and location score, instant alerts, AI breakdown. Free.",
     eyebrow: "Telegram bot for renting in Poland",
     h1: "Rent an apartment in Poland — let your home find you",
     lead: "Kwadrat PL gathers fresh listings from OLX, Otodom and Morizon into one Telegram bot. Subscribe to a search and new flats and rooms land right in your chat, before everyone else.",
@@ -445,14 +459,18 @@ const C = {
     finalLead: "Open Kwadrat PL and subscribe to your search — the right place will come to you.",
     finalCta: "Open the bot in Telegram",
     otherBotsTitle: "More bots by the author",
-    botDesc: { issa: "Prep for the skipper licence (ISSA Inshore Skipper), SRC radio and Polish patents — a spaced-repetition trainer." },
+    botDesc: {
+      issa: "Prep for the skipper licence (ISSA Inshore Skipper), SRC radio and Polish patents — a spaced-repetition trainer.",
+      flygo: "Cheap flights from Poland: Ryanair and Wizz Air, smart route combos and price-drop alerts.",
+      obshak: "Group expenses without the awkwardness: an AI receipt scanner, who-owes-whom and one-tap settling.",
+    },
     footAbout: "Kwadrat PL — finding rental homes in Poland, with a 5-language interface. OLX, Otodom and Morizon in one Telegram bot.",
     footLang: "Language",
     footRights: "Not a real-estate agency. All listings belong to their sources.",
   },
   by: {
     title: "Арэнда жылля ў Польшчы без пасярэднікаў — бот Kwadrat PL",
-    desc: "Пошук арэнды кватэр і пакояў у Польшчы: OLX, Otodom і Morizon у адным Telegram-боце. Імгненныя апавяшчэнні, справядлівая цана, AI-разбор. Бясплатна.",
+    desc: "Арэнда кватэр і пакояў у Польшчы: OLX, Otodom і Morizon у адным боце. Мапа аб'яў і ацэнка лакацыі Варшавы, апавяшчэнні, AI-разбор. Бясплатна.",
     eyebrow: "Telegram-бот для арэнды ў Польшчы",
     h1: "Арэнда жылля ў Польшчы: хай дом знойдзецца сам",
     lead: "Kwadrat PL збірае свежыя аб'явы з OLX, Otodom і Morizon у адзін Telegram-бот. Падпішыцеся на пошук — новыя кватэры і пакоі прыйдуць проста ў чат, раней за іншых.",
@@ -518,7 +536,11 @@ const C = {
     finalLead: "Адкрыйце Kwadrat PL і падпішыцеся на свой пошук — новае жыллё прыйдзе само.",
     finalCta: "Адкрыць бота ў Telegram",
     otherBotsTitle: "Іншыя боты аўтара",
-    botDesc: { issa: "Падрыхтоўка да ліцэнзіі шкіпера (ISSA Inshore Skipper), SRC-радыё і польскіх правоў — трэнажор з інтэрвальным паўтарэннем." },
+    botDesc: {
+      issa: "Падрыхтоўка да ліцэнзіі шкіпера (ISSA Inshore Skipper), SRC-радыё і польскіх правоў — трэнажор з інтэрвальным паўтарэннем.",
+      flygo: "Танныя пералёты з Польшчы: Ryanair і Wizz Air, разумныя стыкоўкі маршрутаў і апавяшчэнні пра падзенне цэн.",
+      obshak: "Супольныя выдаткі кампаніі без няёмкасці: AI-сканер чэкаў, «хто каму колькі» і разлік у адзін тап.",
+    },
     footAbout: "Kwadrat PL — пошук арэнды жылля ў Польшчы на 5 мовах: руская, украінская, беларуская, польская, англійская. OLX, Otodom, Morizon у адным боце.",
     footLang: "Мова",
     footRights: "Не з'яўляецца агенцтвам нерухомасці. Усе аб'явы належаць іх крыніцам.",
@@ -802,6 +824,15 @@ a.chip:active{ transform:scale(.96); opacity:.75 }
 .shot img{ width:100%; height:auto; display:block; border-radius:20px;
   border:.5px solid var(--border); box-shadow:var(--shadow); background:var(--card) }
 
+/* tool: оценка локации */
+.tool-sec{ display:flex; gap:36px; align-items:center; flex-wrap:wrap; justify-content:center }
+.tool-txt{ flex:1 1 340px; max-width:560px }
+.tool-lead{ color:var(--muted); font-size:16.5px; line-height:1.65; margin:0 0 16px }
+.tool-cats{ display:flex; flex-wrap:wrap; gap:8px; margin:0 0 20px }
+.tool-img{ margin:0; flex:0 1 240px; max-width:250px }
+.tool-img img{ width:100%; height:auto; display:block; border-radius:20px;
+  border:.5px solid var(--border); box-shadow:var(--shadow); background:var(--card) }
+
 /* widget */
 .widget-sec{ display:flex; gap:32px; align-items:center; flex-wrap:wrap; justify-content:center }
 .widget-txt{ flex:1 1 300px; max-width:460px }
@@ -916,12 +947,30 @@ footer{ border-top:.5px solid var(--border); padding:40px 0; margin-top:20px }
 
   <section>
     <div class="wrap">
+      <div class="tool-sec">
+        <div class="tool-txt">
+          <h2 class="sec-h" style="text-align:left">📍 ${esc(TOOL[lang].h1)}</h2>
+          <p class="tool-lead">${esc(TOOL[lang].lead)}</p>
+          <div class="tool-cats">${["catTransport", "catInfra", "catSchools", "catGreen"]
+            .map((k, i) => `<span class="chip">${["🚇", "🛒", "🏫", "🌳"][i]} ${esc(KW.DICT[k][lang])}</span>`).join("")}</div>
+          <a class="btn" href="${url(meta.path + TOOL_SLUG)}">📍 ${esc(TOOL[lang].btn)}</a>
+        </div>
+        <figure class="tool-img"><a href="${url(meta.path + TOOL_SLUG)}"><picture>
+          <source srcset="/shots/shot-loc-dark.webp" media="(prefers-color-scheme: dark)">
+          <img src="/shots/shot-loc.webp" width="760" height="1645" loading="lazy" alt="${esc(c.altLoc)}">
+        </picture></a></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
       <h2 class="sec-h">${esc(c.stepsTitle)}</h2>
       <ol class="steps">${stepItems}</ol>
     </div>
   </section>
 
-  <section class="alt">
+  <section>
     <div class="wrap">
       <h2 class="sec-h">${esc(c.shotsTitle)}</h2>
       <p class="sec-lead">${esc(c.shotsLead)}</p>
@@ -964,7 +1013,6 @@ footer{ border-top:.5px solid var(--border); padding:40px 0; margin-top:20px }
       <h2 class="sec-h">${esc(c.citiesTitle)}</h2>
       <p class="sec-lead">${esc(c.citiesLead)}</p>
       <div class="chips">${cityChips}</div>
-      <p style="text-align:center; margin-top:18px"><a class="btn sm ghost" href="${url(meta.path + TOOL_SLUG)}">📍 ${esc(TOOL[lang].h1)}</a></p>
     </div>
   </section>
 
@@ -1933,6 +1981,7 @@ const TOOL_SLUG = "ocena-lokalizacji/";
 const TOOL = {
   ru: {
     title: "Оценка локации в Варшаве — проверь адрес бесплатно",
+    btn: "Оценить адрес бесплатно",
     desc: "Введи адрес в Варшаве и получи балл 0–100 за транспорт, магазины, школы и зелёные зоны. Ближайшие объекты с расстояниями. Бесплатно и без регистрации.",
     h1: "Оценка локации в Варшаве",
     lead: "Введи адрес или тапни точку на карте — покажем, насколько удобно там жить: общий балл 0–100 и разбор по транспорту, инфраструктуре, школам и зелени, с ближайшими объектами и расстояниями.",
@@ -1945,6 +1994,7 @@ const TOOL = {
   },
   ua: {
     title: "Оцінка локації у Варшаві — перевір адресу безкоштовно",
+    btn: "Оцінити адресу безкоштовно",
     desc: "Введи адресу у Варшаві та отримай бал 0–100 за транспорт, магазини, школи й зелені зони. Найближчі об'єкти з відстанями. Безкоштовно й без реєстрації.",
     h1: "Оцінка локації у Варшаві",
     lead: "Введи адресу або тапни точку на карті — покажемо, наскільки зручно там жити: загальний бал 0–100 і розбір за транспортом, інфраструктурою, школами та зеленню, з найближчими об'єктами й відстанями.",
@@ -1957,6 +2007,7 @@ const TOOL = {
   },
   by: {
     title: "Ацэнка лакацыі ў Варшаве — правер адрас бясплатна",
+    btn: "Ацаніць адрас бясплатна",
     desc: "Увядзі адрас у Варшаве і атрымай бал 0–100 за транспарт, крамы, школы і зялёныя зоны. Найбліжэйшыя аб'екты з адлегласцямі. Бясплатна і без рэгістрацыі.",
     h1: "Ацэнка лакацыі ў Варшаве",
     lead: "Увядзі адрас або тапні кропку на карце — пакажам, наколькі зручна там жыць: агульны бал 0–100 і разбор па транспарце, інфраструктуры, школах і зеляніне, з найбліжэйшымі аб'ектамі і адлегласцямі.",
@@ -1969,6 +2020,7 @@ const TOOL = {
   },
   pl: {
     title: "Ocena lokalizacji w Warszawie — sprawdź adres za darmo",
+    btn: "Oceń adres za darmo",
     desc: "Wpisz adres w Warszawie i zobacz wynik 0–100 za transport, sklepy, szkoły i tereny zielone. Najbliższe obiekty z odległościami. Za darmo i bez rejestracji.",
     h1: "Ocena lokalizacji w Warszawie",
     lead: "Wpisz adres albo stuknij punkt na mapie — pokażemy, jak wygodnie się tam mieszka: łączny wynik 0–100 i rozbicie na transport, infrastrukturę, szkoły i zieleń, z najbliższymi obiektami i odległościami.",
@@ -1981,6 +2033,7 @@ const TOOL = {
   },
   en: {
     title: "Warsaw location score — check any address for free",
+    btn: "Check an address for free",
     desc: "Enter a Warsaw address and get a 0–100 score for transit, shops, schools and green areas. Nearest places with distances. Free, no sign-up.",
     h1: "Warsaw location score",
     lead: "Enter an address or tap a point on the map — we'll show how liveable it is: an overall 0–100 score with a breakdown for transit, infrastructure, schools and greenery, plus the nearest places and distances.",
