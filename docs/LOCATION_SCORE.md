@@ -67,10 +67,31 @@ Tarchomin ≈ 64, Saska Kępa ≈ 57, Stara Miłosna ≈ 41. Скрипт кал
 - Реальный потолок защиты публичного бесплатного инструмента — экономический:
   лимиты делают массовый съём медленнее, чем самостоятельный запрос в OSM.
 
+## Геоданные объявлений (geo_enrich.py, Спринт 1 «почему подходит тебе»)
+
+Фоновый цикл (каждые `ENRICH_INTERVAL`=300 с) обогащает варшавские объявления:
+
+| Источник | Что даёт | precision |
+|---|---|---|
+| OLX | lat/lon из `offer.map` (точка рандомизирована в радиусе) | `approx` (реже `point`) |
+| Otodom | улица из `location.address.street` → геокод | `address` (с № дома) / `street` |
+| остальные | центроид района (18 шт., навсегда в кэше) | `district` |
+
+Предрасчёт LocationQuality — **только** для `point/address/street` (скорить
+рандомизированную точку OLX или центроид района и вешать бейдж = ложная
+точность; для них в шторке кнопка открывает инструмент с пометкой
+«приблизительно», `?prec=` на lokacja.html). Бюджеты: `ENRICH_GEOCODES`=25
+геокодов/цикл, `ENRICH_SCORES`=15 оценок/цикл, `ENRICH_SCORE_DAILY`=120 живых
+Overpass/день (плюс глобальный `GEO_DAILY_LIMIT` всё равно сверху). Результаты
+в таблице `geo_listings`; в публичный listings.json их мерджит **инжест**
+(файл вне инжеста не переписывается) → изменения видны на следующем прогоне
+фетчера. Retention 60 дней.
+
 ## Env (все опциональны)
 
 `GOOGLE_PLACES_KEY`, `PLACES_DAILY_LIMIT=100`, `PLACES_MONTHLY_LIMIT=2500`,
-`GEO_DAILY_LIMIT=400`.
+`GEO_DAILY_LIMIT=400`, `ENRICH_INTERVAL=300`, `ENRICH_GEOCODES=25`,
+`ENRICH_SCORES=15`, `ENRICH_SCORE_DAILY=120`.
 
 ## API
 
