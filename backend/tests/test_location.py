@@ -38,6 +38,13 @@ RICH = ([at(300, METRO, "Metro Test")] +
         [at(280, PARK, "Park Testowy"), at(700, PARK, "Skwer")])
 
 
+@pytest.fixture(autouse=True)
+def _no_gtfs(monkeypatch):
+    """Детерминизм: реальный stop_freq.json не влияет на юниты (freq=None
+    → нейтральный множитель 0.75 у всех остановок)."""
+    monkeypatch.setattr(geo, "_freq_grid", {})
+
+
 # ── юниты скоринга ──────────────────────────────────────────────────────────
 
 def test_rich_location_scores_high():
@@ -70,6 +77,19 @@ def test_density_matters_but_saturates():
                           LAT, LON)["categories"]["infra"]["score"]
     assert one < three <= ten
     assert ten - three <= 5  # насыщение: 10-й магазин почти ничего не добавляет
+
+
+def test_frequent_stop_beats_rare(monkeypatch):
+    # одна и та же остановка: 30 отпр./час против 1 отпр./час
+    stop = at(150, BUS, "B")
+    busy = {(round(stop["lat"], 3), round(LON, 3)): [(stop["lat"], LON, 30.0)]}
+    rare = {(round(stop["lat"], 3), round(LON, 3)): [(stop["lat"], LON, 1.0)]}
+    monkeypatch.setattr(geo, "_freq_grid", busy)
+    hi = geo.score_point([stop], LAT, LON)["categories"]["transport"]["score"]
+    monkeypatch.setattr(geo, "_freq_grid", rare)
+    lo = geo.score_point([stop], LAT, LON)["categories"]["transport"]["score"]
+    assert hi > lo
+    assert geo._freq_mult(30) > 0.99 and geo._freq_mult(1) < 0.5
 
 
 def test_bus_only_cannot_beat_metro_district():

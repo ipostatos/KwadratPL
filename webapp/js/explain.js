@@ -143,9 +143,23 @@
     return out + "</div>";
   }
 
+  // ── Fit-балл для сортировки «Лучшее для меня»: выгода по рынку 45% +
+  // локация (персональная или общая) 35% + близость к работе 20%.
+  // Без профиля тоже осмыслен (цена+локация); неизвестные сигналы = 50.
+  function fitScore(l) {
+    var v = App.priceVerdict(l);
+    var val = v && v.betterPct != null ? v.betterPct : 50;
+    var pf = personalLoc(l);
+    var loc = pf != null ? pf : (l.locScore != null ? l.locScore : 50);
+    var cm = commuteMin(l);
+    var cmS = cm == null ? 50 : Math.max(0, Math.min(100, 110 - cm * 1.4));
+    return 0.45 * val + 0.35 * loc + 0.20 * cmS;
+  }
+
   App.explain = explain;
   App.explainData = explainData;   // для тестов
   App.profile = profile;
   App.commuteMin = commuteMin;
   App.personalLoc = personalLoc;
+  App.fitScore = fitScore;
 })(window);

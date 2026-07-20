@@ -66,7 +66,7 @@ const API = [
   "toast", "timeAgo", "esc", "safePhotoUrl", "openListingUrl",
   "priceVerdict", "priceBadge", "priceInsight",
   "trustBadges", "moveInCost", "dataQuality", "landlordInfo",
-  "explain", "explainData", "profile", "commuteMin", "personalLoc",
+  "explain", "explainData", "profile", "commuteMin", "personalLoc", "fitScore",
   "commuteInfo", "deleteAccount",
   "aiAvailable", "analyzeListing", "mountAiButton",
   "priceUnit", "cityName", "isFav", "toggleFav",
@@ -141,6 +141,9 @@ ok(App.aiAvailable() === false, "AI недоступен вне Telegram");
     "explain: дальше лимита — в рисках");
   storage.delete("kw_profile");
   ok(App.profile() === null, "profile: null без kw_profile");
+  // fitScore: дешёвое с хорошей локацией выше дорогого без неё
+  ok(App.fitScore({ ...cheap, locCats: null, locScore: 90 }) >
+     App.fitScore(bad), "fitScore: выгодное+локация ранжируется выше");
   App.live = false;   // дальше тесты App.listings не используют
 }
 

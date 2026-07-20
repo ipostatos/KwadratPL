@@ -169,6 +169,56 @@ def _search_url(sub: dict) -> str:
     return WEBAPP_URL.rstrip("/") + "/search.html?" + urllib.parse.urlencode(params)
 
 
+# ── explain-строка в пуше: рынок из listings.json, кэш 10 минут ────────────
+_market_cache = {"ts": 0.0, "market": {}}
+
+
+def _push_market() -> dict:
+    import json as _json
+
+    import community
+    from config import LISTINGS_PATH
+    now = time.monotonic()
+    if now - _market_cache["ts"] > 600:
+        try:
+            with open(LISTINGS_PATH, encoding="utf-8") as f:
+                listings = _json.load(f).get("listings") or []
+            _market_cache["market"] = community.build_market(listings)
+        except Exception as e:
+            log.warning("push market build failed: %s", e)
+            _market_cache["market"] = {}
+        _market_cache["ts"] = now
+    return _market_cache["market"]
+
+
+def push_explain_line(l: dict, lang: str) -> str:
+    """«✅ ниже рынка на 18% · 📍 84/100 · ⚠️ агентство» — сигналы карточки-
+    объяснения Mini App, сжатые в одну строку пуша. Пусто = сигналов нет."""
+    import community
+    parts = []
+    market = _push_market()
+    v = community._ppm(l)
+    if v is not None and market:
+        base = f"{l.get('city')}|{l.get('type')}"
+        med = market.get(f"{base}|{l['district']}") if l.get("district") else None
+        if med is None:
+            med = market.get(base)
+        if med:
+            pct = round((v - med) / med * 100)
+            if pct <= -12:
+                parts.append("✅ " + T["px_below"][lang].format(n=abs(pct)))
+            elif pct >= 15:
+                parts.append("⚠️ " + T["px_above"][lang].format(n=pct))
+    if isinstance(l.get("locScore"), (int, float)):
+        mark = "✅" if l["locScore"] >= 75 else ("⚠️" if l["locScore"] <= 40 else "📍")
+        parts.append(f"{mark} " + T["px_loc"][lang].format(n=int(l["locScore"])))
+    if l.get("agency") is True:
+        parts.append("⚠️ " + T["px_agency"][lang])
+    elif l.get("agency") is False:
+        parts.append("✅ " + T["px_private"][lang])
+    return " · ".join(parts)
+
+
 def _listing_kb(l: dict, lang: str) -> InlineKeyboardMarkup | None:
     """Клавиатура пуша (ТОЛЬКО личка — web_app-кнопки в группах невалидны):
     источник + шторка Mini App (там AI-разбор, избранное, карточка-объяснение)
@@ -203,6 +253,13 @@ async def notify_user(user_id: int, lang: str, hits: list):
         l, sub = item if isinstance(item, tuple) else (item, None)
         kb = _listing_kb(l, lang)
         text = fmt_listing(l, lang, sub)
+        # «почему подходит / что проверить» одной строкой (может быть пустой)
+        try:
+            ex = push_explain_line(l, lang)
+            if ex:
+                text += "\n" + ex
+        except Exception as e:
+            log.warning("push explain failed: %s", e)
         ph = l.get("photo")
         photo = ph if isinstance(ph, str) and ph.startswith("https://") else None
         # терминально только «пользователь заблокировал бота»; флуд-контроль —

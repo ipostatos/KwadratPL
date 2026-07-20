@@ -30,7 +30,7 @@ UA = "KwadratPL-location/1.0 (+https://kwadratpl.pl)"
 # версия скоринговой модели (принцип «все коэффициенты имеют версию»):
 # менять при ЛЮБОЙ правке констант скоринга + прогонять калибровочный бенчмарк
 # (docs/LOCATION_SCORE.md, раздел «Калибровка и стабильность»)
-MODEL_VERSION = "1.2.0"   # 1.2.0: штраф за текущее качество воздуха (GIOŚ)
+MODEL_VERSION = "1.3.0"   # 1.3.0: частоты ОТ (GTFS ZTM); 1.2.0: воздух GIOŚ
 
 # границы Варшавы (bbox с небольшим запасом; город ~52.10–52.37 / 20.85–21.27)
 WARSAW = {"lat_min": 52.08, "lat_max": 52.38, "lon_min": 20.82, "lon_max": 21.30}
@@ -384,6 +384,54 @@ def fetch_places(lat, lon):
     return out
 
 
+# ── частоты общественного транспорта (GTFS ZTM, tools/build-stop-freq.py) ──
+# Статический срез «отправлений в час» по остановкам Варшавы (будний день,
+# 06–22). Пять редких автобусов ≠ частая линия: частота взвешивает вклад
+# автобусных/трамвайных остановок в транспортную оценку (§10.2 мат-модели).
+from pathlib import Path as _Path
+_STOP_FREQ_PATH = _Path(__file__).resolve().parent / "data" / "stop_freq.json"
+_freq_grid = None      # {(lat3, lon3): [(lat, lon, freq/h)]}; {} = данных нет
+
+
+def _load_freq():
+    global _freq_grid
+    if _freq_grid is not None:
+        return _freq_grid
+    grid = {}
+    try:
+        for slat, slon, f in json.loads(_STOP_FREQ_PATH.read_text(encoding="utf-8")):
+            grid.setdefault((round(slat, 3), round(slon, 3)), []).append((slat, slon, f))
+    except (OSError, ValueError) as e:
+        log.warning("stop_freq.json unavailable (%s) — частоты ОТ не учитываются", e)
+    _freq_grid = grid
+    return grid
+
+
+def stop_freq_at(lat, lon, max_dist=80):
+    """Отправлений/час у ближайшей GTFS-остановки в радиусе max_dist, иначе None."""
+    grid = _load_freq()
+    if not grid:
+        return None
+    best = None
+    for dla in (-0.001, 0.0, 0.001):
+        for dlo in (-0.002, -0.001, 0.0, 0.001, 0.002):
+            cell = (round(lat + dla, 3), round(lon + dlo, 3))
+            for slat, slon, f in grid.get(cell, ()):
+                d = _haversine(lat, lon, slat, slon)
+                if d <= max_dist and (best is None or d < best[0]):
+                    best = (d, f)
+    return best[1] if best else None
+
+
+def _freq_mult(f):
+    """0.35..1.0: насыщение по частоте (6/час → ~0.76, 12 → ~0.91, 30 → ~1.0).
+    None (GTFS не сматчился — новая/переименованная остановка) → нейтральные
+    0.75, не наказываем жёстко за пробел данных."""
+    if f is None:
+        return 0.75
+    return 0.35 + 0.65 * (1.0 - math.exp(-f / 6.0))
+
+
 # ── классификация элементов OSM → (категория, вид) ──────────────────────────
 _INFRA_KIND = {
     "supermarket": "grocery", "convenience": "grocery", "greengrocer": "grocery",
@@ -467,8 +515,11 @@ def collect_poi(elements, lat, lon):
         name = (tags.get("name") or "").strip()
         dkey = (kind, name.lower()) if name else (kind, f"{elat:.4f},{elon:.4f}")
         if dkey not in best or dist < best[dkey]["dist"]:
-            best[dkey] = {"name": name, "kind": kind, "cat": cat, "dist": dist,
-                          "lat": round(elat, 5), "lon": round(elon, 5)}
+            item = {"name": name, "kind": kind, "cat": cat, "dist": dist,
+                    "lat": round(elat, 5), "lon": round(elon, 5)}
+            if kind in ("bus", "tram"):
+                item["freq"] = stop_freq_at(elat, elon)   # отпр./час или None
+            best[dkey] = item
     out = {"transport": [], "schools": [], "infra": [], "green": []}
     for item in best.values():
         out[item.pop("cat")].append(item)
@@ -509,14 +560,18 @@ def _decay(dist, comfort, dmax):
 _SERIES = (1.0, 0.4, 0.25, 0.15, 0.1, 0.07)
 
 
-def _sub(items, comfort, dmax, series=_SERIES, norm=1.4):
+def _sub(items, comfort, dmax, series=_SERIES, norm=1.4, use_freq=False):
     """Суб-оценка вида 0..1: сумма затуханий ближайших объектов с убывающими
     весами, делённая на норму насыщения norm. norm=1.0 — один близкий объект
     даёт полный вклад (метро); norm=1.4 — для 100% нужно 2–3 объекта (магазины:
-    одна Żabka = ~70% вида, вторая-третья добирают остальное)."""
+    одна Żabka = ~70% вида, вторая-третья добирают остальное).
+    use_freq — вклад остановки взвешен частотой отправлений (GTFS)."""
     total = 0.0
     for w, it in zip(series, items):
-        total += w * _decay(it["dist"], comfort, dmax)
+        c = w * _decay(it["dist"], comfort, dmax)
+        if use_freq:
+            c *= _freq_mult(it.get("freq"))
+        total += c
     return min(1.0, total / norm)
 
 
@@ -535,8 +590,12 @@ def _score_transport(poi):
     rail = _sub(by.get("rail", []), 400, 1300, series=(1.0, 0.15), norm=1.0)
     heavy = max(metro, 0.8 * rail)
     both = 0.5 * min(metro, rail)          # и метро, и SKM рядом — небольшой бонус
-    tram = _sub(by.get("tram", []), 250, 900, series=(1.0, 0.4, 0.2), norm=1.3)
-    bus = _sub(by.get("bus", []), 250, 700, series=(1.0, 0.35, 0.2, 0.1), norm=1.35)
+    # трамваи/автобусы взвешены частотой (норма чуть ниже: mult<1 даже у
+    # частых линий, иначе модель 1.3.0 просела бы против калибровки 1.1)
+    tram = _sub(by.get("tram", []), 250, 900, series=(1.0, 0.4, 0.2), norm=1.15,
+                use_freq=True)
+    bus = _sub(by.get("bus", []), 250, 700, series=(1.0, 0.35, 0.2, 0.1), norm=1.2,
+               use_freq=True)
     # метро у дома должно давать сильный балл и без трамваев (калибровка:
     # Kabaty = метро 30 м + автобусы, но ноль трамваев → честные ~76, не 68)
     return round(100 * min(1.0, 0.55 * heavy + 0.07 * both + 0.22 * tram + 0.21 * bus))

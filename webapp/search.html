@@ -118,6 +118,7 @@
        title="Mapa"><span class="emi" data-icon="map-pin"></span></a>
     <select id="sort">
       <option value="new" data-i18n="sortNew"></option>
+      <option value="fit" data-i18n="sortFit"></option>
       <option value="priceAsc" data-i18n="sortPriceAsc"></option>
       <option value="priceDesc" data-i18n="sortPriceDesc"></option>
       <option value="areaDesc" data-i18n="sortArea"></option>
@@ -289,7 +290,9 @@ function filtered() {
     new: function (a, b) { return b.ts - a.ts; },
     priceAsc: function (a, b) { return a.price - b.price; },
     priceDesc: function (a, b) { return b.price - a.price; },
-    areaDesc: function (a, b) { return b.area - a.area; }
+    areaDesc: function (a, b) { return b.area - a.area; },
+    // «Лучшее для меня»: выгода + локация + близость к работе (js/explain.js)
+    fit: function (a, b) { return App.fitScore(b) - App.fitScore(a); }
   };
   return res.sort(sorters[state.sort]);
 }

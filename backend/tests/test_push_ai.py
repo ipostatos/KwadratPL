@@ -40,6 +40,23 @@ async def test_donate_link(client, auth, monkeypatch):
     assert r3.status_code == 401                       # без initData нельзя
 
 
+def test_push_explain_line():
+    listings = [{"id": f"x{i}", "city": "warszawa", "district": "Wola", "type": "long",
+                 "price": 3000 + i * 100, "area": 50} for i in range(8)]
+    with open(os.environ["LISTINGS_PATH"], "w", encoding="utf-8") as f:
+        json.dump({"listings": listings}, f)
+    bot_module._market_cache["ts"] = 0.0   # сброс кэша рынка между тестами
+
+    cheap = {"id": "c", "city": "warszawa", "district": "Wola", "type": "long",
+             "price": 2400, "area": 50, "locScore": 84, "agency": True}
+    line = bot_module.push_explain_line(cheap, "ru")
+    assert "ниже рынка" in line and "84/100" in line and "агентство" in line
+    assert line.count("·") == 2
+
+    plain = {"id": "p", "city": "krakow", "type": "long", "price": 2500}
+    assert bot_module.push_explain_line(plain, "ru") == ""   # сигналов нет — пусто
+
+
 def test_market_pct():
     listings = [{"id": f"x{i}", "city": "warszawa", "district": "Wola", "type": "long",
                  "price": 3000 + i * 100, "area": 50} for i in range(8)]
