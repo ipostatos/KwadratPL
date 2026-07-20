@@ -196,6 +196,13 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 .lt-hint{ color:var(--muted); font-size:13px; margin:0 0 10px }
 #lt-map{ height:320px; border-radius:16px; border:1px solid var(--border); margin:0 0 18px; z-index:0 }
 .lt-state{ color:var(--muted); text-align:center; padding:18px 0 }
+.load-icons{ font-size:26px; letter-spacing:8px }
+.load-icons span{ display:inline-block; animation:hop 1.2s ease-in-out infinite }
+.load-icons span:nth-child(2){ animation-delay:.15s }
+.load-icons span:nth-child(3){ animation-delay:.3s }
+.load-icons span:nth-child(4){ animation-delay:.45s }
+@keyframes hop{ 0%,100%{ transform:translateY(0); opacity:.35 } 30%{ transform:translateY(-9px); opacity:1 } }
+.load-phrase{ margin-top:10px; transition:opacity .25s }
 .lt-card{ background:var(--card); border:1px solid var(--border); border-radius:16px;
   padding:18px; margin-bottom:18px }
 .lt-head{ display:flex; align-items:center; gap:16px; margin-bottom:14px }
@@ -261,7 +268,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 (function () {
   "use strict";
   var API = "https://kwadratpl-46-224-220-94.sslip.io";
-  var T = {"locInput":"Адреса у Варшаві…","locBtn":"Оцінити","locMapHint":"…або тапни точку на карті","locPick":"Уточни адресу:","locNotFound":"Адресу не знайдено у Варшаві. Спробуй інакше: вулиця та номер будинку.","locLoad":"Аналізую околиці…","locErr":"Не вдалося отримати дані. Спробуй ще раз трохи пізніше.","locBusy":"Денний ліміт аналізів вичерпано — спробуй завтра.","locRate":"Забагато запитів — зачекай кілька хвилин.","locOnlyWaw":"Поки працює лише для Варшави","locNearT":"Що поруч","verdictExcellent":"Чудова локація","verdictGood":"Хороша локація","verdictAverage":"Середня локація","verdictWeak":"Слабка локація","catTransport":"Транспорт","catInfra":"Інфраструктура","catSchools":"Школи та садки","catGreen":"Зелені зони","kMetro":"Метро","kRail":"Електричка (SKM/KM)","kTram":"Трамвай","kBus":"Автобус","kGrocery":"Продукти","kPharmacy":"Аптека","kHealth":"Медицина","kFood":"Кафе й ресторани","kServices":"Банк / пошта","kSport":"Спорт","kVet":"Ветклініка","kPlayground":"Дитячий майданчик","kMall":"Торговий центр","kMarketplace":"Базар","kSchool":"Школа","kKindergarten":"Дитячий садок","kPark":"Парк","kForest":"Ліс","kGreen":"Сквер"};
+  var T = {"locInput":"Адреса у Варшаві…","locBtn":"Оцінити","locMapHint":"…або тапни точку на карті","locPick":"Уточни адресу:","locNotFound":"Адресу не знайдено у Варшаві. Спробуй інакше: вулиця та номер будинку.","locLoad":"Аналізую околиці…","locLoad1":"Міряємо кроки до метро…","locLoad2":"Перераховуємо Żabki поруч…","locLoad3":"Шукаємо школи й майданчики…","locLoad4":"Зазираємо в парки та сквери…","locErr":"Не вдалося отримати дані. Спробуй ще раз трохи пізніше.","locBusy":"Денний ліміт аналізів вичерпано — спробуй завтра.","locRate":"Забагато запитів — зачекай кілька хвилин.","locOnlyWaw":"Поки працює лише для Варшави","locNearT":"Що поруч","verdictExcellent":"Чудова локація","verdictGood":"Хороша локація","verdictAverage":"Середня локація","verdictWeak":"Слабка локація","catTransport":"Транспорт","catInfra":"Інфраструктура","catSchools":"Школи та садки","catGreen":"Зелені зони","kMetro":"Метро","kRail":"Електричка (SKM/KM)","kTram":"Трамвай","kBus":"Автобус","kGrocery":"Продукти","kPharmacy":"Аптека","kHealth":"Медицина","kFood":"Кафе й ресторани","kServices":"Банк / пошта","kSport":"Спорт","kVet":"Ветклініка","kPlayground":"Дитячий майданчик","kMall":"Торговий центр","kMarketplace":"Базар","kSchool":"Школа","kKindergarten":"Дитячий садок","kPark":"Парк","kForest":"Ліс","kGreen":"Сквер"};
   var LANG = "ua";
   var KINDL = { metro: "kMetro", rail: "kRail", tram: "kTram", bus: "kBus", grocery: "kGrocery",
     pharmacy: "kPharmacy", health: "kHealth", food: "kFood", services: "kServices", sport: "kSport",
@@ -284,10 +291,26 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
   var marker = null, circle = null, pins = [];
   map.on("click", function (e) { score(e.latlng.lat, e.latlng.lng, null); });
 
+  var LOAD_KEYS = ["locLoad1", "locLoad2", "locLoad3", "locLoad4"];
+  var loadTimer = null;
   function setState(key) {
     var el = $("#lt-state");
+    clearInterval(loadTimer);
+    loadTimer = null;
     if (!key) { el.hidden = true; return; }
-    el.textContent = T[key];
+    if (key === "locLoad") {
+      el.innerHTML = '<div class="load-icons"><span>🚇</span><span>🛒</span>' +
+        '<span>🏫</span><span>🌳</span></div>' +
+        '<div class="load-phrase" id="lt-phrase">' + esc(T[LOAD_KEYS[0]]) + "</div>";
+      var idx = 0, ph = el.querySelector("#lt-phrase");
+      loadTimer = setInterval(function () {
+        idx = (idx + 1) % LOAD_KEYS.length;
+        ph.style.opacity = 0;
+        setTimeout(function () { ph.textContent = T[LOAD_KEYS[idx]]; ph.style.opacity = 1; }, 250);
+      }, 1700);
+    } else {
+      el.textContent = T[key];
+    }
     el.hidden = false;
     $("#lt-result").hidden = true;
   }

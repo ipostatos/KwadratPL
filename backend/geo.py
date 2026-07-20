@@ -175,7 +175,7 @@ def reverse(lat, lon, lang="pl"):
 # 4 блока с раздельными лимитами out — чтобы плотный центр (сотни кафе) не
 # вытеснял из ответа школы и парки. Кладбища сознательно НЕ запрашиваем —
 # известная ошибка таких сервисов «кладбище = зелёная зона».
-_OVERPASS_QL = """[out:json][timeout:25];
+_OVERPASS_QL = """[out:json][timeout:10];
 (
   nwr(around:{r},{lat},{lon})[railway=station];
   node(around:{r},{lat},{lon})[railway=subway_entrance];
@@ -216,13 +216,16 @@ def fetch_poi(lat, lon):
     ql = _OVERPASS_QL.format(r=RADIUS, lat=f"{lat:.6f}", lon=f"{lon:.6f}")
     body = urllib.parse.urlencode({"data": ql}).encode()
     last = None
-    # зеркала бывают перегружены (504/429/таймауты) — два круга по всем
+    # зеркала бывают перегружены (504/429/таймауты) — два круга по всем.
+    # Таймауты короткие (сервер 10с, клиент 14с): здоровое зеркало отвечает
+    # за 2–8 с, больное лучше бросить быстро и перейти к следующему — иначе
+    # пользователь ждал зависшее зеркало до 35 с
     for attempt in range(2):
         if attempt:
             time.sleep(2)
         for url in OVERPASS_URLS:
             try:
-                raw = _http_json(url, data=body, timeout=35)
+                raw = _http_json(url, data=body, timeout=14)
                 elements = raw.get("elements", [])
                 _cache_put(key, elements)
                 return elements, False

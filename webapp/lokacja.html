@@ -41,6 +41,16 @@
   .catrow .cr-top{ display:flex; justify-content:space-between; align-items:baseline;
     font-size:var(--fs-sm); margin-bottom:5px }
   .catrow .cr-top b{ font-variant-numeric:tabular-nums }
+
+  /* весёлый лоадер: прыгающие категории + ротация фраз */
+  .load-icons{ font-size:26px; letter-spacing:8px; text-align:center }
+  .load-icons span{ display:inline-block; animation:hop 1.2s ease-in-out infinite }
+  .load-icons span:nth-child(2){ animation-delay:.15s }
+  .load-icons span:nth-child(3){ animation-delay:.3s }
+  .load-icons span:nth-child(4){ animation-delay:.45s }
+  @keyframes hop{ 0%,100%{ transform:translateY(0); opacity:.35 }
+    30%{ transform:translateY(-9px); opacity:1 } }
+  .load-phrase{ margin-top:10px; transition:opacity .25s }
   .objlist{ margin:6px 0 0; padding:0; list-style:none; font-size:var(--fs-xs);
     color:var(--hint); line-height:1.6 }
   .objlist b{ color:var(--text); font-weight:600 }
@@ -130,10 +140,30 @@ map.on("click", function (e) {
 });
 
 // ── состояния ──
+var LOAD_KEYS = ["locLoad1", "locLoad2", "locLoad3", "locLoad4"];
+var _loadTimer = null;
 function setState(msgKey) {
   var el = $("#state");
+  clearInterval(_loadTimer);
+  _loadTimer = null;
   if (!msgKey) { el.classList.add("hidden"); return; }
-  el.textContent = I18N.t(msgKey);
+  if (msgKey === "locLoad") {
+    // анализ идёт секунды — показываем «жизнь», а не застывшую строку
+    el.innerHTML = '<div class="load-icons"><span>🚇</span><span>🛒</span>' +
+      '<span>🏫</span><span>🌳</span></div>' +
+      '<div class="load-phrase" id="loadPhrase">' + esc(I18N.t(LOAD_KEYS[0])) + "</div>";
+    var idx = 0, ph = el.querySelector("#loadPhrase");
+    _loadTimer = setInterval(function () {
+      idx = (idx + 1) % LOAD_KEYS.length;
+      ph.style.opacity = 0;
+      setTimeout(function () {
+        ph.textContent = I18N.t(LOAD_KEYS[idx]);
+        ph.style.opacity = 1;
+      }, 250);
+    }, 1700);
+  } else {
+    el.textContent = I18N.t(msgKey);
+  }
   el.classList.remove("hidden");
   $("#result").classList.add("hidden");
 }

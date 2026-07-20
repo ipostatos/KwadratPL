@@ -347,6 +347,10 @@
     mapMore:   { ru: "Подробнее", pl: "Szczegóły", ua: "Детальніше", by: "Падрабязней", en: "Details" },
     donateStars: { ru: "Поддержать звёздами Telegram", pl: "Wesprzyj gwiazdkami Telegrama", ua: "Підтримати зірками Telegram", by: "Падтрымаць зоркамі Telegram", en: "Support with Telegram Stars" },
     starsThanks: { ru: "Спасибо за поддержку!", pl: "Dziękuję za wsparcie!", ua: "Дякую за підтримку!", by: "Дзякуй за падтрымку!", en: "Thank you for the support!" },
+    locLoad1: { ru: "Меряем шаги до метро…", pl: "Mierzymy kroki do metra…", ua: "Міряємо кроки до метро…", by: "Мераем крокі да метро…", en: "Counting steps to the metro…" },
+    locLoad2: { ru: "Пересчитываем Żabki поблизости…", pl: "Liczymy Żabki w okolicy…", ua: "Перераховуємо Żabki поруч…", by: "Пералічваем Żabki побач…", en: "Counting nearby Żabkas…" },
+    locLoad3: { ru: "Ищем школы и детские площадки…", pl: "Szukamy szkół i placów zabaw…", ua: "Шукаємо школи й майданчики…", by: "Шукаем школы і пляцоўкі…", en: "Looking for schools and playgrounds…" },
+    locLoad4: { ru: "Заглядываем в парки и скверы…", pl: "Zaglądamy do parków i skwerów…", ua: "Зазираємо в парки та сквери…", by: "Зазіраем у паркі і скверы…", en: "Peeking into parks and greens…" },
     locHowT: { ru: "Как считается оценка?", pl: "Jak liczony jest wynik?", ua: "Як рахується оцінка?", by: "Як лічыцца ацэнка?", en: "How is the score calculated?" },
     locHowText: {
       ru: "Мы смотрим реальные объекты в радиусе ~1,2 км от точки (данные OpenStreetMap и Google): метро и SKM — по входам на станции, трамваи и автобусы, магазины (включая Żabki), аптеки, врачей, кафе, спорт, школы, сады, парки и скверы. Балл каждой категории зависит от близости и количества: первый близкий объект даёт больше всего, дальние и «лишние» — почти ничего. Итог — взвешенная сумма (транспорт 40%, инфраструктура 25%, зелень 20%, школы 15%), при этом провал одной категории заметно тянет общий балл вниз. Кладбища зелёными зонами не считаются. Оценка — ориентир для сравнения адресов, а не абсолютная истина.",

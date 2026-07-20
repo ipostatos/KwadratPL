@@ -111,11 +111,20 @@ async def score(request: Request, response: Response,
     if not geo.in_warsaw(lat, lon):
         raise HTTPException(400, "outside_warsaw")
     _throttle(request, "score")
+    # подпись адреса — украшение: считаем ПАРАЛЛЕЛЬНО с POI (раньше ждали
+    # Nominatim после Overpass — лишние 1–3 секунды на холодный запрос)
+    def _safe_reverse():
+        try:
+            return geo.reverse(lat, lon, _lang_q(lang))
+        except Exception:
+            return None
+
     try:
         async with _overpass_sem:
-            (elements, cached), places = await asyncio.gather(
+            (elements, cached), places, label = await asyncio.gather(
                 asyncio.to_thread(geo.fetch_poi, lat, lon),
                 asyncio.to_thread(geo.fetch_places, lat, lon),  # [] без ключа/лимита
+                asyncio.to_thread(_safe_reverse),
             )
     except RuntimeError as e:
         log.warning("poi fetch failed: %s", e)
@@ -123,11 +132,6 @@ async def score(request: Request, response: Response,
         raise HTTPException(503, "daily_capacity" if "daily_capacity" in str(e)
                             else "poi_unavailable")
     result = geo.score_point(elements, lat, lon, places=places)
-    # подпись адреса — украшение: не валим оценку, если reverse не ответил
-    try:
-        label = await asyncio.to_thread(geo.reverse, lat, lon, _lang_q(lang))
-    except Exception:
-        label = None
     return {
         "lat": round(lat, 5), "lon": round(lon, 5), "label": label,
         "radius": geo.RADIUS, "cached": cached, "model": geo.MODEL_VERSION,

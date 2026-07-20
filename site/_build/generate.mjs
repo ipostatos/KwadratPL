@@ -2054,6 +2054,7 @@ const TOOL = {
 // строки UI инструмента — из словаря Mini App (не дублируем переводы)
 function toolL10n(lang) {
   const keys = ["locInput", "locBtn", "locMapHint", "locPick", "locNotFound", "locLoad",
+    "locLoad1", "locLoad2", "locLoad3", "locLoad4",
     "locErr", "locBusy", "locRate", "locOnlyWaw", "locNearT",
     "verdictExcellent", "verdictGood", "verdictAverage", "verdictWeak",
     "catTransport", "catInfra", "catSchools", "catGreen",
@@ -2077,6 +2078,13 @@ const TOOL_CSS = `
 .lt-hint{ color:var(--muted); font-size:13px; margin:0 0 10px }
 #lt-map{ height:320px; border-radius:16px; border:1px solid var(--border); margin:0 0 18px; z-index:0 }
 .lt-state{ color:var(--muted); text-align:center; padding:18px 0 }
+.load-icons{ font-size:26px; letter-spacing:8px }
+.load-icons span{ display:inline-block; animation:hop 1.2s ease-in-out infinite }
+.load-icons span:nth-child(2){ animation-delay:.15s }
+.load-icons span:nth-child(3){ animation-delay:.3s }
+.load-icons span:nth-child(4){ animation-delay:.45s }
+@keyframes hop{ 0%,100%{ transform:translateY(0); opacity:.35 } 30%{ transform:translateY(-9px); opacity:1 } }
+.load-phrase{ margin-top:10px; transition:opacity .25s }
 .lt-card{ background:var(--card); border:1px solid var(--border); border-radius:16px;
   padding:18px; margin-bottom:18px }
 .lt-head{ display:flex; align-items:center; gap:16px; margin-bottom:14px }
@@ -2185,10 +2193,26 @@ function toolPage(meta) {
   var marker = null, circle = null, pins = [];
   map.on("click", function (e) { score(e.latlng.lat, e.latlng.lng, null); });
 
+  var LOAD_KEYS = ["locLoad1", "locLoad2", "locLoad3", "locLoad4"];
+  var loadTimer = null;
   function setState(key) {
     var el = $("#lt-state");
+    clearInterval(loadTimer);
+    loadTimer = null;
     if (!key) { el.hidden = true; return; }
-    el.textContent = T[key];
+    if (key === "locLoad") {
+      el.innerHTML = '<div class="load-icons"><span>🚇</span><span>🛒</span>' +
+        '<span>🏫</span><span>🌳</span></div>' +
+        '<div class="load-phrase" id="lt-phrase">' + esc(T[LOAD_KEYS[0]]) + "</div>";
+      var idx = 0, ph = el.querySelector("#lt-phrase");
+      loadTimer = setInterval(function () {
+        idx = (idx + 1) % LOAD_KEYS.length;
+        ph.style.opacity = 0;
+        setTimeout(function () { ph.textContent = T[LOAD_KEYS[idx]]; ph.style.opacity = 1; }, 250);
+      }, 1700);
+    } else {
+      el.textContent = T[key];
+    }
     el.hidden = false;
     $("#lt-result").hidden = true;
   }
