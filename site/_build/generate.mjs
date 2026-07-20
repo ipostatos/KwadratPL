@@ -805,7 +805,11 @@ a.card:active{ transform:scale(.98); opacity:.8 }
 
 /* steps */
 .steps{ list-style:none; padding:0; margin:0; display:grid; gap:12px; max-width:720px; margin:0 auto }
-@media(min-width:760px){ .steps{ grid-template-columns:1fr 1fr 1fr } }
+/* десктоп: шаги на всю ширину контейнера, просторнее карточки */
+@media(min-width:760px){
+  .steps{ grid-template-columns:1fr 1fr 1fr; max-width:none; gap:18px }
+  .step{ padding:26px 24px }
+}
 .step{ display:flex; gap:14px; align-items:flex-start; background:var(--card);
   border:.5px solid var(--border); border-radius:var(--radius-sm); padding:18px }
 .step-n{ flex:none; width:30px; height:30px; border-radius:9px; font-weight:700; color:#fff;
