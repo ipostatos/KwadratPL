@@ -20,7 +20,9 @@ def test_listing_kb_full():
 
 def test_listing_kb_no_coords_no_loc_button():
     kb = bot_module._listing_kb({**L, "lat": None, "lon": None}, "en")
-    assert len(kb.inline_keyboard[1]) == 1          # только «в приложении»
+    texts = [b.text for b in kb.inline_keyboard[1]]
+    assert not any("Location" in t for t in texts)   # без координат нет 📍
+    assert "❤️" in texts                             # избранное есть всегда
 
 
 import pytest

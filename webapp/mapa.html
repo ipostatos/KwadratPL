@@ -61,10 +61,24 @@
   <div id="map"></div>
 
   <div class="m-top">
+    <div class="seg" id="mCity">
+      <button data-val="warszawa"></button>
+      <button data-val="krakow"></button>
+    </div>
     <div class="seg" id="mType">
       <button data-val="long" data-i18n="long"></button>
       <button data-val="room" data-i18n="room"></button>
       <button data-val="short" data-i18n="short"></button>
+    </div>
+    <div style="display:flex; gap:6px">
+      <select id="mPrice" class="seg" style="flex:1; pointer-events:auto; border:1px solid var(--border); border-radius:var(--r-sm); padding:8px; font-size:var(--fs-sm); font-weight:700; color:var(--text); background:color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter:blur(12px)"></select>
+      <div class="seg" id="mRooms" style="flex:1">
+        <button data-val="0">∀</button>
+        <button data-val="1">1</button>
+        <button data-val="2">2</button>
+        <button data-val="3">3</button>
+        <button data-val="4">4+</button>
+      </div>
     </div>
     <span class="m-count" id="mCount"></span>
   </div>
@@ -99,11 +113,18 @@ var tg = window.Telegram && window.Telegram.WebApp;
 var isDark = tg && tg.colorScheme ? tg.colorScheme === "dark"
   : matchMedia("(prefers-color-scheme: dark)").matches;
 
-var state = { type: "long" };
+var CITY_CENTER = { warszawa: [21.006, 52.2318], krakow: [19.9369, 50.0619] };
+var qs = new URLSearchParams(location.search);
+var state = {
+  type: "long",
+  city: CITY_CENTER[qs.get("city")] ? qs.get("city") : "warszawa",
+  priceMax: 0,      // 0 = любая
+  rooms: 0          // 0 = все
+};
 var map = new maplibregl.Map({
   container: "map",
   style: "map/style-" + (isDark ? "dark" : "light") + ".json",
-  center: [21.006, 52.2318],
+  center: CITY_CENTER[state.city],
   zoom: 11,
   attributionControl: { compact: true },
 });
@@ -120,8 +141,11 @@ function fmtPrice(l) {
 function geojson() {
   var feats = [];
   App.listings.forEach(function (l) {
-    if (l.city !== "warszawa" || l.type !== state.type) return;
+    if (l.city !== state.city || l.type !== state.type) return;
     if (l.lat == null || l.lon == null || !OK_PREC[l.geoPrec]) return;
+    if (state.priceMax && l.price > state.priceMax) return;
+    if (state.rooms && !(l.rooms != null &&
+        (state.rooms === 4 ? l.rooms >= 4 : l.rooms === state.rooms))) return;
     feats.push({
       type: "Feature",
       geometry: { type: "Point", coordinates: [l.lon, l.lat] },
@@ -246,6 +270,48 @@ map.on("load", function () {
 
   App.ready.then(refresh);
 });
+
+// сегмент города
+document.querySelectorAll("#mCity button").forEach(function (b) {
+  b.textContent = I18N.cityName(b.dataset.val);
+  b.classList.toggle("active", b.dataset.val === state.city);
+  b.onclick = function () {
+    state.city = b.dataset.val;
+    document.querySelectorAll("#mCity button").forEach(function (x) {
+      x.classList.toggle("active", x === b);
+    });
+    map.jumpTo({ center: CITY_CENTER[state.city], zoom: 11 });
+    $("#mCard").classList.remove("show");
+    if (map.getSource("listings")) refresh();
+    if (typeof haptic === "function") haptic("select");
+  };
+});
+
+// фильтры: максимум цены и комнаты
+(function () {
+  var sel = $("#mPrice");
+  [[0, I18N.t("mapAnyPrice")], [2500, "≤ 2500 zł"], [3500, "≤ 3500 zł"],
+   [5000, "≤ 5000 zł"], [8000, "≤ 8000 zł"]].forEach(function (o) {
+    var el = document.createElement("option");
+    el.value = o[0]; el.textContent = o[1];
+    sel.appendChild(el);
+  });
+  sel.onchange = function () {
+    state.priceMax = +sel.value;
+    if (map.getSource("listings")) refresh();
+  };
+  document.querySelectorAll("#mRooms button").forEach(function (b) {
+    b.classList.toggle("active", +b.dataset.val === state.rooms);
+    b.onclick = function () {
+      state.rooms = +b.dataset.val;
+      document.querySelectorAll("#mRooms button").forEach(function (x) {
+        x.classList.toggle("active", x === b);
+      });
+      if (map.getSource("listings")) refresh();
+      if (typeof haptic === "function") haptic("select");
+    };
+  });
+})();
 
 // сегмент типа аренды
 document.querySelectorAll("#mType button").forEach(function (b) {

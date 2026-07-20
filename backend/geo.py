@@ -32,10 +32,19 @@ UA = "KwadratPL-location/1.0 (+https://kwadratpl.pl)"
 # (docs/LOCATION_SCORE.md, раздел «Калибровка и стабильность»)
 MODEL_VERSION = "1.3.0"   # 1.3.0: частоты ОТ (GTFS ZTM); 1.2.0: воздух GIOŚ
 
-# границы Варшавы (bbox с небольшим запасом; город ~52.10–52.37 / 20.85–21.27)
-WARSAW = {"lat_min": 52.08, "lat_max": 52.38, "lon_min": 20.82, "lon_max": 21.30}
-# viewbox Nominatim: left,top,right,bottom
-_VIEWBOX = f"{WARSAW['lon_min']},{WARSAW['lat_max']},{WARSAW['lon_max']},{WARSAW['lat_min']}"
+# границы поддерживаемых городов (bbox с запасом) + имя для станций GIOŚ
+CITY_BOUNDS = {
+    "warszawa": {"lat_min": 52.08, "lat_max": 52.38, "lon_min": 20.82,
+                 "lon_max": 21.30, "gios": "Warszawa", "center": (52.2318, 21.006)},
+    "krakow": {"lat_min": 49.96, "lat_max": 50.14, "lon_min": 19.78,
+               "lon_max": 20.12, "gios": "Kraków", "center": (50.0619, 19.9369)},
+}
+WARSAW = CITY_BOUNDS["warszawa"]   # обратная совместимость
+
+
+def _viewbox(city):
+    b = CITY_BOUNDS[city]
+    return f"{b['lon_min']},{b['lat_max']},{b['lon_max']},{b['lat_min']}"
 
 RADIUS = 1200          # метров вокруг точки — рабочая зона анализа
 GEOCODE_TTL = 30 * 86400
@@ -71,9 +80,16 @@ NOMINATIM = "https://nominatim.openstreetmap.org"
 _NOMI_LANG = {"ru": "ru", "pl": "pl", "ua": "uk", "by": "be", "en": "en"}
 
 
-def in_warsaw(lat, lon):
-    return (WARSAW["lat_min"] <= lat <= WARSAW["lat_max"]
-            and WARSAW["lon_min"] <= lon <= WARSAW["lon_max"])
+def city_of(lat, lon):
+    """Ключ города, в чей bbox попадает точка, либо None."""
+    for key, b in CITY_BOUNDS.items():
+        if b["lat_min"] <= lat <= b["lat_max"] and b["lon_min"] <= lon <= b["lon_max"]:
+            return key
+    return None
+
+
+def in_warsaw(lat, lon):   # обратная совместимость (тесты/enricher)
+    return city_of(lat, lon) == "warszawa"
 
 
 # ── низкоуровневый HTTP (sync; роутер зовёт через asyncio.to_thread) ────────
@@ -128,18 +144,20 @@ def _short_label(display_name):
     return ", ".join(keep[:4]) if keep else str(display_name)
 
 
-def geocode(q, lang="pl"):
-    """Адрес → до 5 кандидатов в границах Варшавы. [] = не нашли (честно)."""
+def geocode(q, lang="pl", city="warszawa"):
+    """Адрес → до 5 кандидатов в границах города. [] = не нашли (честно)."""
+    if city not in CITY_BOUNDS:
+        city = "warszawa"
     q = " ".join(str(q).split())[:120]
     if not q:
         return []
-    key = f"g:{lang}:{q.lower()}"
+    key = f"g:{city}:{lang}:{q.lower()}"
     hit = _cache_get(key, GEOCODE_TTL)
     if hit is not None:
         return hit
     params = urllib.parse.urlencode({
         "format": "jsonv2", "q": q, "limit": 5, "countrycodes": "pl",
-        "viewbox": _VIEWBOX, "bounded": 1,
+        "viewbox": _viewbox(city), "bounded": 1,
         "accept-language": _NOMI_LANG.get(lang, "pl"),
     })
     _nominatim_wait()
@@ -147,7 +165,7 @@ def geocode(q, lang="pl"):
     out = []
     for r in raw:
         lat, lon = float(r["lat"]), float(r["lon"])
-        if in_warsaw(lat, lon):
+        if city_of(lat, lon) == city:
             out.append({"label": _short_label(r.get("display_name", q)),
                         "lat": round(lat, 5), "lon": round(lon, 5)})
     _cache_put(key, out)
@@ -204,7 +222,39 @@ out tags center 400;
   nwr(around:{r},{lat},{lon})[natural=wood];
 );
 out tags center 120;
+(
+  way(around:250,{lat},{lon})[highway~"^(motorway|trunk|primary)$"];
+  way(around:200,{lat},{lon})[railway=rail];
+);
+out geom 25;
 """
+
+
+def noise_near(elements, lat, lon):
+    """Источники шума рядом (risk-флаг, в балл не входит): ближайшая ТОЧКА
+    геометрии крупной дороги (motorway/trunk/primary) ≤200 м или ж/д путей
+    ≤150 м. Дистанция по прямой — честная эвристика, не децибелы."""
+    road = rail = None
+    for el in elements:
+        tags = el.get("tags") or {}
+        if tags.get("highway") in ("motorway", "trunk", "primary"):
+            kind = "road"
+        elif tags.get("railway") == "rail":
+            kind = "rail"
+        else:
+            continue
+        for pt in el.get("geometry") or []:
+            d = _haversine(lat, lon, pt["lat"], pt["lon"])
+            if kind == "road" and (road is None or d < road):
+                road = d
+            elif kind == "rail" and (rail is None or d < rail):
+                rail = d
+    out = {}
+    if road is not None and road <= 200:
+        out["road"] = int(road)
+    if rail is not None and rail <= 150:
+        out["rail"] = int(rail)
+    return out or None
 
 
 def fetch_poi(lat, lon):
@@ -254,16 +304,17 @@ AIR_PENALTY = (0, 0, -3, -6, -9, -12)   # индекс 0..5 → штраф к о
 AIR_MAX_DIST = 10000                     # станция дальше 10 км — не судим
 
 
-def fetch_air():
-    """Станции GIOŚ Варшавы с текущим индексом (кэш 1 час). [] при сбое —
+def fetch_air(city="warszawa"):
+    """Станции GIOŚ города с текущим индексом (кэш 1 час). [] при сбое —
     оценка без воздуха, честно без штрафа."""
-    hit = _cache_get("air:warszawa", AIR_TTL)
+    gios_name = CITY_BOUNDS.get(city, WARSAW)["gios"]
+    hit = _cache_get(f"air:{city}", AIR_TTL)
     if hit is not None:
         return hit
     try:
         data = _http_json(_GIOS_STATIONS, timeout=15)
         stations = [s for s in (data.get("Lista stacji pomiarowych") or [])
-                    if s.get("Nazwa miasta") == "Warszawa"]
+                    if s.get("Nazwa miasta") == gios_name]
     except Exception as e:
         log.warning("gios stations fetch failed: %s", e)
         return []
@@ -279,7 +330,7 @@ def fetch_air():
                         "name": s["Nazwa stacji"], "level": int(lvl)})
         except Exception:
             continue
-    _cache_put("air:warszawa", out)
+    _cache_put(f"air:{city}", out)
     return out
 
 
@@ -696,6 +747,11 @@ def score_point(elements, lat, lon, places=None, air=None, top=5):
     worst = min(c["score"] for c in cats.values())
     overall = round(wsum * (0.70 + 0.30 * worst / 100))
     result = {"categories": cats, "sources": sources}
+    # источники шума — отдельный risk-флаг, балл не трогает (принцип: сильный
+    # негативный фактор показывается явно, а не прячется в среднем)
+    noise = noise_near(elements, lat, lon)
+    if noise:
+        result["noise"] = noise
     # текущее качество воздуха: штраф прозрачен (отдельное поле air) и не
     # растворяется в балле молча — принцип «риски видимы» из мат-модели
     if air:

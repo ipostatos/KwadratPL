@@ -228,7 +228,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 <h1 class="art-h1">Warsaw location score</h1>
 <p class="art-lead">Enter an address or tap a point on the map — we'll show how liveable it is: an overall 0–100 score with a breakdown for transit, infrastructure, schools and greenery, plus the nearest places and distances.</p>
 <div class="lt-bar">
-  <input type="text" id="lt-q" autocomplete="off" placeholder="Address in Warsaw…">
+  <input type="text" id="lt-q" autocomplete="off" placeholder="Street and house number…">
   <button class="btn" id="lt-go">Check</button>
 </div>
 <div class="lt-cands" id="lt-cands" hidden></div>
@@ -239,7 +239,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
   <div class="lt-card">
     <div class="lt-head">
       <div class="lt-num"><span id="lt-score">–</span><small>/ 100</small></div>
-      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div><div class="lt-addr" id="lt-air" hidden></div></div>
+      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div><div class="lt-addr" id="lt-air" hidden></div><div class="lt-addr" id="lt-noise" hidden style="color:#a8730b"></div></div>
     </div>
     <div id="lt-cats"></div>
   </div>
@@ -268,7 +268,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 (function () {
   "use strict";
   var API = "https://kwadratpl-46-224-220-94.sslip.io";
-  var T = {"locInput":"Address in Warsaw…","locBtn":"Check","locMapHint":"…or tap a point on the map","locPick":"Pick the exact address:","locNotFound":"Address not found in Warsaw. Try street + house number.","locLoad":"Analyzing the area…","locLoad1":"Counting steps to the metro…","locLoad2":"Counting nearby Żabkas…","locLoad3":"Looking for schools and playgrounds…","locLoad4":"Peeking into parks and greens…","airT":"Air right now","airL0":"very good","airL1":"good","airL2":"moderate","airL3":"fair","airL4":"poor","airL5":"very poor","locErr":"Couldn't fetch the data. Please try again in a moment.","locBusy":"Daily analysis limit reached — try again tomorrow.","locRate":"Too many requests — wait a couple of minutes.","locOnlyWaw":"Warsaw only for now","locNearT":"Nearby","verdictExcellent":"Excellent location","verdictGood":"Good location","verdictAverage":"Average location","verdictWeak":"Weak location","catTransport":"Transit","catInfra":"Infrastructure","catSchools":"Schools & kindergartens","catGreen":"Green areas","kMetro":"Metro","kRail":"Rail (SKM/KM)","kTram":"Tram","kBus":"Bus","kGrocery":"Grocery","kPharmacy":"Pharmacy","kHealth":"Healthcare","kFood":"Food & cafés","kServices":"Bank / post","kSport":"Sport","kVet":"Vet","kPlayground":"Playground","kMall":"Mall","kMarketplace":"Market","kSchool":"School","kKindergarten":"Kindergarten","kPark":"Park","kForest":"Forest","kGreen":"Green space"};
+  var T = {"locInput":"Street and house number…","locBtn":"Check","locMapHint":"…or tap a point on the map","locPick":"Pick the exact address:","locNotFound":"Address not found in Warsaw. Try street + house number.","locLoad":"Analyzing the area…","locLoad1":"Counting steps to the metro…","locLoad2":"Counting nearby Żabkas…","locLoad3":"Looking for schools and playgrounds…","locLoad4":"Peeking into parks and greens…","airT":"Air right now","airL0":"very good","airL1":"good","airL2":"moderate","airL3":"fair","airL4":"poor","airL5":"very poor","noiseT":"May be noisy","noiseRoad":"major road ~{n} m away","noiseRail":"railway tracks ~{n} m away","locErr":"Couldn't fetch the data. Please try again in a moment.","locBusy":"Daily analysis limit reached — try again tomorrow.","locRate":"Too many requests — wait a couple of minutes.","locOnlyWaw":"Warsaw and Kraków only for now","locNearT":"Nearby","verdictExcellent":"Excellent location","verdictGood":"Good location","verdictAverage":"Average location","verdictWeak":"Weak location","catTransport":"Transit","catInfra":"Infrastructure","catSchools":"Schools & kindergartens","catGreen":"Green areas","kMetro":"Metro","kRail":"Rail (SKM/KM)","kTram":"Tram","kBus":"Bus","kGrocery":"Grocery","kPharmacy":"Pharmacy","kHealth":"Healthcare","kFood":"Food & cafés","kServices":"Bank / post","kSport":"Sport","kVet":"Vet","kPlayground":"Playground","kMall":"Mall","kMarketplace":"Market","kSchool":"School","kKindergarten":"Kindergarten","kPark":"Park","kForest":"Forest","kGreen":"Green space"};
   var LANG = "en";
   var KINDL = { metro: "kMetro", rail: "kRail", tram: "kTram", bus: "kBus", grocery: "kGrocery",
     pharmacy: "kPharmacy", health: "kHealth", food: "kFood", services: "kServices", sport: "kSport",
@@ -398,6 +398,14 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
       airEl.style.color = d.air.level >= 4 ? "#c33" : d.air.level >= 2 ? "#a8730b" : "";
     }
     airEl.hidden = !d.air;
+    var nEl = $("#lt-noise");
+    if (d.noise) {
+      var np = [];
+      if (d.noise.road != null) np.push(T.noiseRoad.split("{n}").join(d.noise.road));
+      if (d.noise.rail != null) np.push(T.noiseRail.split("{n}").join(d.noise.rail));
+      nEl.textContent = "🔊 " + T.noiseT + ": " + np.join(", ");
+    }
+    nEl.hidden = !d.noise;
     $("#lt-cats").innerHTML = CATS.map(function (c) {
       var cat = d.categories[c[0]];
       var objs = (cat.objects || []).slice(0, 3).map(function (o) {

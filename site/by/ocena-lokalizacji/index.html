@@ -228,7 +228,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 <h1 class="art-h1">Ацэнка лакацыі ў Варшаве</h1>
 <p class="art-lead">Увядзі адрас або тапні кропку на карце — пакажам, наколькі зручна там жыць: агульны бал 0–100 і разбор па транспарце, інфраструктуры, школах і зеляніне, з найбліжэйшымі аб'ектамі і адлегласцямі.</p>
 <div class="lt-bar">
-  <input type="text" id="lt-q" autocomplete="off" placeholder="Адрас у Варшаве…">
+  <input type="text" id="lt-q" autocomplete="off" placeholder="Вуліца і нумар дома…">
   <button class="btn" id="lt-go">Ацаніць</button>
 </div>
 <div class="lt-cands" id="lt-cands" hidden></div>
@@ -239,7 +239,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
   <div class="lt-card">
     <div class="lt-head">
       <div class="lt-num"><span id="lt-score">–</span><small>/ 100</small></div>
-      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div><div class="lt-addr" id="lt-air" hidden></div></div>
+      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div><div class="lt-addr" id="lt-air" hidden></div><div class="lt-addr" id="lt-noise" hidden style="color:#a8730b"></div></div>
     </div>
     <div id="lt-cats"></div>
   </div>
@@ -268,7 +268,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 (function () {
   "use strict";
   var API = "https://kwadratpl-46-224-220-94.sslip.io";
-  var T = {"locInput":"Адрас у Варшаве…","locBtn":"Ацаніць","locMapHint":"…або тапні кропку на карце","locPick":"Удакладні адрас:","locNotFound":"Адрас не знойдзены ў Варшаве. Паспрабуй інакш: вуліца і нумар дома.","locLoad":"Аналізую наваколле…","locLoad1":"Мераем крокі да метро…","locLoad2":"Пералічваем Żabki побач…","locLoad3":"Шукаем школы і пляцоўкі…","locLoad4":"Зазіраем у паркі і скверы…","airT":"Паветра зараз","airL0":"вельмі добрае","airL1":"добрае","airL2":"умеранае","airL3":"здавальняючае","airL4":"дрэннае","airL5":"вельмі дрэннае","locErr":"Не атрымалася атрымаць даныя. Паспрабуй яшчэ раз крыху пазней.","locBusy":"Дзённы ліміт аналізаў вычарпаны — паспрабуй заўтра.","locRate":"Зашмат запытаў — пачакай пару хвілін.","locOnlyWaw":"Пакуль працуе толькі для Варшавы","locNearT":"Што побач","verdictExcellent":"Выдатная лакацыя","verdictGood":"Добрая лакацыя","verdictAverage":"Сярэдняя лакацыя","verdictWeak":"Слабая лакацыя","catTransport":"Транспарт","catInfra":"Інфраструктура","catSchools":"Школы і садкі","catGreen":"Зялёныя зоны","kMetro":"Метро","kRail":"Электрычка (SKM/KM)","kTram":"Трамвай","kBus":"Аўтобус","kGrocery":"Прадукты","kPharmacy":"Аптэка","kHealth":"Медыцына","kFood":"Кавярні і рэстараны","kServices":"Банк / пошта","kSport":"Спорт","kVet":"Ветклініка","kPlayground":"Дзіцячая пляцоўка","kMall":"Гандлёвы цэнтр","kMarketplace":"Кірмаш","kSchool":"Школа","kKindergarten":"Дзіцячы сад","kPark":"Парк","kForest":"Лес","kGreen":"Сквер"};
+  var T = {"locInput":"Вуліца і нумар дома…","locBtn":"Ацаніць","locMapHint":"…або тапні кропку на карце","locPick":"Удакладні адрас:","locNotFound":"Адрас не знойдзены ў Варшаве. Паспрабуй інакш: вуліца і нумар дома.","locLoad":"Аналізую наваколле…","locLoad1":"Мераем крокі да метро…","locLoad2":"Пералічваем Żabki побач…","locLoad3":"Шукаем школы і пляцоўкі…","locLoad4":"Зазіраем у паркі і скверы…","airT":"Паветра зараз","airL0":"вельмі добрае","airL1":"добрае","airL2":"умеранае","airL3":"здавальняючае","airL4":"дрэннае","airL5":"вельмі дрэннае","noiseT":"Можа быць шумна","noiseRoad":"вялікая дарога за ~{n} м","noiseRail":"чыгуначныя пуці за ~{n} м","locErr":"Не атрымалася атрымаць даныя. Паспрабуй яшчэ раз крыху пазней.","locBusy":"Дзённы ліміт аналізаў вычарпаны — паспрабуй заўтра.","locRate":"Зашмат запытаў — пачакай пару хвілін.","locOnlyWaw":"Пакуль працуе ў Варшаве і Кракаве","locNearT":"Што побач","verdictExcellent":"Выдатная лакацыя","verdictGood":"Добрая лакацыя","verdictAverage":"Сярэдняя лакацыя","verdictWeak":"Слабая лакацыя","catTransport":"Транспарт","catInfra":"Інфраструктура","catSchools":"Школы і садкі","catGreen":"Зялёныя зоны","kMetro":"Метро","kRail":"Электрычка (SKM/KM)","kTram":"Трамвай","kBus":"Аўтобус","kGrocery":"Прадукты","kPharmacy":"Аптэка","kHealth":"Медыцына","kFood":"Кавярні і рэстараны","kServices":"Банк / пошта","kSport":"Спорт","kVet":"Ветклініка","kPlayground":"Дзіцячая пляцоўка","kMall":"Гандлёвы цэнтр","kMarketplace":"Кірмаш","kSchool":"Школа","kKindergarten":"Дзіцячы сад","kPark":"Парк","kForest":"Лес","kGreen":"Сквер"};
   var LANG = "by";
   var KINDL = { metro: "kMetro", rail: "kRail", tram: "kTram", bus: "kBus", grocery: "kGrocery",
     pharmacy: "kPharmacy", health: "kHealth", food: "kFood", services: "kServices", sport: "kSport",
@@ -398,6 +398,14 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
       airEl.style.color = d.air.level >= 4 ? "#c33" : d.air.level >= 2 ? "#a8730b" : "";
     }
     airEl.hidden = !d.air;
+    var nEl = $("#lt-noise");
+    if (d.noise) {
+      var np = [];
+      if (d.noise.road != null) np.push(T.noiseRoad.split("{n}").join(d.noise.road));
+      if (d.noise.rail != null) np.push(T.noiseRail.split("{n}").join(d.noise.rail));
+      nEl.textContent = "🔊 " + T.noiseT + ": " + np.join(", ");
+    }
+    nEl.hidden = !d.noise;
     $("#lt-cats").innerHTML = CATS.map(function (c) {
       var cat = d.categories[c[0]];
       var objs = (cat.objects || []).slice(0, 3).map(function (o) {

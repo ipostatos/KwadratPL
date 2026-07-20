@@ -228,7 +228,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 <h1 class="art-h1">Ocena lokalizacji w Warszawie</h1>
 <p class="art-lead">Wpisz adres albo stuknij punkt na mapie — pokażemy, jak wygodnie się tam mieszka: łączny wynik 0–100 i rozbicie na transport, infrastrukturę, szkoły i zieleń, z najbliższymi obiektami i odległościami.</p>
 <div class="lt-bar">
-  <input type="text" id="lt-q" autocomplete="off" placeholder="Adres w Warszawie…">
+  <input type="text" id="lt-q" autocomplete="off" placeholder="Ulica i numer domu…">
   <button class="btn" id="lt-go">Oceń</button>
 </div>
 <div class="lt-cands" id="lt-cands" hidden></div>
@@ -239,7 +239,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
   <div class="lt-card">
     <div class="lt-head">
       <div class="lt-num"><span id="lt-score">–</span><small>/ 100</small></div>
-      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div><div class="lt-addr" id="lt-air" hidden></div></div>
+      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div><div class="lt-addr" id="lt-air" hidden></div><div class="lt-addr" id="lt-noise" hidden style="color:#a8730b"></div></div>
     </div>
     <div id="lt-cats"></div>
   </div>
@@ -268,7 +268,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 (function () {
   "use strict";
   var API = "https://kwadratpl-46-224-220-94.sslip.io";
-  var T = {"locInput":"Adres w Warszawie…","locBtn":"Oceń","locMapHint":"…albo stuknij punkt na mapie","locPick":"Doprecyzuj adres:","locNotFound":"Nie znaleziono adresu w Warszawie. Spróbuj inaczej: ulica i numer domu.","locLoad":"Analizuję okolicę…","locLoad1":"Mierzymy kroki do metra…","locLoad2":"Liczymy Żabki w okolicy…","locLoad3":"Szukamy szkół i placów zabaw…","locLoad4":"Zaglądamy do parków i skwerów…","airT":"Powietrze teraz","airL0":"bardzo dobre","airL1":"dobre","airL2":"umiarkowane","airL3":"dostateczne","airL4":"złe","airL5":"bardzo złe","locErr":"Nie udało się pobrać danych. Spróbuj ponownie za chwilę.","locBusy":"Dzienny limit analiz wyczerpany — spróbuj jutro.","locRate":"Za dużo zapytań — odczekaj kilka minut.","locOnlyWaw":"Na razie działa tylko dla Warszawy","locNearT":"Co w pobliżu","verdictExcellent":"Świetna lokalizacja","verdictGood":"Dobra lokalizacja","verdictAverage":"Przeciętna lokalizacja","verdictWeak":"Słaba lokalizacja","catTransport":"Transport","catInfra":"Infrastruktura","catSchools":"Szkoły i przedszkola","catGreen":"Tereny zielone","kMetro":"Metro","kRail":"Kolej (SKM/KM)","kTram":"Tramwaj","kBus":"Autobus","kGrocery":"Sklep spożywczy","kPharmacy":"Apteka","kHealth":"Przychodnia","kFood":"Gastronomia","kServices":"Bank / poczta","kSport":"Sport","kVet":"Weterynarz","kPlayground":"Plac zabaw","kMall":"Centrum handlowe","kMarketplace":"Targowisko","kSchool":"Szkoła","kKindergarten":"Przedszkole","kPark":"Park","kForest":"Las","kGreen":"Skwer"};
+  var T = {"locInput":"Ulica i numer domu…","locBtn":"Oceń","locMapHint":"…albo stuknij punkt na mapie","locPick":"Doprecyzuj adres:","locNotFound":"Nie znaleziono adresu w Warszawie. Spróbuj inaczej: ulica i numer domu.","locLoad":"Analizuję okolicę…","locLoad1":"Mierzymy kroki do metra…","locLoad2":"Liczymy Żabki w okolicy…","locLoad3":"Szukamy szkół i placów zabaw…","locLoad4":"Zaglądamy do parków i skwerów…","airT":"Powietrze teraz","airL0":"bardzo dobre","airL1":"dobre","airL2":"umiarkowane","airL3":"dostateczne","airL4":"złe","airL5":"bardzo złe","noiseT":"Może być głośno","noiseRoad":"duża droga ~{n} m","noiseRail":"tory kolejowe ~{n} m","locErr":"Nie udało się pobrać danych. Spróbuj ponownie za chwilę.","locBusy":"Dzienny limit analiz wyczerpany — spróbuj jutro.","locRate":"Za dużo zapytań — odczekaj kilka minut.","locOnlyWaw":"Na razie działa w Warszawie i Krakowie","locNearT":"Co w pobliżu","verdictExcellent":"Świetna lokalizacja","verdictGood":"Dobra lokalizacja","verdictAverage":"Przeciętna lokalizacja","verdictWeak":"Słaba lokalizacja","catTransport":"Transport","catInfra":"Infrastruktura","catSchools":"Szkoły i przedszkola","catGreen":"Tereny zielone","kMetro":"Metro","kRail":"Kolej (SKM/KM)","kTram":"Tramwaj","kBus":"Autobus","kGrocery":"Sklep spożywczy","kPharmacy":"Apteka","kHealth":"Przychodnia","kFood":"Gastronomia","kServices":"Bank / poczta","kSport":"Sport","kVet":"Weterynarz","kPlayground":"Plac zabaw","kMall":"Centrum handlowe","kMarketplace":"Targowisko","kSchool":"Szkoła","kKindergarten":"Przedszkole","kPark":"Park","kForest":"Las","kGreen":"Skwer"};
   var LANG = "pl";
   var KINDL = { metro: "kMetro", rail: "kRail", tram: "kTram", bus: "kBus", grocery: "kGrocery",
     pharmacy: "kPharmacy", health: "kHealth", food: "kFood", services: "kServices", sport: "kSport",
@@ -398,6 +398,14 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
       airEl.style.color = d.air.level >= 4 ? "#c33" : d.air.level >= 2 ? "#a8730b" : "";
     }
     airEl.hidden = !d.air;
+    var nEl = $("#lt-noise");
+    if (d.noise) {
+      var np = [];
+      if (d.noise.road != null) np.push(T.noiseRoad.split("{n}").join(d.noise.road));
+      if (d.noise.rail != null) np.push(T.noiseRail.split("{n}").join(d.noise.rail));
+      nEl.textContent = "🔊 " + T.noiseT + ": " + np.join(", ");
+    }
+    nEl.hidden = !d.noise;
     $("#lt-cats").innerHTML = CATS.map(function (c) {
       var cat = d.categories[c[0]];
       var objs = (cat.objects || []).slice(0, 3).map(function (o) {

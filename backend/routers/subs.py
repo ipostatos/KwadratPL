@@ -80,6 +80,7 @@ def delete_me(authorization: str = Header("")):
     with db() as c:
         c.execute("DELETE FROM subs WHERE user_id=?", (uid,))
         c.execute("DELETE FROM pending WHERE user_id=?", (uid,))
+        c.execute("DELETE FROM favs WHERE user_id=?", (uid,))
         c.execute("DELETE FROM users WHERE id=?", (uid,))
     log.info("user %s deleted own data on request", uid)
     return {"deleted": True}

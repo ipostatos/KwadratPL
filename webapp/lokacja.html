@@ -60,6 +60,10 @@
   <h1><span class="emi" data-icon="gauge"></span><span data-i18n="locT"></span></h1>
   <p class="sub" data-i18n="locSub"></p>
 
+  <div class="seg" id="citySeg" style="margin-bottom:8px">
+    <button data-city="warszawa"></button>
+    <button data-city="krakow"></button>
+  </div>
   <div class="searchbar">
     <input type="text" id="q" autocomplete="off">
     <button class="btn" id="go"></button>
@@ -79,6 +83,7 @@
           <div class="score-addr" id="rAddr"></div>
           <div class="score-addr hidden" id="rApprox" style="color:var(--warn)"></div>
           <div class="score-addr hidden" id="rAir"></div>
+          <div class="score-addr hidden" id="rNoise" style="color:var(--warn)"></div>
         </div>
       </div>
       <div id="rCats"></div>
@@ -122,13 +127,30 @@ var CAT_TONE = { transport: "#3390ec", infra: "#e0a13a", schools: "#8e7bef", gre
 $("#go").textContent = I18N.t("locBtn");
 $("#q").placeholder = I18N.t("locInput");
 
+// ── города инструмента ──
+var CITY_VIEW = { warszawa: [52.2318, 21.006], krakow: [50.0619, 19.9369] };
+var toolCity = "warszawa";
+document.querySelectorAll("#citySeg button").forEach(function (b) {
+  b.textContent = I18N.cityName(b.dataset.city);
+  b.classList.toggle("active", b.dataset.city === toolCity);
+  b.onclick = function () {
+    toolCity = b.dataset.city;
+    document.querySelectorAll("#citySeg button").forEach(function (x) {
+      x.classList.toggle("active", x === b);
+    });
+    map.setView(CITY_VIEW[toolCity], 11);
+    $("#cands").classList.add("hidden");
+    if (typeof haptic === "function") haptic("select");
+  };
+});
+
 // ── карта ──
 var tg = window.Telegram && window.Telegram.WebApp;
 var isDark = tg && tg.colorScheme ? tg.colorScheme === "dark"
   : matchMedia("(prefers-color-scheme: dark)").matches;
 if (isDark) document.body.classList.add("map-dark");
 var map = L.map("map", { attributionControl: true, zoomControl: false })
-  .setView([52.2318, 21.006], 11);
+  .setView(CITY_VIEW[toolCity], 11);
 L.control.zoom({ position: "bottomright" }).addTo(map);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 18, attribution: "&copy; OpenStreetMap"
@@ -183,7 +205,8 @@ function lookup() {
   busy = true;
   $("#cands").classList.add("hidden");
   setState("locLoad");
-  fetch(API + "/api/location/geocode?q=" + encodeURIComponent(q) + "&lang=" + I18N.lang)
+  fetch(API + "/api/location/geocode?q=" + encodeURIComponent(q) +
+        "&lang=" + I18N.lang + "&city=" + toolCity)
     .then(function (r) {
       if (!r.ok) return r.json().then(function (d) { throw { s: r.status, d: d && d.detail }; });
       return r.json();
@@ -272,6 +295,16 @@ function render(d, label) {
       : d.air.level >= 2 ? "var(--warn)" : "var(--hint)";
   }
   airEl.classList.toggle("hidden", !d.air);
+
+  // источники шума рядом (risk-флаг, в балл не входит)
+  var nEl = $("#rNoise");
+  if (d.noise) {
+    var np = [];
+    if (d.noise.road != null) np.push(I18N.t("noiseRoad", { n: d.noise.road }));
+    if (d.noise.rail != null) np.push(I18N.t("noiseRail", { n: d.noise.rail }));
+    nEl.textContent = "🔊 " + I18N.t("noiseT") + ": " + np.join(", ");
+  }
+  nEl.classList.toggle("hidden", !d.noise);
 
   $("#rCats").innerHTML = CATS.map(function (c) {
     var cat = d.categories[c[0]];

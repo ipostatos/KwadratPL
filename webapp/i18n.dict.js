@@ -253,9 +253,9 @@
 
     /* ── оценка локации (lokacja.html) ── */
     locT:        { ru: "Оценка локации", pl: "Ocena lokalizacji", ua: "Оцінка локації", by: "Ацэнка лакацыі", en: "Location score" },
-    locSub:      { ru: "Введи адрес в Варшаве или тапни точку на карте — покажем балл 0–100 за транспорт, магазины, школы и зелень", pl: "Wpisz adres w Warszawie albo stuknij punkt na mapie — pokażemy wynik 0–100 za transport, sklepy, szkoły i zieleń", ua: "Введи адресу у Варшаві або тапни точку на карті — покажемо бал 0–100 за транспорт, магазини, школи та зелень", by: "Увядзі адрас у Варшаве або тапні кропку на карце — пакажам бал 0–100 за транспарт, крамы, школы і зеляніну", en: "Enter a Warsaw address or tap the map — get a 0–100 score for transit, shops, schools and greenery" },
+    locSub:      { ru: "Введи адрес или тапни точку на карте — покажем балл 0–100 за транспорт, магазины, школы и зелень. Варшава и Краков", pl: "Wpisz adres albo stuknij punkt na mapie — pokażemy wynik 0–100 za transport, sklepy, szkoły i zieleń. Warszawa i Kraków", ua: "Введи адресу або тапни точку на карті — покажемо бал 0–100 за транспорт, магазини, школи та зелень. Варшава і Краків", by: "Увядзі адрас або тапні кропку на карце — пакажам бал 0–100 за транспарт, крамы, школы і зеляніну. Варшава і Кракаў", en: "Enter an address or tap the map — get a 0–100 score for transit, shops, schools and greenery. Warsaw and Kraków" },
     locTileD:    { ru: "Насколько удобно жить по адресу в Варшаве — баллом 0–100", pl: "Jak wygodnie mieszka się pod adresem w Warszawie — wynik 0–100", ua: "Наскільки зручно жити за адресою у Варшаві — балом 0–100", by: "Наколькі зручна жыць па адрасе ў Варшаве — балам 0–100", en: "How liveable a Warsaw address is — scored 0–100" },
-    locInput:    { ru: "Адрес в Варшаве…", pl: "Adres w Warszawie…", ua: "Адреса у Варшаві…", by: "Адрас у Варшаве…", en: "Address in Warsaw…" },
+    locInput:    { ru: "Улица и номер дома…", pl: "Ulica i numer domu…", ua: "Вулиця та номер будинку…", by: "Вуліца і нумар дома…", en: "Street and house number…" },
     locBtn:      { ru: "Оценить", pl: "Oceń", ua: "Оцінити", by: "Ацаніць", en: "Check" },
     locMapHint:  { ru: "…или тапни точку на карте", pl: "…albo stuknij punkt na mapie", ua: "…або тапни точку на карті", by: "…або тапні кропку на карце", en: "…or tap a point on the map" },
     locPick:     { ru: "Уточни адрес:", pl: "Doprecyzuj adres:", ua: "Уточни адресу:", by: "Удакладні адрас:", en: "Pick the exact address:" },
@@ -264,7 +264,7 @@
     locErr:      { ru: "Не получилось получить данные. Попробуй ещё раз чуть позже.", pl: "Nie udało się pobrać danych. Spróbuj ponownie za chwilę.", ua: "Не вдалося отримати дані. Спробуй ще раз трохи пізніше.", by: "Не атрымалася атрымаць даныя. Паспрабуй яшчэ раз крыху пазней.", en: "Couldn't fetch the data. Please try again in a moment." },
     locBusy:     { ru: "Дневной лимит анализов исчерпан — попробуй завтра.", pl: "Dzienny limit analiz wyczerpany — spróbuj jutro.", ua: "Денний ліміт аналізів вичерпано — спробуй завтра.", by: "Дзённы ліміт аналізаў вычарпаны — паспрабуй заўтра.", en: "Daily analysis limit reached — try again tomorrow." },
     locRate:     { ru: "Слишком много запросов — подожди пару минут.", pl: "Za dużo zapytań — odczekaj kilka minut.", ua: "Забагато запитів — зачекай кілька хвилин.", by: "Зашмат запытаў — пачакай пару хвілін.", en: "Too many requests — wait a couple of minutes." },
-    locOnlyWaw:  { ru: "Пока работает только по Варшаве", pl: "Na razie działa tylko dla Warszawy", ua: "Поки працює лише для Варшави", by: "Пакуль працуе толькі для Варшавы", en: "Warsaw only for now" },
+    locOnlyWaw:  { ru: "Пока работает в Варшаве и Кракове", pl: "Na razie działa w Warszawie i Krakowie", ua: "Поки працює у Варшаві та Кракові", by: "Пакуль працуе ў Варшаве і Кракаве", en: "Warsaw and Kraków only for now" },
     locOverall:  { ru: "Общая оценка", pl: "Ocena ogólna", ua: "Загальна оцінка", by: "Агульная адзнака", en: "Overall score" },
     catTransport:{ ru: "Транспорт", pl: "Transport", ua: "Транспорт", by: "Транспарт", en: "Transit" },
     catInfra:    { ru: "Инфраструктура", pl: "Infrastruktura", ua: "Інфраструктура", by: "Інфраструктура", en: "Infrastructure" },
@@ -323,7 +323,7 @@
 
     /* ── Personal Fit v1: профиль пользователя ── */
     profT:      { ru: "Мой профиль", pl: "Mój profil", ua: "Мій профіль", by: "Мой профіль", en: "My profile" },
-    profD:      { ru: "Персональные подсказки в объявлениях: время до работы и что важно рядом. Хранится только на этом устройстве. Пока только Варшава.", pl: "Osobiste podpowiedzi w ogłoszeniach: czas do pracy i co ważne w okolicy. Zapisywane tylko na tym urządzeniu. Na razie tylko Warszawa.", ua: "Персональні підказки в оголошеннях: час до роботи та що важливо поруч. Зберігається лише на цьому пристрої. Поки лише Варшава.", by: "Персанальныя падказкі ў аб'явах: час да працы і што важна побач. Захоўваецца толькі на гэтай прыладзе. Пакуль толькі Варшава.", en: "Personal hints on listings: commute time and what matters nearby. Stored on this device only. Warsaw only for now." },
+    profD:      { ru: "Персональные подсказки в объявлениях: время до работы и что важно рядом. Хранится только на этом устройстве. Работает в Варшаве и Кракове.", pl: "Osobiste podpowiedzi w ogłoszeniach: czas do pracy i co ważne w okolicy. Zapisywane tylko na tym urządzeniu. Działa w Warszawie i Krakowie.", ua: "Персональні підказки в оголошеннях: час до роботи та що важливо поруч. Зберігається лише на цьому пристрої. Працює у Варшаві та Кракові.", by: "Персанальныя падказкі ў аб'явах: час да працы і што важна побач. Захоўваецца толькі на гэтай прыладзе. Працуе ў Варшаве і Кракаве.", en: "Personal hints on listings: commute time and what matters nearby. Stored on this device only. Works in Warsaw and Kraków." },
     profWork:   { ru: "Работа / учёба (адрес в Варшаве)", pl: "Praca / uczelnia (adres w Warszawie)", ua: "Робота / навчання (адреса у Варшаві)", by: "Праца / вучоба (адрас у Варшаве)", en: "Work / study (Warsaw address)" },
     profFindB:  { ru: "Найти", pl: "Znajdź", ua: "Знайти", by: "Знайсці", en: "Find" },
     profWorkSet:{ ru: "Точка: {s}", pl: "Punkt: {s}", ua: "Точка: {s}", by: "Кропка: {s}", en: "Point: {s}" },
@@ -341,7 +341,7 @@
 
     /* ── карта объявлений (mapa.html) ── */
     mapT:      { ru: "Карта объявлений", pl: "Mapa ogłoszeń", ua: "Мапа оголошень", by: "Мапа аб'яў", en: "Listings map" },
-    mapTileD:  { ru: "Варшава: все объявления с ценами на одной карте", pl: "Warszawa: wszystkie ogłoszenia z cenami na jednej mapie", ua: "Варшава: всі оголошення з цінами на одній мапі", by: "Варшава: усе аб'явы з цэнамі на адной мапе", en: "Warsaw: every listing with its price on one map" },
+    mapTileD:  { ru: "Варшава и Краков: объявления с ценами на одной карте", pl: "Warszawa i Kraków: ogłoszenia z cenami na jednej mapie", ua: "Варшава і Краків: оголошення з цінами на одній мапі", by: "Варшава і Кракаў: аб'явы з цэнамі на адной мапе", en: "Warsaw & Kraków: listings with prices on one map" },
     mapCountN: { ru: "На карте: {n}", pl: "Na mapie: {n}", ua: "На мапі: {n}", by: "На мапе: {n}", en: "On the map: {n}" },
     mapApprox: { ru: "Часть меток приблизительные: точный адрес скрыт в объявлении", pl: "Część znaczników jest przybliżona: dokładny adres ukryty w ogłoszeniu", ua: "Частина міток приблизні: точна адреса прихована в оголошенні", by: "Частка метак прыблізныя: дакладны адрас схаваны ў аб'яве", en: "Some pins are approximate: the exact address is hidden in the listing" },
     mapMore:   { ru: "Подробнее", pl: "Szczegóły", ua: "Детальніше", by: "Падрабязней", en: "Details" },
@@ -358,6 +358,10 @@
     airL3: { ru: "посредственный", pl: "dostateczne", ua: "посереднє", by: "здавальняючае", en: "fair" },
     airL4: { ru: "плохой", pl: "złe", ua: "погане", by: "дрэннае", en: "poor" },
     airL5: { ru: "очень плохой", pl: "bardzo złe", ua: "дуже погане", by: "вельмі дрэннае", en: "very poor" },
+    noiseT: { ru: "Может быть шумно", pl: "Może być głośno", ua: "Може бути шумно", by: "Можа быць шумна", en: "May be noisy" },
+    noiseRoad: { ru: "крупная дорога в ~{n} м", pl: "duża droga ~{n} m", ua: "велика дорога за ~{n} м", by: "вялікая дарога за ~{n} м", en: "major road ~{n} m away" },
+    noiseRail: { ru: "ж/д пути в ~{n} м", pl: "tory kolejowe ~{n} m", ua: "залізничні колії за ~{n} м", by: "чыгуначныя пуці за ~{n} м", en: "railway tracks ~{n} m away" },
+    mapAnyPrice: { ru: "Любая цена", pl: "Dowolna cena", ua: "Будь-яка ціна", by: "Любая цана", en: "Any price" },
     sortFit: { ru: "Лучшее для меня", pl: "Najlepsze dla mnie", ua: "Найкраще для мене", by: "Найлепшае для мяне", en: "Best for me" },
     locHowT: { ru: "Как считается оценка?", pl: "Jak liczony jest wynik?", ua: "Як рахується оцінка?", by: "Як лічыцца ацэнка?", en: "How is the score calculated?" },
     locHowText: {

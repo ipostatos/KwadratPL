@@ -42,6 +42,17 @@ T = {
                "en": "✨ Analysis in the app"},
     "loc_btn": {"ru": "📍 Локация", "pl": "📍 Lokalizacja",
                 "ua": "📍 Локація", "by": "📍 Лакацыя", "en": "📍 Location"},
+    # избранное из пуша (ответ на callback ❤️)
+    "fav_added": {"ru": "❤️ В избранном! Смотри в приложении → Избранное",
+                  "pl": "❤️ W ulubionych! Zobacz w aplikacji → Ulubione",
+                  "ua": "❤️ В обраному! Дивись у застосунку → Обране",
+                  "by": "❤️ У абраным! Глядзі ў праграме → Абранае",
+                  "en": "❤️ Saved! See it in the app → Favourites"},
+    "fav_removed": {"ru": "Убрано из избранного",
+                    "pl": "Usunięto z ulubionych",
+                    "ua": "Прибрано з обраного",
+                    "by": "Прыбрана з абранага",
+                    "en": "Removed from favourites"},
     # донаты Telegram Stars
     "donate_pick": {
         "ru": "⭐ Поддержать проект звёздами Telegram — выбери сумму:",

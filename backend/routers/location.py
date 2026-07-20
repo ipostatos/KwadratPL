@@ -88,13 +88,15 @@ def _lang_q(lang: str) -> str:
 @router.get("/geocode")
 async def geocode(request: Request, response: Response,
                   q: str = Query(..., min_length=2, max_length=120),
-                  lang: str = "pl"):
-    """Адрес → кандидаты в Варшаве. results=[] — честное «не нашли»."""
+                  lang: str = "pl", city: str = "warszawa"):
+    """Адрес → кандидаты в границах города. results=[] — честное «не нашли»."""
     _cors(request, response)
     _browser_gate(request)
     _throttle(request, "geocode")
+    if city not in geo.CITY_BOUNDS:
+        raise HTTPException(400, "unsupported_city")
     try:
-        results = await asyncio.to_thread(geo.geocode, q, _lang_q(lang))
+        results = await asyncio.to_thread(geo.geocode, q, _lang_q(lang), city)
     except Exception as e:
         log.warning("geocode failed: %s", e)
         raise HTTPException(503, "geocode_unavailable")
@@ -108,8 +110,9 @@ async def score(request: Request, response: Response,
     """Оценка точки: общий балл 0–100, 4 категории, ближайшие объекты."""
     _cors(request, response)
     _browser_gate(request)
-    if not geo.in_warsaw(lat, lon):
-        raise HTTPException(400, "outside_warsaw")
+    point_city = geo.city_of(lat, lon)
+    if not point_city:
+        raise HTTPException(400, "outside_warsaw")   # код оставлен для совместимости
     _throttle(request, "score")
     # подпись адреса — украшение: считаем ПАРАЛЛЕЛЬНО с POI (раньше ждали
     # Nominatim после Overpass — лишние 1–3 секунды на холодный запрос)
@@ -121,7 +124,7 @@ async def score(request: Request, response: Response,
 
     def _safe_air():
         try:
-            return geo.air_at(lat, lon, geo.fetch_air())
+            return geo.air_at(lat, lon, geo.fetch_air(point_city))
         except Exception:
             return None
 

@@ -49,14 +49,18 @@ def _score_budget_take():
     return True
 
 
-def _warsaw_listings():
+# города с гео-обогащением (границы и центроиды — geo.CITY_BOUNDS)
+CITIES = {"warszawa": "Warszawa", "krakow": "Kraków"}
+
+
+def _geo_listings():
     try:
         with open(LISTINGS_PATH, encoding="utf-8") as f:
             data = json.load(f)
     except (OSError, ValueError):
         return []
     return [l for l in (data.get("listings") or [])
-            if isinstance(l, dict) and l.get("id") and l.get("city") == "warszawa"]
+            if isinstance(l, dict) and l.get("id") and l.get("city") in CITIES]
 
 
 def _resolve_coords(l, geocodes_left):
@@ -64,13 +68,16 @@ def _resolve_coords(l, geocodes_left):
     unknown — все применимые попытки сделаны и не вышло (можно сохранять);
     defer — не хватило бюджета геокодов на попытку (НЕ сохранять, вернёмся)."""
     used = 0
+    city = l.get("city")
+    city_name = CITIES.get(city, "Warszawa")
     lat, lon = l.get("lat"), l.get("lon")
-    if isinstance(lat, (int, float)) and isinstance(lon, (int, float)) and geo.in_warsaw(lat, lon):
+    if isinstance(lat, (int, float)) and isinstance(lon, (int, float)) \
+            and geo.city_of(lat, lon) == city:
         return round(lat, 5), round(lon, 5), l.get("geoPrec") or "approx", used
 
     def _try(q):
         try:
-            return geo.geocode(q + ", Warszawa", "pl")
+            return geo.geocode(f"{q}, {city_name}", "pl", city)
         except Exception as e:
             log.warning("enrich geocode '%s' failed: %s", q, e)
             return None
@@ -102,7 +109,7 @@ SCOREABLE = ("point", "address", "street")
 def enrich_once():
     """Один цикл: геокод новых объявлений + скоринг точных. Sync, зовётся
     через asyncio.to_thread из enrich_loop."""
-    listings = _warsaw_listings()
+    listings = _geo_listings()
     if not listings:
         return {"geocoded": 0, "scored": 0}
     now = int(time.time())

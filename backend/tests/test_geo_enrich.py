@@ -31,7 +31,7 @@ L_KRK = {"id": "olx-9", "city": "krakow", "district": "Podgórze", "price": 2500
 def geo_mocks(monkeypatch):
     calls = {"geocode": [], "poi": 0}
 
-    def fake_geocode(q, lang="pl"):
+    def fake_geocode(q, lang="pl", city="warszawa"):
         calls["geocode"].append(q)
         return [{"label": q, "lat": 52.22, "lon": 21.01}]
 
@@ -54,8 +54,8 @@ def test_enrich_assigns_precision_и_scores_only_exact(geo_mocks):
     _write_listings([L_OLX, L_OTO, L_MRZ, L_NOGEO, L_KRK])
     res = geo_enrich.enrich_once()
     rows = _rows()
-    assert res["geocoded"] == 4                       # краковское не трогаем
-    assert "olx-9" not in rows
+    assert res["geocoded"] == 5                       # Варшава + Краков
+    assert rows["olx-9"]["precision"] == "district"   # Краков: центроид района
     assert rows["olx-1"]["precision"] == "approx"     # координаты OLX как есть
     assert rows["olx-1"]["score"] is None             # рандомизированную точку не скорим
     assert rows["otodom-2"]["precision"] == "address"  # улица с номером
@@ -64,8 +64,9 @@ def test_enrich_assigns_precision_и_scores_only_exact(geo_mocks):
     assert rows["morizon-3"]["precision"] == "district"
     assert rows["morizon-3"]["score"] is None
     assert rows["olx-4"]["precision"] == "unknown"
-    # геокодили только Otodom-улицу и район Morizon
-    assert sorted(geo_mocks["geocode"]) == ["Popularna 5, Warszawa", "Wola, Warszawa"]
+    # геокодили Otodom-улицу, район Morizon и краковский район
+    assert sorted(geo_mocks["geocode"]) == \
+        ["Podgórze, Kraków", "Popularna 5, Warszawa", "Wola, Warszawa"]
     # повторный цикл ничего не делает (всё уже в таблице)
     res2 = geo_enrich.enrich_once()
     assert res2 == {"geocoded": 0, "scored": 0}

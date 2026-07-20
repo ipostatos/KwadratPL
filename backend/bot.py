@@ -243,8 +243,27 @@ def _listing_kb(l: dict, lang: str) -> InlineKeyboardMarkup | None:
                 web_app=WebAppInfo(url=base + "/lokacja.html?" + urllib.parse.urlencode(
                     {"lat": l["lat"], "lon": l["lon"],
                      "prec": l.get("geoPrec") or ""}))))
+        # серверное избранное: toggle прямо из пуша (лимит callback_data 64 байта)
+        if len(lid.encode()) <= 60:
+            app_row.append(InlineKeyboardButton(text="❤️", callback_data=f"fav:{lid}"))
         rows.append(app_row)
     return InlineKeyboardMarkup(inline_keyboard=rows) if rows else None
+
+
+@dp.callback_query(F.data.startswith("fav:"))
+async def on_fav_toggle(q):
+    lid = q.data[4:]
+    lang = lang_of(q.from_user.language_code if q.from_user else None)
+    with db() as c:
+        row = c.execute("SELECT 1 FROM favs WHERE user_id=? AND listing_id=?",
+                        (q.from_user.id, lid)).fetchone()
+        if row:
+            c.execute("DELETE FROM favs WHERE user_id=? AND listing_id=?",
+                      (q.from_user.id, lid))
+        else:
+            c.execute("INSERT OR IGNORE INTO favs(user_id, listing_id, ts) VALUES(?,?,?)",
+                      (q.from_user.id, lid, int(time.time())))
+    await q.answer(T["fav_removed" if row else "fav_added"][lang])
 
 
 async def notify_user(user_id: int, lang: str, hits: list):

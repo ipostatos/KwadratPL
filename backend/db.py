@@ -99,6 +99,13 @@ def init_db():
             data TEXT NOT NULL,
             ts INTEGER
         )""")
+        # серверное избранное: синк между устройствами + кнопка ❤️ из пуша
+        c.execute("""CREATE TABLE IF NOT EXISTS favs(
+            user_id INTEGER NOT NULL,
+            listing_id TEXT NOT NULL,
+            ts INTEGER,
+            PRIMARY KEY (user_id, listing_id)
+        )""")
         # счётчик живых вызовов Google Places по дням — жёсткий блокер бюджета
         # (geo.py), переживает рестарт, месячный лимит = SUM по месяцу
         c.execute("""CREATE TABLE IF NOT EXISTS places_usage(

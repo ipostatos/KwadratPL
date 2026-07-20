@@ -186,6 +186,7 @@
       localStorage.setItem("kw_favs", JSON.stringify(favs));
     } catch (e) { /* приватный режим / квота — работаем из памяти */ }
     if (App.syncSubs) App.syncSubs();   // js/subs.js, подключён следом
+    if (App.syncFavs) App.syncFavs();   // серверное избранное — тем же дебаунсом
   }
 
   // initData Telegram — авторизация серверных фич (подписки, AI); null вне Telegram

@@ -110,9 +110,10 @@ def test_cemetery_not_green():
     assert geo._classify({"landuse": "cemetery"}) is None
 
 
-def test_in_warsaw_bounds():
-    assert geo.in_warsaw(52.23, 21.01)
-    assert not geo.in_warsaw(50.06, 19.94)  # Краков
+def test_city_bounds():
+    assert geo.city_of(52.23, 21.01) == "warszawa"
+    assert geo.city_of(50.06, 19.94) == "krakow"
+    assert geo.city_of(54.35, 18.65) is None   # Гданьск пока не поддержан
 
 
 # ── API ─────────────────────────────────────────────────────────────────────
@@ -171,9 +172,11 @@ async def test_score_cached_second_call(client, geo_net):
 
 @pytest.mark.asyncio
 async def test_score_outside_warsaw_400(client, geo_net):
-    r = await client.get("/api/location/score?lat=50.06&lon=19.94", headers=SITE)
+    r = await client.get("/api/location/score?lat=54.35&lon=18.65", headers=SITE)  # Гданьск: пока не поддержан
     assert r.status_code == 400
     assert geo_net["overpass"] == 0
+    r2 = await client.get("/api/location/score?lat=50.06&lon=19.94", headers=SITE)  # Краков поддержан
+    assert r2.status_code == 200
 
 
 @pytest.mark.asyncio

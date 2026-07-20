@@ -87,7 +87,53 @@
       .catch(function () {});
   })();
 
+  // ── серверное избранное: id на сервере, объекты — локальный кэш ──────────
+  var _favTimer = null;
+  function doSyncFavs() {
+    var init = tgInitData();
+    if (!init) return;
+    fetch("/api/favs", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": "tma " + init },
+      keepalive: true,
+      body: JSON.stringify({ ids: favs.map(function (f) { return String(f.id); }) })
+    }).catch(function () {});
+  }
+  function syncFavs() {
+    if (!tgInitData()) return;
+    clearTimeout(_favTimer);
+    _favTimer = setTimeout(doSyncFavs, 400);
+  }
+  // старт: мердж серверных id (❤️ из пуша / другое устройство) с локальными
+  // объектами; id без объекта гидрируем из живого инвентаря
+  (function pullFavs() {
+    var init = tgInitData();
+    if (!init) return;
+    fetch("/api/favs", { headers: { "Authorization": "tma " + init } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.ids) return;
+        App.ready.then(function () {
+          var have = {};
+          favs.forEach(function (f) { have[String(f.id)] = 1; });
+          var added = 0;
+          d.ids.forEach(function (id) {
+            if (have[id]) return;
+            var l = App.listings.find(function (x) { return String(x.id) === id; });
+            if (l) { favs.push(l); added++; }
+            // объявление умерло и объекта нигде нет — молча пропускаем
+          });
+          if (added || d.ids.length !== favs.length) {
+            try { localStorage.setItem("kw_favs", JSON.stringify(favs)); } catch (e) {}
+            syncFavs();   // локальные, которых нет на сервере — дольём
+          }
+        });
+      })
+      .catch(function () {});
+  })();
+
   App.syncSubs = syncSubs;
+  App.syncFavs = syncFavs;
   App.getQuiet = getQuiet;
   App.setQuiet = setQuiet;
   App.deleteAccount = deleteAccount;

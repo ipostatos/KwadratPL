@@ -34,7 +34,7 @@ from bot import bot, digest_loop, dp, notify_user  # noqa: F401 (notify_user —
 from config import AI_DAILY_LIMIT, LISTINGS_PATH, TZ, log  # noqa: F401 (AI_DAILY_LIMIT/TZ — re-export для тестов)
 from db import db, init_db  # noqa: F401 (db — re-export для тестов)
 from matching import _clean_sub, matches  # noqa: F401 (re-export для тестов)
-from routers import analyze, donate, health, listings, location, subs, widget
+from routers import analyze, donate, favs, health, listings, location, subs, widget
 from texts import CITY, fmt_listing, lang_of, sub_label  # noqa: F401 (re-export для тестов)
 from fetch_watchdog import watchdog_loop
 from geo_enrich import enrich_loop
@@ -70,5 +70,6 @@ app.include_router(widget.router)
 app.include_router(analyze.router)
 app.include_router(location.router)
 app.include_router(donate.router)
+app.include_router(favs.router)
 app.include_router(subs.router)
 app.include_router(listings.router)
