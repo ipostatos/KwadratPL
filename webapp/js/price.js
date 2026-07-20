@@ -11,8 +11,11 @@
 
   // Считаем медиану цены за м² по группам (город+тип+район, с фолбэком на
   // город+тип). Сравниваем объявление с медианой похожих → вердикт.
+  // v2 (Value Score): к медиане добавлены MAD (робастный разброс), число
+  // аналогов без самого объявления, перцентиль «выгоднее N% похожих» и буква
+  // уверенности A/B/C — район+выборка+разброс. Пороги scam/deal НЕ менялись.
   var MIN_GROUP = 6;          // меньше — медиана шумная, не судим
-  var _market = null;         // { "city|type|district": medianPPM, "city|type": ... }
+  var _market = null;         // { "city|type[|district]": {med, mad, arr:[{v,id}]} }
 
   function median(arr) {
     if (!arr.length) return null;
@@ -31,40 +34,61 @@
       var v = ppm(l);
       if (v == null) return;
       var base = l.city + "|" + l.type;
-      (groups[base] = groups[base] || []).push(v);
+      (groups[base] = groups[base] || []).push({ v: v, id: l.id });
       if (l.district) {
         var k = base + "|" + l.district;
-        (groups[k] = groups[k] || []).push(v);
+        (groups[k] = groups[k] || []).push({ v: v, id: l.id });
       }
     });
     _market = {};
     Object.keys(groups).forEach(function (k) {
-      if (groups[k].length >= MIN_GROUP) _market[k] = median(groups[k]);
+      var arr = groups[k];
+      if (arr.length < MIN_GROUP) return;
+      var vals = arr.map(function (x) { return x.v; });
+      var med = median(vals);
+      var mad = median(vals.map(function (x) { return Math.abs(x - med); }));
+      _market[k] = { med: med, mad: mad, arr: arr };
     });
   }
 
-  // вердикт по цене: {level, pct, scope} либо null (мало данных / нет площади)
+  // вердикт по цене либо null (мало данных / нет площади):
   //   level: "scam" | "deal" | "fair" | "above"
   //   pct: отклонение от медианы (−0.3 = на 30% дешевле)
   //   scope: "district" | "city" — по какой выборке сравнили
+  //   n: аналогов (без самого объявления); betterPct: % аналогов дороже;
+  //   conf: "A"|"B"|"C" — район ≥20 и разброс ≤30% = A, район = B,
+  //         большой город с малым разбросом = B, иначе C
   function priceVerdict(l) {
     if (!App.live) return null;               // на демо-данных смысла нет
     if (_market == null) buildMarket();
     var v = ppm(l);
     if (v == null) return null;
     var base = l.city + "|" + l.type;
-    var med, scope;
-    if (l.district && _market[base + "|" + l.district] != null) {
-      med = _market[base + "|" + l.district]; scope = "district";
-    } else if (_market[base] != null) {
-      med = _market[base]; scope = "city";
+    var g, scope;
+    if (l.district && _market[base + "|" + l.district]) {
+      g = _market[base + "|" + l.district]; scope = "district";
+    } else if (_market[base]) {
+      g = _market[base]; scope = "city";
     } else return null;
+    var med = g.med;
     if (!med) return null;
     var pct = (v - med) / med;
     var level = pct <= -0.40 ? "scam"
       : pct <= -0.12 ? "deal"
       : pct < 0.15 ? "fair" : "above";
-    return { level: level, pct: pct, scope: scope };
+    var others = 0, pricier = 0;
+    g.arr.forEach(function (x) {
+      if (x.id !== l.id) { others++; if (x.v > v) pricier++; }
+    });
+    var rel = g.mad / med;                    // относительный разброс группы
+    var conf = scope === "district"
+      ? (g.arr.length >= 20 && rel <= 0.30 ? "A" : "B")
+      : (g.arr.length >= 40 && rel <= 0.30 ? "B" : "C");
+    return {
+      level: level, pct: pct, scope: scope,
+      n: others, betterPct: others ? Math.round(100 * pricier / others) : null,
+      mad: g.mad, conf: conf,
+    };
   }
 
   // компактный бейдж рядом с ценой (карточка/шторка)
@@ -154,6 +178,16 @@
       var txt = v.level === "above" ? I18N.t("pvAbove", { n: pct }) : I18N.t("pvDeal", { n: pct });
       out += '<div class="pv-line">📊 <span class="em ' + cls + '">' + esc(txt) +
         "</span> · " + esc(scope) + "</div>";
+    }
+    // Value Score v2: перцентиль по аналогам + размер выборки + уверенность —
+    // показываем и для fair-цен (полезно даже без вердикта «выше/ниже рынка»)
+    if (v && v.betterPct != null) {
+      var valTxt = v.betterPct >= 50
+        ? I18N.t("pvBetter", { p: v.betterPct })
+        : I18N.t("pvWorse", { p: 100 - v.betterPct });
+      out += '<div class="pv-line">⚖️ ' + esc(valTxt) + " · " +
+        esc(I18N.t("pvCompsN", { n: v.n })) + " · " +
+        esc(I18N.t("pvConf", { c: v.conf })) + "</div>";
     }
     if (v && v.level === "scam") {
       out += '<div class="scam-warn"><span class="ic">🚨</span><div><b>' +

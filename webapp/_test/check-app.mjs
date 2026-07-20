@@ -90,6 +90,29 @@ ok(App.priceVerdict(l) === null, "priceVerdict null на демо-данных (
 ok(App.dataQuality({ price: 100 }) === "thin", "dataQuality: пустая карточка = thin");
 ok(App.aiAvailable() === false, "AI недоступен вне Telegram");
 
+// Value Score v2 на синтетическом рынке (live=true, свои листинги; до этого
+// priceVerdict не звался с live=true — кэш _market ещё не построен)
+{
+  App.live = true;
+  const synth = [];
+  for (let i = 0; i < 9; i++) {
+    synth.push({ id: "s" + i, city: "warszawa", district: "Wola",
+      type: "long", area: 50, price: 3000 + i * 100 });
+  }
+  const cheap = { id: "cheap", city: "warszawa", district: "Wola",
+    type: "long", area: 50, price: 2400 };
+  App.listings.length = 0;
+  App.listings.push(...synth, cheap);
+  const vv = App.priceVerdict(cheap);
+  ok(vv && vv.level === "deal", "v2: дешёвое объявление = deal");
+  ok(vv.scope === "district", "v2: сравнение по району");
+  ok(vv.n === 9, "v2: аналоги считаются без самого объявления");
+  ok(vv.betterPct === 100, "v2: все аналоги дороже → выгоднее 100%");
+  ok(vv.conf === "B", "v2: район с выборкой 10 и малым разбросом = B");
+  ok(typeof vv.mad === "number" && vv.mad > 0, "v2: MAD посчитан");
+  App.live = false;   // дальше тесты App.listings не используют
+}
+
 // persist → syncSubs (guarded-связка core→subs) не бросает
 App.saved.push({ city: "warszawa", type: "long", notify: true });
 App.persist();
