@@ -2055,6 +2055,7 @@ const TOOL = {
 function toolL10n(lang) {
   const keys = ["locInput", "locBtn", "locMapHint", "locPick", "locNotFound", "locLoad",
     "locLoad1", "locLoad2", "locLoad3", "locLoad4",
+    "airT", "airL0", "airL1", "airL2", "airL3", "airL4", "airL5",
     "locErr", "locBusy", "locRate", "locOnlyWaw", "locNearT",
     "verdictExcellent", "verdictGood", "verdictAverage", "verdictWeak",
     "catTransport", "catInfra", "catSchools", "catGreen",
@@ -2153,7 +2154,7 @@ function toolPage(meta) {
   <div class="lt-card">
     <div class="lt-head">
       <div class="lt-num"><span id="lt-score">–</span><small>/ 100</small></div>
-      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div></div>
+      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div><div class="lt-addr" id="lt-air" hidden></div></div>
     </div>
     <div id="lt-cats"></div>
   </div>
@@ -2292,6 +2293,14 @@ function toolPage(meta) {
     v.textContent = T["verdict" + d.verdict.charAt(0).toUpperCase() + d.verdict.slice(1)];
     v.className = "lt-verdict lt-v-" + d.verdict;
     $("#lt-addr").textContent = label || d.label || (d.lat.toFixed(4) + ", " + d.lon.toFixed(4));
+    var airEl = $("#lt-air");
+    if (d.air) {
+      airEl.textContent = "🌬 " + T.airT + ": " + T["airL" + d.air.level] +
+        (d.air.penalty ? " · " + d.air.penalty : "") +
+        " · GIOŚ, " + (d.air.dist / 1000).toFixed(1) + " km";
+      airEl.style.color = d.air.level >= 4 ? "#c33" : d.air.level >= 2 ? "#a8730b" : "";
+    }
+    airEl.hidden = !d.air;
     $("#lt-cats").innerHTML = CATS.map(function (c) {
       var cat = d.categories[c[0]];
       var objs = (cat.objects || []).slice(0, 3).map(function (o) {

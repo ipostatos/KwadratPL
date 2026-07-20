@@ -30,7 +30,7 @@ UA = "KwadratPL-location/1.0 (+https://kwadratpl.pl)"
 # версия скоринговой модели (принцип «все коэффициенты имеют версию»):
 # менять при ЛЮБОЙ правке констант скоринга + прогонять калибровочный бенчмарк
 # (docs/LOCATION_SCORE.md, раздел «Калибровка и стабильность»)
-MODEL_VERSION = "1.1.0"
+MODEL_VERSION = "1.2.0"   # 1.2.0: штраф за текущее качество воздуха (GIOŚ)
 
 # границы Варшавы (bbox с небольшим запасом; город ~52.10–52.37 / 20.85–21.27)
 WARSAW = {"lat_min": 52.08, "lat_max": 52.38, "lon_min": 20.82, "lon_max": 21.30}
@@ -240,6 +240,63 @@ def fetch_poi(lat, lon):
                 last = e
                 log.warning("overpass %s failed: %s", url, e)
     raise RuntimeError(f"all overpass mirrors failed: {last}")
+
+
+# ── качество воздуха: GIOŚ (официальный API, бесплатно, без ключей) ────────
+# Текущий AQ-индекс ближайшей станции (шкала 0 Bardzo dobry … 5 Bardzo zły)
+# даёт штраф к ОБЩЕМУ баллу live-инструмента. В предрасчёт locScore для
+# карточек НЕ входит (бейджи должны быть стабильными, воздух меняется по
+# часам) — в инструменте штраф показан отдельной строкой, разница объяснена.
+_GIOS_STATIONS = "https://api.gios.gov.pl/pjp-api/v1/rest/station/findAll?size=500"
+_GIOS_INDEX = "https://api.gios.gov.pl/pjp-api/v1/rest/aqindex/getIndex/{}"
+AIR_TTL = 3600
+AIR_PENALTY = (0, 0, -3, -6, -9, -12)   # индекс 0..5 → штраф к общему баллу
+AIR_MAX_DIST = 10000                     # станция дальше 10 км — не судим
+
+
+def fetch_air():
+    """Станции GIOŚ Варшавы с текущим индексом (кэш 1 час). [] при сбое —
+    оценка без воздуха, честно без штрафа."""
+    hit = _cache_get("air:warszawa", AIR_TTL)
+    if hit is not None:
+        return hit
+    try:
+        data = _http_json(_GIOS_STATIONS, timeout=15)
+        stations = [s for s in (data.get("Lista stacji pomiarowych") or [])
+                    if s.get("Nazwa miasta") == "Warszawa"]
+    except Exception as e:
+        log.warning("gios stations fetch failed: %s", e)
+        return []
+    out = []
+    for s in stations:
+        try:
+            idx = _http_json(_GIOS_INDEX.format(s["Identyfikator stacji"]),
+                             timeout=10)["AqIndex"]
+            lvl = idx.get("Wartość indeksu")
+            if lvl is None:
+                continue   # станция без расчёта индекса (бывает)
+            out.append({"lat": float(s["WGS84 φ N"]), "lon": float(s["WGS84 λ E"]),
+                        "name": s["Nazwa stacji"], "level": int(lvl)})
+        except Exception:
+            continue
+    _cache_put("air:warszawa", out)
+    return out
+
+
+def air_at(lat, lon, stations):
+    """Ближайшая станция → {level, name, dist, penalty}; None = данных нет
+    или станция слишком далеко."""
+    best = None
+    for s in stations:
+        d = _haversine(lat, lon, s["lat"], s["lon"])
+        if best is None or d < best[0]:
+            best = (d, s)
+    if not best or best[0] > AIR_MAX_DIST:
+        return None
+    d, s = best
+    lvl = max(0, min(5, int(s["level"])))
+    return {"level": lvl, "name": s["name"], "dist": int(d),
+            "penalty": AIR_PENALTY[lvl]}
 
 
 # ── Google Places (New) — доп. слой поверх OSM ──────────────────────────────
@@ -559,8 +616,8 @@ def _merge_places(poi_infra, places, lat, lon):
     return added
 
 
-def score_point(elements, lat, lon, places=None, top=5):
-    """Главная сборка: OSM (+опционально Google Places) → оценка + объекты."""
+def score_point(elements, lat, lon, places=None, air=None, top=5):
+    """Главная сборка: OSM (+Google Places, +воздух GIOŚ) → оценка + объекты."""
     poi = collect_poi(elements, lat, lon)
     sources = ["osm"]
     if places and _merge_places(poi["infra"], places, lat, lon):
@@ -579,5 +636,13 @@ def score_point(elements, lat, lon, places=None, top=5):
     wsum = sum(WEIGHTS[c] * cats[c]["score"] for c in WEIGHTS)
     worst = min(c["score"] for c in cats.values())
     overall = round(wsum * (0.70 + 0.30 * worst / 100))
-    return {"score": overall, "verdict": verdict_of(overall),
-            "categories": cats, "sources": sources}
+    result = {"categories": cats, "sources": sources}
+    # текущее качество воздуха: штраф прозрачен (отдельное поле air) и не
+    # растворяется в балле молча — принцип «риски видимы» из мат-модели
+    if air:
+        overall = max(0, min(100, overall + air["penalty"]))
+        result["air"] = air
+        sources.append("gios")
+    result["score"] = overall
+    result["verdict"] = verdict_of(overall)
+    return result

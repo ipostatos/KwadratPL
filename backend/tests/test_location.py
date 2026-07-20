@@ -110,6 +110,14 @@ def geo_net(monkeypatch):
         if "overpass" in url:
             calls["overpass"] += 1
             return {"elements": RICH}
+        if "gios" in url:
+            calls["gios"] = calls.get("gios", 0) + 1
+            if "findAll" in url:
+                return {"Lista stacji pomiarowych": [
+                    {"Identyfikator stacji": 1, "Nazwa stacji": "Test-GIOŚ",
+                     "Nazwa miasta": "Warszawa",
+                     "WGS84 φ N": str(LAT), "WGS84 λ E": str(LON)}]}
+            return {"AqIndex": {"Wartość indeksu": 3}}   # Dostateczny → −6
         calls["nominatim"] += 1
         if "/reverse" in url:
             return {"display_name": "Testowa 1, Śródmieście, Warszawa, 00-001, Polska"}
@@ -165,6 +173,26 @@ async def test_cors_for_site(client, geo_net):
     r2 = await client.get("/api/location/geocode?q=Testowa",
                           headers={"Origin": "https://evil.example"})
     assert "access-control-allow-origin" not in r2.headers
+
+
+def test_air_at_nearest_and_too_far():
+    st = [{"lat": LAT + 0.01, "lon": LON, "name": "Far", "level": 1},
+          {"lat": LAT + 0.001, "lon": LON, "name": "Near", "level": 3}]
+    a = geo.air_at(LAT, LON, st)
+    assert a["name"] == "Near" and a["penalty"] == -6
+    assert geo.air_at(LAT, LON, [{"lat": LAT + 0.2, "lon": LON, "name": "X", "level": 5}]) is None
+    assert geo.air_at(LAT, LON, []) is None
+
+
+@pytest.mark.asyncio
+async def test_score_applies_air_penalty(client, geo_net):
+    base = geo.score_point(RICH, LAT, LON)["score"]
+    r = await client.get(f"/api/location/score?lat={LAT}&lon={LON}", headers=SITE)
+    d = r.json()
+    assert d["air"]["level"] == 3 and d["air"]["penalty"] == -6
+    assert d["air"]["name"] == "Test-GIOŚ"
+    assert d["score"] == base - 6
+    assert "gios" in d["sources"]
 
 
 @pytest.mark.asyncio

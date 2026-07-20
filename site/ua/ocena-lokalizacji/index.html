@@ -239,7 +239,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
   <div class="lt-card">
     <div class="lt-head">
       <div class="lt-num"><span id="lt-score">–</span><small>/ 100</small></div>
-      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div></div>
+      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div><div class="lt-addr" id="lt-air" hidden></div></div>
     </div>
     <div id="lt-cats"></div>
   </div>
@@ -268,7 +268,7 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
 (function () {
   "use strict";
   var API = "https://kwadratpl-46-224-220-94.sslip.io";
-  var T = {"locInput":"Адреса у Варшаві…","locBtn":"Оцінити","locMapHint":"…або тапни точку на карті","locPick":"Уточни адресу:","locNotFound":"Адресу не знайдено у Варшаві. Спробуй інакше: вулиця та номер будинку.","locLoad":"Аналізую околиці…","locLoad1":"Міряємо кроки до метро…","locLoad2":"Перераховуємо Żabki поруч…","locLoad3":"Шукаємо школи й майданчики…","locLoad4":"Зазираємо в парки та сквери…","locErr":"Не вдалося отримати дані. Спробуй ще раз трохи пізніше.","locBusy":"Денний ліміт аналізів вичерпано — спробуй завтра.","locRate":"Забагато запитів — зачекай кілька хвилин.","locOnlyWaw":"Поки працює лише для Варшави","locNearT":"Що поруч","verdictExcellent":"Чудова локація","verdictGood":"Хороша локація","verdictAverage":"Середня локація","verdictWeak":"Слабка локація","catTransport":"Транспорт","catInfra":"Інфраструктура","catSchools":"Школи та садки","catGreen":"Зелені зони","kMetro":"Метро","kRail":"Електричка (SKM/KM)","kTram":"Трамвай","kBus":"Автобус","kGrocery":"Продукти","kPharmacy":"Аптека","kHealth":"Медицина","kFood":"Кафе й ресторани","kServices":"Банк / пошта","kSport":"Спорт","kVet":"Ветклініка","kPlayground":"Дитячий майданчик","kMall":"Торговий центр","kMarketplace":"Базар","kSchool":"Школа","kKindergarten":"Дитячий садок","kPark":"Парк","kForest":"Ліс","kGreen":"Сквер"};
+  var T = {"locInput":"Адреса у Варшаві…","locBtn":"Оцінити","locMapHint":"…або тапни точку на карті","locPick":"Уточни адресу:","locNotFound":"Адресу не знайдено у Варшаві. Спробуй інакше: вулиця та номер будинку.","locLoad":"Аналізую околиці…","locLoad1":"Міряємо кроки до метро…","locLoad2":"Перераховуємо Żabki поруч…","locLoad3":"Шукаємо школи й майданчики…","locLoad4":"Зазираємо в парки та сквери…","airT":"Повітря зараз","airL0":"дуже добре","airL1":"добре","airL2":"помірне","airL3":"посереднє","airL4":"погане","airL5":"дуже погане","locErr":"Не вдалося отримати дані. Спробуй ще раз трохи пізніше.","locBusy":"Денний ліміт аналізів вичерпано — спробуй завтра.","locRate":"Забагато запитів — зачекай кілька хвилин.","locOnlyWaw":"Поки працює лише для Варшави","locNearT":"Що поруч","verdictExcellent":"Чудова локація","verdictGood":"Хороша локація","verdictAverage":"Середня локація","verdictWeak":"Слабка локація","catTransport":"Транспорт","catInfra":"Інфраструктура","catSchools":"Школи та садки","catGreen":"Зелені зони","kMetro":"Метро","kRail":"Електричка (SKM/KM)","kTram":"Трамвай","kBus":"Автобус","kGrocery":"Продукти","kPharmacy":"Аптека","kHealth":"Медицина","kFood":"Кафе й ресторани","kServices":"Банк / пошта","kSport":"Спорт","kVet":"Ветклініка","kPlayground":"Дитячий майданчик","kMall":"Торговий центр","kMarketplace":"Базар","kSchool":"Школа","kKindergarten":"Дитячий садок","kPark":"Парк","kForest":"Ліс","kGreen":"Сквер"};
   var LANG = "ua";
   var KINDL = { metro: "kMetro", rail: "kRail", tram: "kTram", bus: "kBus", grocery: "kGrocery",
     pharmacy: "kPharmacy", health: "kHealth", food: "kFood", services: "kServices", sport: "kSport",
@@ -390,6 +390,14 @@ footer{ border-top:.5px solid var(--border); padding:36px 0; margin-top:20px }
     v.textContent = T["verdict" + d.verdict.charAt(0).toUpperCase() + d.verdict.slice(1)];
     v.className = "lt-verdict lt-v-" + d.verdict;
     $("#lt-addr").textContent = label || d.label || (d.lat.toFixed(4) + ", " + d.lon.toFixed(4));
+    var airEl = $("#lt-air");
+    if (d.air) {
+      airEl.textContent = "🌬 " + T.airT + ": " + T["airL" + d.air.level] +
+        (d.air.penalty ? " · " + d.air.penalty : "") +
+        " · GIOŚ, " + (d.air.dist / 1000).toFixed(1) + " km";
+      airEl.style.color = d.air.level >= 4 ? "#c33" : d.air.level >= 2 ? "#a8730b" : "";
+    }
+    airEl.hidden = !d.air;
     $("#lt-cats").innerHTML = CATS.map(function (c) {
       var cat = d.categories[c[0]];
       var objs = (cat.objects || []).slice(0, 3).map(function (o) {

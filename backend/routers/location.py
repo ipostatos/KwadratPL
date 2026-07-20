@@ -119,19 +119,26 @@ async def score(request: Request, response: Response,
         except Exception:
             return None
 
+    def _safe_air():
+        try:
+            return geo.air_at(lat, lon, geo.fetch_air())
+        except Exception:
+            return None
+
     try:
         async with _overpass_sem:
-            (elements, cached), places, label = await asyncio.gather(
+            (elements, cached), places, label, air = await asyncio.gather(
                 asyncio.to_thread(geo.fetch_poi, lat, lon),
                 asyncio.to_thread(geo.fetch_places, lat, lon),  # [] без ключа/лимита
                 asyncio.to_thread(_safe_reverse),
+                asyncio.to_thread(_safe_air),                   # None при сбое GIOŚ
             )
     except RuntimeError as e:
         log.warning("poi fetch failed: %s", e)
         # daily_capacity = наш дневной кап, poi_unavailable = зеркала легли
         raise HTTPException(503, "daily_capacity" if "daily_capacity" in str(e)
                             else "poi_unavailable")
-    result = geo.score_point(elements, lat, lon, places=places)
+    result = geo.score_point(elements, lat, lon, places=places, air=air)
     return {
         "lat": round(lat, 5), "lon": round(lon, 5), "label": label,
         "radius": geo.RADIUS, "cached": cached, "model": geo.MODEL_VERSION,

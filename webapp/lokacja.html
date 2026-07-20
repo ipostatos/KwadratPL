@@ -78,6 +78,7 @@
           <div class="score-verdict" id="rVerdict"></div>
           <div class="score-addr" id="rAddr"></div>
           <div class="score-addr hidden" id="rApprox" style="color:var(--warn)"></div>
+          <div class="score-addr hidden" id="rAir"></div>
         </div>
       </div>
       <div id="rCats"></div>
@@ -260,6 +261,17 @@ function render(d, label) {
   ap.textContent = approxPrec ? I18N.t("locApprox") : "";
   ap.classList.toggle("hidden", !approxPrec);
   approxPrec = false;   // ручной повторный поиск на странице — уже точная точка
+
+  // текущий воздух (GIOŚ): штраф показываем явно, плохой — подсвечиваем
+  var airEl = $("#rAir");
+  if (d.air) {
+    airEl.textContent = "🌬 " + I18N.t("airT") + ": " + I18N.t("airL" + d.air.level) +
+      (d.air.penalty ? " · " + d.air.penalty : "") +
+      " · GIOŚ, " + (d.air.dist / 1000).toFixed(1) + " km";
+    airEl.style.color = d.air.level >= 4 ? "var(--bad)"
+      : d.air.level >= 2 ? "var(--warn)" : "var(--hint)";
+  }
+  airEl.classList.toggle("hidden", !d.air);
 
   $("#rCats").innerHTML = CATS.map(function (c) {
     var cat = d.categories[c[0]];
