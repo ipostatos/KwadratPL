@@ -170,7 +170,9 @@ def _search_url(sub: dict) -> str:
 
 
 # ── explain-строка в пуше: рынок из listings.json, кэш 10 минут ────────────
-_market_cache = {"ts": 0.0, "market": {}}
+# ts=None — «ещё не строили»: сравнение с 0.0 ломалось на свежезагруженной
+# машине (monotonic < 600 сек аптайма → кэш казался валидным; поймано CI)
+_market_cache = {"ts": None, "market": {}}
 
 
 def _push_market() -> dict:
@@ -179,7 +181,7 @@ def _push_market() -> dict:
     import community
     from config import LISTINGS_PATH
     now = time.monotonic()
-    if now - _market_cache["ts"] > 600:
+    if _market_cache["ts"] is None or now - _market_cache["ts"] > 600:
         try:
             with open(LISTINGS_PATH, encoding="utf-8") as f:
                 listings = _json.load(f).get("listings") or []

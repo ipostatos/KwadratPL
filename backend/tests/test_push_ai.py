@@ -45,7 +45,7 @@ def test_push_explain_line():
                  "price": 3000 + i * 100, "area": 50} for i in range(8)]
     with open(os.environ["LISTINGS_PATH"], "w", encoding="utf-8") as f:
         json.dump({"listings": listings}, f)
-    bot_module._market_cache["ts"] = 0.0   # сброс кэша рынка между тестами
+    bot_module._market_cache["ts"] = None   # сброс кэша рынка между тестами
 
     cheap = {"id": "c", "city": "warszawa", "district": "Wola", "type": "long",
              "price": 2400, "area": 50, "locScore": 84, "agency": True}
