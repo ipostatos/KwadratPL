@@ -56,11 +56,15 @@ def _live_budget_take():
     _live_day["n"] += 1
     return True
 
+# порядок = приоритет; бенчмарк с VPS 2026-07-21: mail.ru ~1.1с стабильно,
+# de быстрый, но 429-ит бурсты, coffee/kumi периодически лежат целиком
 OVERPASS_URLS = [
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
     "https://overpass-api.de/api/interpreter",
     "https://overpass.private.coffee/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
+_last_good_mirror = [None]   # липкость: удачное зеркало пробуем первым
 NOMINATIM = "https://nominatim.openstreetmap.org"
 
 # язык интерфейса → accept-language Nominatim
@@ -220,14 +224,17 @@ def fetch_poi(lat, lon):
     # Таймауты короткие (сервер 10с, клиент 14с): здоровое зеркало отвечает
     # за 2–8 с, больное лучше бросить быстро и перейти к следующему — иначе
     # пользователь ждал зависшее зеркало до 35 с
+    good = _last_good_mirror[0]
+    order = ([good] if good else []) + [u for u in OVERPASS_URLS if u != good]
     for attempt in range(2):
         if attempt:
             time.sleep(2)
-        for url in OVERPASS_URLS:
+        for url in order:
             try:
                 raw = _http_json(url, data=body, timeout=14)
                 elements = raw.get("elements", [])
                 _cache_put(key, elements)
+                _last_good_mirror[0] = url
                 return elements, False
             except Exception as e:
                 last = e
