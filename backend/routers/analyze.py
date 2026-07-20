@@ -12,10 +12,12 @@ from datetime import datetime
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, LinkPreviewOptions
 from fastapi import APIRouter, Header, HTTPException, Request
 
+import community
 from ai_usage import _ai_stats
 from auth import _auth_user
 from bot import bot
-from config import AI_DAILY_LIMIT, AI_ENABLED, ANALYZE_MODEL, INGEST_TOKEN, TZ, log
+from config import (AI_DAILY_LIMIT, AI_ENABLED, ANALYZE_MODEL, INGEST_TOKEN,
+                    LISTINGS_PATH, TZ, log)
 from db import db
 from texts import AI_LANG_NAME, _SHARE_BTN, fmt_share, lang_of
 
@@ -52,6 +54,29 @@ def ai_stats(x_ingest_token: str = Header("")):
     return _ai_stats()
 
 
+def _market_pct(l: dict) -> int | None:
+    """Отклонение цены/м² объявления от медианы похожих (наш listings.json), %.
+    Считаем по данным сервера, а не со слов клиента — тот же алгоритм, что
+    в community.py/webapp (медиана по город+тип+район с фолбэком на город)."""
+    try:
+        with open(LISTINGS_PATH, encoding="utf-8") as f:
+            listings = json.load(f).get("listings") or []
+        market = community.build_market(listings)
+        v = community._ppm(l)
+        if v is None:
+            return None
+        base = f"{l.get('city')}|{l.get('type')}"
+        med = market.get(f"{base}|{l['district']}") if l.get("district") else None
+        if med is None:
+            med = market.get(base)
+        if not med:
+            return None
+        return round((v - med) / med * 100)
+    except Exception as e:
+        log.warning("market_pct failed: %s", e)
+        return None
+
+
 @router.post("/api/analyze")
 async def analyze(request: Request, authorization: str = Header("")):
     if not AI_ENABLED:
@@ -83,11 +108,21 @@ async def analyze(request: Request, authorization: str = Header("")):
     if (r["count"] if r else 0) >= AI_DAILY_LIMIT:
         raise HTTPException(429, "daily AI limit reached")
 
-    # ценовой контекст для скам-скоринга не считаем на сервере — просто отдаём
-    # факты объявления модели; сильное занижение цены она увидит из price/area
     fields = {k: l.get(k) for k in
               ("title", "descr", "price", "area", "rooms", "type", "city",
                "district", "pets", "parking", "balcony", "agency", "source", "url")}
+    # рыночный контекст из НАШИХ данных (не со слов клиента): отклонение цены/м²
+    # от медианы похожих — сильнейший скам-сигнал; + оценка локации, если есть.
+    # Решение «пускать ли AI в оценки»: да, как входной контекст — AI объясняет,
+    # но числа считает детерминированный код, а не модель.
+    pct = _market_pct(l)
+    ctx = {}
+    if pct is not None:
+        ctx["price_vs_similar_median_pct"] = pct
+    if isinstance(l.get("locScore"), (int, float)):
+        ctx["location_score_0_100"] = l["locScore"]
+    if ctx:
+        fields["market_context"] = ctx
     system = (
         "You help migrants rent flats in Poland. You receive one rental listing "
         "(fields may be in Polish). Respond ONLY as JSON matching the schema.\n"
@@ -95,10 +130,15 @@ async def analyze(request: Request, authorization: str = Header("")):
         f"- summary: 3-6 short bullet points in {AI_LANG_NAME[lang]} with the key "
         "facts a renter needs (price, deposit/czynsz hints if present, rooms, area, "
         "availability, pets, who lists it). Be factual; do not invent details.\n"
+        "- market_context (if present) is computed by our backend from live data: "
+        "price_vs_similar_median_pct is the price/m² deviation vs the median of "
+        "similar listings (negative = cheaper), location_score_0_100 rates the "
+        "neighbourhood. Treat a price 35%+ below median as a strong fraud signal; "
+        "mention a notably good/bad price or location in the summary.\n"
         "- scam_level: assess fraud risk (low/medium/high) from signals like a price "
-        "far below the area/size, urgency, requests to pay a deposit or 'reservation' "
-        "before viewing, owner claiming to be abroad, or contact pushed off-platform. "
-        "Most real listings are 'low'.\n"
+        "far below the area/size or the market median, urgency, requests to pay a "
+        "deposit or 'reservation' before viewing, owner claiming to be abroad, or "
+        "contact pushed off-platform. Most real listings are 'low'.\n"
         f"- scam_flags: 0-4 short warning phrases in {AI_LANG_NAME[lang]} explaining the "
         "risk, empty if none."
     )

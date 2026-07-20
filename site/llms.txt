@@ -19,6 +19,7 @@
 - Not a real-estate agency; listings remain the property of their original source sites.
 
 ## Renter guides
+- [Scam check](https://kwadratpl.pl/guides/scam/): Reverse image search with Google Lens, Yandex and TinEye, red flags in the listing and the chat, safe payment rules and what to do if you already sent money.
 - [Get your deposit back](https://kwadratpl.pl/guides/kaucja/): Poland's kaucja law: documenting the flat's condition, what counts as normal wear, and how to write a wezwanie do zapłaty if the deposit isn't returned.
 - [Rental contract guide](https://kwadratpl.pl/guides/umowa/): A walkthrough of a Polish lease: mandatory clauses, what tenants are actually liable for, common landlord traps, and what to check before signing.
 - [Contract & documents](https://kwadratpl.pl/guides/najem/): How najem okazjonalny differs from a standard lease, why meldunek and karta pobytu matter, and what to ask the landlord before renting.

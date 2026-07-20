@@ -36,6 +36,34 @@ T = {
              "en": "…and {n} more — see the app"},
     "open": {"ru": "Открыть объявление", "pl": "Otwórz ogłoszenie",
              "ua": "Відкрити оголошення", "by": "Адкрыць аб'яву", "en": "Open listing"},
+    # кнопки пуша: шторка в Mini App (AI-разбор/избранное/объяснение) и оценка локации
+    "in_app": {"ru": "✨ Разбор в приложении", "pl": "✨ Analiza w aplikacji",
+               "ua": "✨ Розбір у застосунку", "by": "✨ Разбор у праграме",
+               "en": "✨ Analysis in the app"},
+    "loc_btn": {"ru": "📍 Локация", "pl": "📍 Lokalizacja",
+                "ua": "📍 Локація", "by": "📍 Лакацыя", "en": "📍 Location"},
+    # донаты Telegram Stars
+    "donate_pick": {
+        "ru": "⭐ Поддержать проект звёздами Telegram — выбери сумму:",
+        "pl": "⭐ Wesprzyj projekt gwiazdkami Telegrama — wybierz kwotę:",
+        "ua": "⭐ Підтримати проєкт зірками Telegram — обери суму:",
+        "by": "⭐ Падтрымаць праект зоркамі Telegram — абяры суму:",
+        "en": "⭐ Support the project with Telegram Stars — pick an amount:"},
+    "donate_title": {"ru": "Поддержка Kwadrat PL", "pl": "Wsparcie Kwadrat PL",
+                     "ua": "Підтримка Kwadrat PL", "by": "Падтрымка Kwadrat PL",
+                     "en": "Support Kwadrat PL"},
+    "donate_desc": {
+        "ru": "Бот бесплатный и без рекламы. Звёзды идут на сервер и развитие.",
+        "pl": "Bot jest darmowy i bez reklam. Gwiazdki idą na serwer i rozwój.",
+        "ua": "Бот безкоштовний і без реклами. Зірки йдуть на сервер і розвиток.",
+        "by": "Бот бясплатны і без рэкламы. Зоркі ідуць на сервер і развіццё.",
+        "en": "The bot is free and ad-free. Stars go to the server and development."},
+    "donate_thanks": {
+        "ru": "Спасибо за поддержку! 💛 Пусть дом найдётся!",
+        "pl": "Dziękuję za wsparcie! 💛 Niech dom się znajdzie!",
+        "ua": "Дякую за підтримку! 💛 Хай дім знайдеться!",
+        "by": "Дзякуй за падтрымку! 💛 Хай дом знойдзецца!",
+        "en": "Thank you for the support! 💛 May your home find you!"},
     "unit_long": {"ru": "zł/мес", "pl": "zł/mies.", "ua": "zł/міс", "by": "zł/мес", "en": "zł/mo"},
     "unit_short": {"ru": "zł/сутки", "pl": "zł/dobę", "ua": "zł/доба", "by": "zł/суткі", "en": "zł/day"},
     "start": {

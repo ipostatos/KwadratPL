@@ -188,7 +188,8 @@ const C = {
     shotsLead: "Поиск, справедливая цена и полная стоимость входа — всё внутри Telegram.",
     altHome: "Главный экран Kwadrat PL: поиск аренды жилья в 8 городах Польши",
     altCards: "Список квартир на аренду с фото, ценой и бейджем «ниже рынка»",
-    altSheet: "Карточка объявления: стоимость входа — аренда и кауция — и источник",
+    altMap: "Карта объявлений Варшавы: цены и кластеры на векторной карте",
+    altLoc: "Оценка локации в Варшаве: балл 0–100 и разбор по категориям",
     widgetTitle: "Виджет на домашний экран iPhone",
     widgetLead: "Сколько подходящих квартир и свежие цены — прямо на экране, не открывая Telegram. Через бесплатное приложение Scriptable, без App Store-платежей и аккаунта разработчика.",
     widgetImgAlt: "Виджет Kwadrat PL на домашнем экране iPhone: число подходящих квартир и цены аренды",
@@ -260,7 +261,8 @@ const C = {
     shotsLead: "Пошук, справедлива ціна й повна вартість входу — усе всередині Telegram.",
     altHome: "Головний екран Kwadrat PL: пошук оренди житла в 8 містах Польщі",
     altCards: "Список квартир на оренду з фото, ціною та бейджем «нижче ринку»",
-    altSheet: "Картка оголошення: вартість входу — оренда й кауція — і джерело",
+    altMap: "Мапа оголошень Варшави: ціни й кластери на векторній мапі",
+    altLoc: "Оцінка локації у Варшаві: бал 0–100 і розбір за категоріями",
     widgetTitle: "Віджет на домашній екран iPhone",
     widgetLead: "Скільки відповідних квартир і свіжі ціни — просто на екрані, не відкриваючи Telegram. Через безкоштовний застосунок Scriptable, без оплат App Store і акаунта розробника.",
     widgetImgAlt: "Віджет Kwadrat PL на домашньому екрані iPhone: число відповідних квартир і ціни оренди",
@@ -332,7 +334,8 @@ const C = {
     shotsLead: "Wyszukiwanie, uczciwa cena i pełny koszt wejścia — wszystko w Telegramie.",
     altHome: "Ekran główny Kwadrat PL: wyszukiwanie wynajmu w 8 miastach w Polsce",
     altCards: "Lista mieszkań na wynajem ze zdjęciem, ceną i znacznikiem „poniżej rynku”",
-    altSheet: "Ogłoszenie: koszt wejścia — najem i kaucja — oraz źródło",
+    altMap: "Mapa ogłoszeń w Warszawie: ceny i klastry na mapie wektorowej",
+    altLoc: "Ocena lokalizacji w Warszawie: wynik 0–100 i rozbicie na kategorie",
     widgetTitle: "Widżet na ekran główny iPhone'a",
     widgetLead: "Ile pasujących mieszkań i świeże ceny — prosto na ekranie, bez otwierania Telegrama. Przez darmową aplikację Scriptable, bez opłat App Store i konta developera.",
     widgetImgAlt: "Widżet Kwadrat PL na ekranie iPhone'a: liczba pasujących mieszkań i ceny najmu",
@@ -404,7 +407,8 @@ const C = {
     shotsLead: "Search, fair-price check and the full move-in cost — all inside Telegram.",
     altHome: "Kwadrat PL home screen: searching rentals across 8 cities in Poland",
     altCards: "List of flats for rent with photo, price and a below-market badge",
-    altSheet: "Listing card: move-in cost — rent and deposit — and the source",
+    altMap: "Warsaw listings map: prices and clusters on a vector map",
+    altLoc: "Warsaw location score: 0–100 with a category breakdown",
     widgetTitle: "iPhone home-screen widget",
     widgetLead: "How many matching flats and the latest prices — right on your screen, without opening Telegram. Via the free Scriptable app, no App Store payments and no developer account.",
     widgetImgAlt: "Kwadrat PL widget on an iPhone home screen: number of matching flats and rental prices",
@@ -476,7 +480,8 @@ const C = {
     shotsLead: "Пошук, справядлівая цана і поўны кошт уваходу — усё ўнутры Telegram.",
     altHome: "Галоўны экран Kwadrat PL: пошук арэнды жылля ў 8 гарадах Польшчы",
     altCards: "Спіс кватэр на арэнду з фота, цаной і бэйджам «ніжэй рынку»",
-    altSheet: "Картка аб'явы: кошт уваходу — арэнда і кауцыя — і крыніца",
+    altMap: "Мапа аб'яў Варшавы: цэны і кластары на вектарнай карце",
+    altLoc: "Ацэнка лакацыі ў Варшаве: бал 0–100 і разбор па катэгорыях",
     widgetTitle: "Віджэт на хатні экран iPhone",
     widgetLead: "Колькі прыдатных кватэр і свежыя цэны — проста на экране, не адкрываючы Telegram. Праз бясплатны дадатак Scriptable, без плацяжоў App Store і акаунта распрацоўшчыка.",
     widgetImgAlt: "Віджэт Kwadrat PL на хатнім экране iPhone: колькасць прыдатных кватэр і цэны арэнды",
@@ -575,7 +580,7 @@ function jsonLd(lang, meta) {
       inLanguage: LANGS.map((l) => l.hreflang),
       description: c.desc,
       screenshot: [url("shots/shot-home.webp"), url("shots/shot-cards.webp"),
-                   url("shots/shot-sheet.webp"), url("shots/shot-widget.webp")],
+                   url("shots/shot-map.webp"), url("shots/shot-loc.webp")],
       offers: { "@type": "Offer", price: "0", priceCurrency: "PLN" },
     },
     {
@@ -791,10 +796,11 @@ a.card:active{ transform:scale(.98); opacity:.8 }
   padding:9px 17px; border-radius:999px; transition:transform .12s ease, opacity .12s ease }
 a.chip:active{ transform:scale(.96); opacity:.75 }
 
-/* screenshots — device-framed PNGs already carry their own shadow, no extra chrome here */
-.shots{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap }
-.shot{ margin:0; flex:0 1 240px; max-width:250px }
-.shot img{ width:100%; height:auto; display:block }
+/* screenshots — чистые скрины одного размера, скругление и тень рисует CSS */
+.shots{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap }
+.shot{ margin:0; flex:0 1 220px; max-width:230px }
+.shot img{ width:100%; height:auto; display:block; border-radius:20px;
+  border:.5px solid var(--border); box-shadow:var(--shadow); background:var(--card) }
 
 /* widget */
 .widget-sec{ display:flex; gap:32px; align-items:center; flex-wrap:wrap; justify-content:center }
@@ -919,19 +925,11 @@ footer{ border-top:.5px solid var(--border); padding:40px 0; margin-top:20px }
     <div class="wrap">
       <h2 class="sec-h">${esc(c.shotsTitle)}</h2>
       <p class="sec-lead">${esc(c.shotsLead)}</p>
-      <div class="shots">
+      <div class="shots">${["home", "cards", "map", "loc"].map((s) => `
         <figure class="shot"><picture>
-          <source srcset="/shots/shot-home-dark.webp" media="(prefers-color-scheme: dark)">
-          <img src="/shots/shot-home.webp" width="760" height="1643" loading="lazy" alt="${esc(c.altHome)}">
-        </picture></figure>
-        <figure class="shot"><picture>
-          <source srcset="/shots/shot-cards-dark.webp" media="(prefers-color-scheme: dark)">
-          <img src="/shots/shot-cards.webp" width="760" height="930" loading="lazy" alt="${esc(c.altCards)}">
-        </picture></figure>
-        <figure class="shot"><picture>
-          <source srcset="/shots/shot-sheet-dark.webp" media="(prefers-color-scheme: dark)">
-          <img src="/shots/shot-sheet.webp" width="760" height="1643" loading="lazy" alt="${esc(c.altSheet)}">
-        </picture></figure>
+          <source srcset="/shots/shot-${s}-dark.webp" media="(prefers-color-scheme: dark)">
+          <img src="/shots/shot-${s}.webp" width="760" height="1645" loading="lazy" alt="${esc(c["alt" + s[0].toUpperCase() + s.slice(1)])}">
+        </picture></figure>`).join("")}
       </div>
     </div>
   </section>
@@ -1175,6 +1173,7 @@ function runPageScript(file) {
 }
 
 const GSRC = {
+  scam: runPageScript("scam.html"),
   kaucja: runPageScript("kaucja.html"),
   umowa: runPageScript("umowa.html"),
   najem: runPageScript("najem.html"),
@@ -1187,6 +1186,19 @@ const GSRC = {
 function pickLang(data, lang) { return (data && (data[lang] || data.ru)) || {}; }
 
 const GUIDES = [
+  { slug: "scam", icon: "shield-check", type: "article", dictKey: "cellScamT",
+    seo: {
+      ru: { title: "Как проверить, не мошенник ли сдаёт квартиру — поиск по фото и красные флаги",
+        desc: "Поиск по фотографиям через Google Lens, Яндекс и TinEye, красные флаги в объявлении и переписке, безопасная оплата и что делать, если деньги уже переведены." },
+      pl: { title: "Jak sprawdzić, czy ogłoszenie najmu to oszustwo — wyszukiwanie po zdjęciach i czerwone flagi",
+        desc: "Wyszukiwanie po zdjęciach przez Google Lens, Yandex i TinEye, czerwone flagi w ogłoszeniu i rozmowie, bezpieczna płatność i co robić, gdy pieniądze już przelane." },
+      ua: { title: "Як перевірити, чи не шахрай здає квартиру — пошук за фото та червоні прапорці",
+        desc: "Пошук за фотографіями через Google Lens, Яндекс і TinEye, червоні прапорці в оголошенні й листуванні, безпечна оплата і що робити, якщо гроші вже переказані." },
+      en: { title: "How to spot a rental scam in Poland — reverse image search and red flags",
+        desc: "Reverse image search with Google Lens, Yandex and TinEye, red flags in the listing and the chat, safe payment rules and what to do if you already sent money." },
+      by: { title: "Як праверыць, ці не шахрай здае кватэру — пошук па фота і чырвоныя сцягі",
+        desc: "Пошук па фатаграфіях праз Google Lens, Яндэкс і TinEye, чырвоныя сцягі ў аб'яве і перапісцы, бяспечная аплата і што рабіць, калі грошы ўжо пераведзены." },
+    } },
   { slug: "kaucja", icon: "wallet", type: "article", dictKey: "cellKaucjaT",
     seo: {
       ru: { title: "Как вернуть кауцию за квартиру в Польше — гайд и шаблон претензии",

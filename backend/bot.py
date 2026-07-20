@@ -8,11 +8,12 @@ import html
 import time
 import urllib.parse
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter
 from aiogram.filters import Command, CommandStart
 from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
-                           LinkPreviewOptions, Message, WebAppInfo)
+                           LabeledPrice, LinkPreviewOptions, Message,
+                           PreCheckoutQuery, WebAppInfo)
 
 from ai_usage import _ai_stats
 from config import ADMIN_IDS, BOT_TOKEN, MAX_NOTIFY_PER_USER, WEBAPP_URL, in_quiet, log
@@ -31,10 +32,62 @@ async def on_start(m: Message):
         c.execute("INSERT OR IGNORE INTO users(id, lang, first_seen) VALUES(?,?,?)",
                   (m.chat.id, lang, int(time.time())))
         c.execute("UPDATE users SET lang=? WHERE id=?", (lang, m.chat.id))
+    # deep-link /start donate — кнопка «Поддержать звёздами» из about.html
+    if (m.text or "").split(maxsplit=1)[1:] == ["donate"]:
+        await _send_donate_menu(m.chat.id, lang)
+        return
     kb = InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text=T["start_btn"][lang], web_app=WebAppInfo(url=WEBAPP_URL))
     ]])
     await m.answer(T["start"][lang], reply_markup=kb)
+
+
+# ── донаты Telegram Stars (XTR): меню сумм → инвойс → pre_checkout → спасибо ──
+_STAR_AMOUNTS = (25, 100, 500)
+
+
+async def _send_donate_menu(chat_id: int, lang: str):
+    kb = InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=f"⭐ {n}", callback_data=f"don:{n}")
+        for n in _STAR_AMOUNTS]])
+    await bot.send_message(chat_id, T["donate_pick"][lang], reply_markup=kb)
+
+
+@dp.message(Command("donate"))
+async def on_donate(m: Message):
+    lang = lang_of(m.from_user.language_code if m.from_user else None)
+    await _send_donate_menu(m.chat.id, lang)
+
+
+@dp.callback_query(F.data.startswith("don:"))
+async def on_donate_pick(q):
+    amount = int(q.data.split(":", 1)[1])
+    if amount not in _STAR_AMOUNTS:
+        await q.answer()
+        return
+    lang = lang_of(q.from_user.language_code if q.from_user else None)
+    # Stars: currency XTR, provider_token пустой (нативная валюта Telegram)
+    await bot.send_invoice(
+        q.message.chat.id,
+        title=T["donate_title"][lang],
+        description=T["donate_desc"][lang],
+        payload=f"donate-{amount}",
+        currency="XTR",
+        prices=[LabeledPrice(label=f"⭐ {amount}", amount=amount)],
+    )
+    await q.answer()
+
+
+@dp.pre_checkout_query()
+async def on_pre_checkout(q: PreCheckoutQuery):
+    await q.answer(ok=True)
+
+
+@dp.message(F.successful_payment)
+async def on_paid(m: Message):
+    lang = lang_of(m.from_user.language_code if m.from_user else None)
+    log.info("donation: %s stars from %s", m.successful_payment.total_amount, m.chat.id)
+    await m.answer(T["donate_thanks"][lang])
 
 
 def _set_muted(chat_id: int, muted: int) -> str:
@@ -116,17 +169,39 @@ def _search_url(sub: dict) -> str:
     return WEBAPP_URL.rstrip("/") + "/search.html?" + urllib.parse.urlencode(params)
 
 
+def _listing_kb(l: dict, lang: str) -> InlineKeyboardMarkup | None:
+    """Клавиатура пуша (ТОЛЬКО личка — web_app-кнопки в группах невалидны):
+    источник + шторка Mini App (там AI-разбор, избранное, карточка-объяснение)
+    + оценка локации, если у объявления есть координаты."""
+    rows = []
+    url = safe_listing_url(l.get("url"))
+    if url:
+        rows.append([InlineKeyboardButton(text=T["open"][lang], url=url)])
+    lid = str(l.get("id") or "")
+    if lid:
+        base = WEBAPP_URL.rstrip("/")
+        app_row = [InlineKeyboardButton(
+            text=T["in_app"][lang],
+            web_app=WebAppInfo(url=base + "/search.html?" + urllib.parse.urlencode(
+                {"city": l.get("city") or "", "type": l.get("type") or "long",
+                 "open": lid})))]
+        if isinstance(l.get("lat"), (int, float)) and isinstance(l.get("lon"), (int, float)):
+            app_row.append(InlineKeyboardButton(
+                text=T["loc_btn"][lang],
+                web_app=WebAppInfo(url=base + "/lokacja.html?" + urllib.parse.urlencode(
+                    {"lat": l["lat"], "lon": l["lon"],
+                     "prec": l.get("geoPrec") or ""}))))
+        rows.append(app_row)
+    return InlineKeyboardMarkup(inline_keyboard=rows) if rows else None
+
+
 async def notify_user(user_id: int, lang: str, hits: list):
     # hits: список пар (объявление, подписка-которая-совпала) для explainability;
     # допускаем и «голое» объявление (digest шлёт без подписки).
     # Есть фото — шлём sendPhoto (фото + «таблица» в подписи), иначе текстом.
     for item in hits[:MAX_NOTIFY_PER_USER]:
         l, sub = item if isinstance(item, tuple) else (item, None)
-        url = safe_listing_url(l.get("url"))
-        kb = None
-        if url:
-            kb = InlineKeyboardMarkup(inline_keyboard=[[
-                InlineKeyboardButton(text=T["open"][lang], url=url)]])
+        kb = _listing_kb(l, lang)
         text = fmt_listing(l, lang, sub)
         ph = l.get("photo")
         photo = ph if isinstance(ph, str) and ph.startswith("https://") else None

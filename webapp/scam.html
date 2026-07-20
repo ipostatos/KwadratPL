@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Проверка на мошенника — Kwadrat PL</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="theme.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="guide.js"></script>
+</head>
+<body>
+  <h1><span class="emi" data-icon="shield-check"></span><span id="ttl"></span></h1>
+  <p class="sub"></p>
+  <div id="art"></div>
+  <a class="btn ghost" href="index.html" style="margin-top:var(--sp-2)" data-i18n="backHome"></a>
+
+<script>
+"use strict";
+var GUIDE = {
+ru: {
+  sub: "Пять минут проверки до звонка владельцу экономят месячную аренду. Главный приём — поиск по фотографиям.",
+  sections: [
+  { h: "Поиск по фото: главный трюк против мошенников", p: ["Мошенники почти никогда не снимают квартиру сами — они крадут фотографии из чужих объявлений. Найди, откуда фото, и схема развалится."], num: true, list: [
+    "Сохрани 2–3 фото квартиры из объявления (долгое нажатие → «Сохранить изображение»).",
+    "Открой <b>Google Картинки</b> (images.google.com) → значок камеры / <b>Google Lens</b> → загрузи фото. На телефоне ещё проще: долгое нажатие на фото → «Найти через Google Lens».",
+    "Прогони то же фото через <b>Яндекс.Картинки</b> (часто находит то, что пропускает Google) и <b>TinEye</b> (tineye.com).",
+    "Сравни находки: та же квартира в других объявлениях? Другой город или страна? Другая цена? Другое имя «владельца»?" ],
+    warn: "Те же фото в объявлении дороже/в другом городе, или у «владельца» другое имя — почти наверняка фото украдены. Не звони, жалуйся на объявление." },
+  { h: "Красные флаги в объявлении и переписке", list: [
+    "Цена заметно <b>ниже рынка</b> — смотри наш бейдж «ниже рынка на N%» и красную анти-скам-плашку в карточке.",
+    "Владелец «сейчас за границей», квартиру покажет «агент» или «курьер с ключами».",
+    "Просят <b>оплату, задаток или „резервацию“ до просмотра</b> — так не бывает, это главный маркер обмана.",
+    "Уводят с портала в мессенджер, иностранный номер, отказ от звонка и видеопросмотра.",
+    "Просят прислать скан паспорта/карты побыту «для брони».",
+    "Сильно торопят: «уже трое желающих, решайте сегодня»." ] },
+  { h: "Проверь владельца и текст объявления", list: [
+    "В нашей карточке: «✨ AI-разбор» оценит риск, чипы покажут «N объявлений на OLX» и с какого года аккаунт продавца.",
+    "Погугли <b>номер телефона</b> в кавычках — жертвы часто публикуют предупреждения.",
+    "Погугли <b>первое предложение описания</b> в кавычках — краденый текст всплывёт в других объявлениях.",
+    "Открой профиль продавца на портале: когда создан, что ещё публикует." ] },
+  { h: "Безопасная оплата", list: [
+    "<b>Никогда</b> не переводи деньги до личного просмотра и подписанного договора.",
+    "Сначала договор и протокол передачи — потом деньги и ключи.",
+    "Наличные — только под расписку (<i>pokwitowanie</i>), лучше перевод с назначением платежа.",
+    "BLIK на телефон и криптовалюта «владельцу за границей» — стоп-сигнал." ] },
+  { h: "Уже перевёл деньги?", num: true, list: [
+    "Сохрани всё: переписку, объявление (скриншоты), подтверждение перевода.",
+    "Заяви в полицию (можно онлайн: <i>zgłoszenie przez internet</i> или в любом komisariacie) — мошенничество это ст. 286 kodeksu karnego.",
+    "Сообщи порталу (OLX/Otodom «Сообщить о нарушении») — объявление снимут, других спасёшь.",
+    "Позвони в свой банк: иногда перевод можно остановить или оспорить." ] }
+  ]
+},
+pl: {
+  sub: "Pięć minut sprawdzania przed telefonem do właściciela oszczędza miesięczny czynsz. Główny trik — wyszukiwanie po zdjęciach.",
+  sections: [
+  { h: "Wyszukiwanie po zdjęciach: główna broń na oszustów", p: ["Oszuści prawie nigdy nie fotografują mieszkania sami — kradną zdjęcia z cudzych ogłoszeń. Znajdź źródło zdjęć, a schemat się rozpadnie."], num: true, list: [
+    "Zapisz 2–3 zdjęcia mieszkania z ogłoszenia (długie przytrzymanie → „Zapisz obraz”).",
+    "Otwórz <b>Grafikę Google</b> (images.google.com) → ikona aparatu / <b>Google Lens</b> → wgraj zdjęcie. Na telefonie: przytrzymaj zdjęcie → „Wyszukaj w Google Lens”.",
+    "Sprawdź to samo zdjęcie w <b>Yandex Images</b> (często znajduje to, co pomija Google) i <b>TinEye</b> (tineye.com).",
+    "Porównaj wyniki: to samo mieszkanie w innych ogłoszeniach? Inne miasto lub kraj? Inna cena? Inne nazwisko „właściciela”?" ],
+    warn: "Te same zdjęcia w droższym ogłoszeniu/innym mieście albo inne nazwisko „właściciela” — zdjęcia niemal na pewno kradzione. Nie dzwoń, zgłoś ogłoszenie." },
+  { h: "Czerwone flagi w ogłoszeniu i rozmowie", list: [
+    "Cena wyraźnie <b>poniżej rynku</b> — sprawdź nasz znacznik „poniżej rynku o N%” i czerwone ostrzeżenie anty-scam.",
+    "Właściciel „jest za granicą”, mieszkanie pokaże „agent” albo „kurier z kluczami”.",
+    "Proszą o <b>opłatę, zadatek lub „rezerwację” przed oględzinami</b> — tak się nie dzieje, to główny marker oszustwa.",
+    "Przenoszą rozmowę poza portal, zagraniczny numer, odmowa telefonu i wideo-oględzin.",
+    "Proszą o skan dowodu/karty pobytu „do rezerwacji”.",
+    "Poganiają: „jest już trzech chętnych, decyzja dziś”." ] },
+  { h: "Sprawdź właściciela i treść ogłoszenia", list: [
+    "W naszej karcie: „✨ Analiza AI” oceni ryzyko, chipy pokażą „N ogłoszeń na OLX” i od którego roku istnieje konto.",
+    "Wygugluj <b>numer telefonu</b> w cudzysłowie — ofiary często publikują ostrzeżenia.",
+    "Wygugluj <b>pierwsze zdanie opisu</b> w cudzysłowie — kradziony tekst wypłynie w innych ogłoszeniach.",
+    "Otwórz profil sprzedającego na portalu: kiedy powstał, co jeszcze publikuje." ] },
+  { h: "Bezpieczna płatność", list: [
+    "<b>Nigdy</b> nie przelewaj pieniędzy przed osobistymi oględzinami i podpisaną umową.",
+    "Najpierw umowa i protokół zdawczo-odbiorczy — potem pieniądze i klucze.",
+    "Gotówka tylko za pokwitowaniem; lepszy przelew z tytułem płatności.",
+    "BLIK na telefon i kryptowaluty dla „właściciela za granicą” — znak stopu." ] },
+  { h: "Już przelałeś pieniądze?", num: true, list: [
+    "Zachowaj wszystko: rozmowy, ogłoszenie (zrzuty ekranu), potwierdzenie przelewu.",
+    "Zgłoś na policję (można online albo w każdym komisariacie) — oszustwo to art. 286 kodeksu karnego.",
+    "Zgłoś portalowi (OLX/Otodom „Zgłoś naruszenie”) — zdejmą ogłoszenie, uratujesz innych.",
+    "Zadzwoń do banku: czasem przelew da się zatrzymać lub zakwestionować." ] }
+  ]
+},
+ua: {
+  sub: "П'ять хвилин перевірки до дзвінка власнику економлять місячну оренду. Головний прийом — пошук за фотографіями.",
+  sections: [
+  { h: "Пошук за фото: головний трюк проти шахраїв", p: ["Шахраї майже ніколи не знімають квартиру самі — вони крадуть фотографії з чужих оголошень. Знайди, звідки фото, і схема розвалиться."], num: true, list: [
+    "Збережи 2–3 фото квартири з оголошення (довге натискання → «Зберегти зображення»).",
+    "Відкрий <b>Google Картинки</b> (images.google.com) → значок камери / <b>Google Lens</b> → завантаж фото. На телефоні ще простіше: довге натискання на фото → «Знайти через Google Lens».",
+    "Прожени те саме фото через <b>Яндекс.Картинки</b> (часто знаходить те, що пропускає Google) і <b>TinEye</b> (tineye.com).",
+    "Порівняй знахідки: та сама квартира в інших оголошеннях? Інше місто чи країна? Інша ціна? Інше ім'я «власника»?" ],
+    warn: "Ті самі фото в дорожчому оголошенні/іншому місті, або у «власника» інше ім'я — майже напевно фото вкрадені. Не дзвони, поскаржся на оголошення." },
+  { h: "Червоні прапорці в оголошенні й листуванні", list: [
+    "Ціна помітно <b>нижча за ринок</b> — дивись наш бейдж «нижче ринку на N%» і червону анти-скам-плашку в картці.",
+    "Власник «зараз за кордоном», квартиру покаже «агент» або «кур'єр із ключами».",
+    "Просять <b>оплату, завдаток чи „резервацію“ до перегляду</b> — так не буває, це головний маркер обману.",
+    "Відводять із порталу в месенджер, іноземний номер, відмова від дзвінка й відеоперегляду.",
+    "Просять надіслати скан паспорта/карти побиту «для броні».",
+    "Сильно кваплять: «вже троє охочих, вирішуйте сьогодні»." ] },
+  { h: "Перевір власника і текст оголошення", list: [
+    "У нашій картці: «✨ AI-розбір» оцінить ризик, чипи покажуть «N оголошень на OLX» і з якого року акаунт продавця.",
+    "Погугли <b>номер телефону</b> в лапках — жертви часто публікують попередження.",
+    "Погугли <b>перше речення опису</b> в лапках — крадений текст спливе в інших оголошеннях.",
+    "Відкрий профіль продавця на порталі: коли створений, що ще публікує." ] },
+  { h: "Безпечна оплата", list: [
+    "<b>Ніколи</b> не переказуй гроші до особистого перегляду й підписаного договору.",
+    "Спершу договір і протокол передачі — потім гроші та ключі.",
+    "Готівка — лише під розписку (<i>pokwitowanie</i>), краще переказ із призначенням платежу.",
+    "BLIK на телефон і криптовалюта «власнику за кордоном» — стоп-сигнал." ] },
+  { h: "Уже переказав гроші?", num: true, list: [
+    "Збережи все: листування, оголошення (скриншоти), підтвердження переказу.",
+    "Заяви в поліцію (можна онлайн або в будь-якому komisariacie) — шахрайство це ст. 286 kodeksu karnego.",
+    "Повідом портал (OLX/Otodom «Повідомити про порушення») — оголошення знімуть, інших врятуєш.",
+    "Зателефонуй у свій банк: іноді переказ можна зупинити або оскаржити." ] }
+  ]
+},
+by: {
+  sub: "Пяць хвілін праверкі да званка гаспадару эканомяць месячную арэнду. Галоўны прыём — пошук па фотаздымках.",
+  sections: [
+  { h: "Пошук па фота: галоўны трук супраць шахраёў", p: ["Шахраі амаль ніколі не здымаюць кватэру самі — яны крадуць фатаграфіі з чужых аб'яў. Знайдзі, адкуль фота, і схема развaліцца."], num: true, list: [
+    "Захавай 2–3 фота кватэры з аб'явы (доўгі націск → «Захаваць выяву»).",
+    "Адкрый <b>Google Малюнкі</b> (images.google.com) → значок камеры / <b>Google Lens</b> → загрузі фота. На тэлефоне яшчэ прасцей: доўгі націск на фота → «Знайсці праз Google Lens».",
+    "Прагані тое ж фота праз <b>Яндэкс.Малюнкі</b> (часта знаходзіць тое, што прапускае Google) і <b>TinEye</b> (tineye.com).",
+    "Параўнай знаходкі: тая ж кватэра ў іншых аб'явах? Іншы горад ці краіна? Іншая цана? Іншае імя «гаспадара»?" ],
+    warn: "Тыя ж фота ў даражэйшай аб'яве/іншым горадзе, або ў «гаспадара» іншае імя — амаль напэўна фота ўкрадзеныя. Не звані, паскардзіся на аб'яву." },
+  { h: "Чырвоныя сцягі ў аб'яве і перапісцы", list: [
+    "Цана прыкметна <b>ніжэйшая за рынак</b> — глядзі наш бейдж «ніжэй рынку на N%» і чырвоную анты-скам-плашку ў картцы.",
+    "Гаспадар «зараз за мяжой», кватэру пакажа «агент» або «кур'ер з ключамі».",
+    "Просяць <b>аплату, задатак ці „рэзервацыю“ да прагляду</b> — так не бывае, гэта галоўны маркер падману.",
+    "Выводзяць з партала ў месенджар, замежны нумар, адмова ад званка і відэапрагляду.",
+    "Просяць даслаць скан пашпарта/карты побыту «для броні».",
+    "Моцна кваапяць: «ужо трое ахвотных, вырашайце сёння»." ] },
+  { h: "Правер гаспадара і тэкст аб'явы", list: [
+    "У нашай картцы: «✨ AI-разбор» ацэніць рызыку, чыпы пакажуць «N аб'яў на OLX» і з якога года акаунт прадаўца.",
+    "Пагуглі <b>нумар тэлефона</b> ў двукоссі — ахвяры часта публікуюць папярэджанні.",
+    "Пагуглі <b>першы сказ апісання</b> ў двукоссі — крадзены тэкст усплыве ў іншых аб'явах.",
+    "Адкрый профіль прадаўца на партале: калі створаны, што яшчэ публікуе." ] },
+  { h: "Бяспечная аплата", list: [
+    "<b>Ніколі</b> не пераводзь грошы да асабістага прагляду і падпісанай дамовы.",
+    "Спачатку дамова і пратакол перадачы — потым грошы і ключы.",
+    "Наяўныя — толькі пад распіску (<i>pokwitowanie</i>), лепш перавод з прызначэннем плацяжу.",
+    "BLIK на тэлефон і крыптавалюта «гаспадару за мяжой» — стоп-сігнал." ] },
+  { h: "Ужо пераказаў грошы?", num: true, list: [
+    "Захавай усё: перапіску, аб'яву (скрыншоты), пацвярджэнне пераводу.",
+    "Заяві ў паліцыю (можна анлайн або ў любым komisariacie) — шахрайства гэта арт. 286 kodeksu karnego.",
+    "Паведамі парталу (OLX/Otodom «Паведаміць пра парушэнне») — аб'яву здымуць, іншых уратуеш.",
+    "Патэлефануй у свой банк: часам перавод можна спыніць або аспрэчыць." ] }
+  ]
+},
+en: {
+  sub: "Five minutes of checking before you call the owner can save a month's rent. The key trick — reverse image search.",
+  sections: [
+  { h: "Reverse image search: the #1 anti-scam trick", p: ["Scammers almost never photograph the flat themselves — they steal photos from other listings. Find where the photos came from and the scheme falls apart."], num: true, list: [
+    "Save 2–3 photos of the flat from the listing (long-press → “Save image”).",
+    "Open <b>Google Images</b> (images.google.com) → camera icon / <b>Google Lens</b> → upload the photo. On the phone it's even easier: long-press the photo → “Search with Google Lens”.",
+    "Run the same photo through <b>Yandex Images</b> (often finds what Google misses) and <b>TinEye</b> (tineye.com).",
+    "Compare the results: same flat in other listings? Different city or country? Different price? A different “owner” name?" ],
+    warn: "Same photos in a pricier listing/another city, or a different “owner” name — the photos are almost certainly stolen. Don't call; report the listing." },
+  { h: "Red flags in the listing and the chat", list: [
+    "Price clearly <b>below the market</b> — check our “below market by N%” badge and the red anti-scam warning in the listing.",
+    "The owner is “abroad right now”; an “agent” or a “courier with keys” will show the flat.",
+    "They ask for <b>payment, a deposit or a “reservation” before the viewing</b> — that never happens legitimately; it's the #1 scam marker.",
+    "They pull you off the portal into a messenger, a foreign number, refuse a call or a video viewing.",
+    "They ask for a passport/residence-card scan “for the booking”.",
+    "They rush you: “three people are already interested, decide today”." ] },
+  { h: "Check the owner and the listing text", list: [
+    "In our listing card: “✨ AI breakdown” scores the risk; chips show “N listings on OLX” and the seller's account age.",
+    "Google the <b>phone number</b> in quotes — victims often post warnings.",
+    "Google the <b>first sentence of the description</b> in quotes — stolen text shows up in other listings.",
+    "Open the seller's portal profile: when created, what else they post." ] },
+  { h: "Safe payment", list: [
+    "<b>Never</b> transfer money before an in-person viewing and a signed contract.",
+    "Contract and handover protocol first — money and keys after.",
+    "Cash only against a receipt (<i>pokwitowanie</i>); a bank transfer with a payment title is better.",
+    "BLIK to a phone or crypto for an “owner abroad” — full stop." ] },
+  { h: "Already sent money?", num: true, list: [
+    "Save everything: the chat, the listing (screenshots), the transfer confirmation.",
+    "Report to the police (online or at any komisariat) — fraud is art. 286 of the penal code.",
+    "Report to the portal (OLX/Otodom “Report abuse”) — they'll take the listing down and you'll save others.",
+    "Call your bank: sometimes a transfer can be stopped or disputed." ] }
+  ]
+}
+};
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.getElementById("ttl").textContent = I18N.t("cellScamT");
+document.title = "Kwadrat PL — " + I18N.t("cellScamT");
+Guide.renderArticle("#art", GUIDE);
+</script>
+</body>
+</html>
