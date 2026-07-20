@@ -107,16 +107,24 @@ def enrich_once():
         return {"geocoded": 0, "scored": 0}
     now = int(time.time())
     with db() as c:
-        known = {r["id"] for r in c.execute("SELECT id FROM geo_listings")}
+        known = {r["id"]: r["precision"] for r in
+                 c.execute("SELECT id, precision FROM geo_listings")}
         # retention: строки старше 60 дней (объявление давно умерло)
         c.execute("DELETE FROM geo_listings WHERE ts < ?", (now - 60 * 86400,))
 
     geocoded = 0
     budget = GEOCODES_PER_CYCLE
+    upgradeable = ("district", "unknown")
     for l in listings:
         lid = str(l["id"])
-        if lid in known:
-            continue
+        prev = known.get(lid)
+        if prev is not None:
+            # апгрейд точности: слабая запись (district/unknown) пересчитывается,
+            # если у объявления появились координаты или улица (данные фетчера
+            # могли прийти ПОСЛЕ первого прохода — write-once терял точность)
+            better = isinstance(l.get("lat"), (int, float)) or bool(l.get("street"))
+            if not (prev in upgradeable and better):
+                continue
         lat, lon, prec, used = _resolve_coords(l, budget)
         budget -= used
         if prec == "defer":

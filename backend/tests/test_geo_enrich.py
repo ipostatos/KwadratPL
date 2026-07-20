@@ -93,6 +93,19 @@ def test_score_daily_budget(geo_mocks, monkeypatch):
     assert geo_mocks["poi"] == 1
 
 
+def test_upgrade_precision_when_street_appears(geo_mocks):
+    # первый проход: у объявления только район
+    _write_listings([L_MRZ])
+    geo_enrich.enrich_once()
+    assert _rows()["morizon-3"]["precision"] == "district"
+    # фетчер стал отдавать улицу → запись должна апгрейдиться, а не скипаться
+    _write_listings([dict(L_MRZ, street="Chłodna 20")])
+    geo_enrich.enrich_once()
+    row = _rows()["morizon-3"]
+    assert row["precision"] == "address"
+    assert row["score"] is not None      # точную точку тут же скорим
+
+
 @pytest.mark.asyncio
 async def test_ingest_merges_geo(client, ingest_headers):
     with db() as c:
