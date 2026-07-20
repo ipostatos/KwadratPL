@@ -114,6 +114,8 @@
 
   <div class="toolbar">
     <span class="count" id="count"></span>
+    <a class="btn ghost sm" href="mapa.html" style="width:auto; margin-right:8px; padding:6px 12px"
+       title="Mapa"><span class="emi" data-icon="map-pin"></span></a>
     <select id="sort">
       <option value="new" data-i18n="sortNew"></option>
       <option value="priceAsc" data-i18n="sortPriceAsc"></option>
@@ -527,6 +529,11 @@ $("#overlay").onclick = function (e) { if (e.target === e.currentTarget) closeSh
 App.ready.then(function () {
   renderControls();
   renderList();
+  // deep-link с карты (mapa.html): ?open=<id> — сразу открыть шторку
+  var openId = qs.get("open");
+  if (openId && App.listings.some(function (l) { return String(l.id) === openId; })) {
+    setTimeout(function () { openSheet(openId); }, 60);
+  }
   if (!App.live) {
     document.querySelector('[data-i18n="footSearch"]').textContent = I18N.t("footSearchDemo");
     /* фоновая симуляция снижения цены — только в демо-режиме:

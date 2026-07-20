@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Kwadrat PL — Карта</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="vendor/maplibre/maplibre-gl.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="nav.js"></script>
+<script src="i18n.dict.js"></script>
+<script src="i18n.js"></script>
+<script src="icons.js"></script>
+<script src="js/core.js"></script>
+<script src="js/price.js"></script>
+<script src="vendor/maplibre/maplibre-gl.js"></script>
+<style>
+  /* — полноэкранная карта: перекрываем рамку theme.css — */
+  html, body{ height:100% }
+  body{ padding:0; max-width:none; margin:0; overflow:hidden }
+  #map{ position:absolute; inset:0 }
+
+  /* верхняя плавающая панель: тип аренды + счётчик */
+  .m-top{ position:absolute; top:10px; left:10px; right:10px; z-index:5;
+    display:flex; flex-direction:column; gap:6px; pointer-events:none }
+  .m-top .seg{ pointer-events:auto; box-shadow:var(--shadow);
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter:saturate(160%) blur(12px); -webkit-backdrop-filter:saturate(160%) blur(12px) }
+  .m-count{ align-self:center; font-size:var(--fs-xs); color:var(--hint);
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    border:1px solid var(--border); border-radius:var(--r-pill); padding:3px 10px }
+
+  /* нижняя плавающая карточка объявления */
+  .m-card{ position:absolute; left:10px; right:10px; bottom:12px; z-index:6;
+    background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg);
+    box-shadow:0 6px 24px rgba(0,0,0,.28); padding:12px 14px;
+    transform:translateY(130%); transition:transform .22s ease }
+  .m-card.show{ transform:none }
+  .m-card .mc-top{ display:flex; align-items:center; gap:10px }
+  .m-card .mc-photo{ width:56px; height:56px; border-radius:10px; flex:0 0 auto;
+    background-size:cover; background-position:center; display:flex;
+    align-items:center; justify-content:center; color:#fff }
+  .m-card .mc-photo svg{ width:24px; height:24px }
+  .m-card .mc-price{ font-size:17px; font-weight:800 }
+  .m-card .mc-meta{ font-size:var(--fs-xs); color:var(--hint); margin-top:2px; line-height:1.4 }
+  .m-card .mc-actions{ display:flex; gap:8px; margin-top:10px }
+  .m-card .mc-actions .btn{ flex:1 }
+  .m-card .mc-actions .fav{ flex:0 0 auto; width:auto }
+  .m-card .close{ position:absolute; top:8px; right:8px; width:26px; height:26px;
+    border-radius:50%; border:0; background:var(--bg); color:var(--hint); cursor:pointer }
+
+  .m-note{ position:absolute; left:10px; bottom:12px; right:10px; z-index:4;
+    text-align:center; font-size:10px; color:var(--hint); pointer-events:none;
+    text-shadow:0 1px 2px var(--bg) }
+  .maplibregl-ctrl-bottom-right{ bottom:34px }
+</style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="m-top">
+    <div class="seg" id="mType">
+      <button data-val="long" data-i18n="long"></button>
+      <button data-val="room" data-i18n="room"></button>
+      <button data-val="short" data-i18n="short"></button>
+    </div>
+    <span class="m-count" id="mCount"></span>
+  </div>
+
+  <div class="m-note" id="mNote"></div>
+
+  <div class="m-card" id="mCard">
+    <button class="close" id="mcClose">✕</button>
+    <div class="mc-top">
+      <div class="mc-photo" id="mcPhoto"></div>
+      <div style="flex:1; min-width:0">
+        <div class="mc-price" id="mcPrice"></div>
+        <div class="mc-meta" id="mcMeta"></div>
+      </div>
+    </div>
+    <div class="mc-actions">
+      <a class="btn" id="mcOpen" href="#"><span class="emi" data-icon="search"></span> <span id="mcOpenT"></span></a>
+      <button class="btn ghost fav" id="mcFav"></button>
+    </div>
+  </div>
+
+<script>
+"use strict";
+if (window.Icons) Icons.hydrate();
+I18N.hydrate();
+document.title = "Kwadrat PL — " + I18N.t("mapT");
+var $ = function (s) { return document.querySelector(s); };
+$("#mNote").textContent = I18N.t("mapApprox");
+$("#mcOpenT").textContent = I18N.t("mapMore");
+
+var tg = window.Telegram && window.Telegram.WebApp;
+var isDark = tg && tg.colorScheme ? tg.colorScheme === "dark"
+  : matchMedia("(prefers-color-scheme: dark)").matches;
+
+var state = { type: "long" };
+var map = new maplibregl.Map({
+  container: "map",
+  style: "map/style-" + (isDark ? "dark" : "light") + ".json",
+  center: [21.006, 52.2318],
+  zoom: 11,
+  attributionControl: { compact: true },
+});
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+
+// метки показываем только для честных координат; district исключён сознательно:
+// центроид района стакал бы десятки объявлений в одну точку (ложная точность)
+var OK_PREC = { point: 1, address: 1, street: 1, approx: 1 };
+
+function fmtPrice(l) {
+  return l.price.toLocaleString() + " zł";
+}
+
+function geojson() {
+  var feats = [];
+  App.listings.forEach(function (l) {
+    if (l.city !== "warszawa" || l.type !== state.type) return;
+    if (l.lat == null || l.lon == null || !OK_PREC[l.geoPrec]) return;
+    feats.push({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [l.lon, l.lat] },
+      properties: { id: String(l.id), price: fmtPrice(l) },
+    });
+  });
+  return { type: "FeatureCollection", features: feats };
+}
+
+// пилюля-ценник: stretchable-картинка под icon-text-fit (рисуем на canvas)
+function pillImage(bg, border) {
+  var dpr = 2, w = 66, h = 30, r = 15, c = document.createElement("canvas");
+  c.width = w * dpr; c.height = h * dpr;
+  var x = c.getContext("2d");
+  x.scale(dpr, dpr);
+  x.beginPath();
+  x.roundRect(1, 1, w - 2, h - 2, r);
+  x.fillStyle = bg; x.fill();
+  x.lineWidth = 1.5; x.strokeStyle = border; x.stroke();
+  return {
+    img: x.getImageData(0, 0, w * dpr, h * dpr),
+    opts: {
+      pixelRatio: dpr,
+      // тянущиеся зоны — центр пилюли; края (скругления) не растягиваются
+      stretchX: [[r + 2, w - r - 2]], stretchY: [[r, h - r]],
+      content: [10, 5, w - 10, h - 5],
+    },
+  };
+}
+
+var cardListing = null;
+function showCard(l) {
+  cardListing = l;
+  var ph = $("#mcPhoto");
+  var safe = App.safePhotoUrl(l.photo);
+  ph.style.background = safe ? 'url("' + safe + '") center/cover'
+    : "linear-gradient(135deg," + (l.grad ? l.grad[0] + "," + l.grad[1] : "#3a6186,#89253e") + ")";
+  ph.innerHTML = safe ? "" : (window.Icons ? Icons.svg(l.icon || "home") : "");
+  $("#mcPrice").innerHTML = App.esc(l.price.toLocaleString() + " " + App.priceUnit(l.type)) +
+    (App.priceBadge ? App.priceBadge(l) : "");
+  var meta = [];
+  if (l.district) meta.push(l.district);
+  if (l.rooms != null) meta.push(l.rooms + " " + I18N.t("roomsShort"));
+  if (l.area != null) meta.push(l.area + " m²");
+  if (l.locScore != null) meta.push("📍 " + l.locScore + "/100");
+  $("#mcMeta").textContent = meta.join(" · ");
+  $("#mcOpen").href = "search.html?city=warszawa&type=" + l.type + "&open=" + encodeURIComponent(l.id);
+  renderFav();
+  $("#mCard").classList.add("show");
+  if (typeof haptic === "function") haptic("light");
+}
+function renderFav() {
+  if (!cardListing) return;
+  var on = App.isFav(cardListing.id);
+  $("#mcFav").innerHTML = '<span class="emi"' + (on ? ' style="color:#ff6b81"' : "") + ">" +
+    Icons.svg("heart") + "</span>";
+}
+$("#mcFav").onclick = function () {
+  if (!cardListing) return;
+  App.toggleFav(cardListing);
+  renderFav();
+  if (typeof haptic === "function") haptic("select");
+};
+$("#mcClose").onclick = function () { $("#mCard").classList.remove("show"); };
+
+function refresh() {
+  var data = geojson();
+  map.getSource("listings").setData(data);
+  $("#mCount").textContent = I18N.t("mapCountN", { n: data.features.length });
+}
+
+map.on("load", function () {
+  var pal = isDark
+    ? { pill: "#242528", pillBorder: "#3C3D40", pillText: "#E6E6E4", cluster: "#3390ec" }
+    : { pill: "#FFFFFF", pillBorder: "#DDDCD7", pillText: "#363636", cluster: "#3390ec" };
+  var p = pillImage(pal.pill, pal.pillBorder);
+  map.addImage("pill", p.img, p.opts);
+
+  map.addSource("listings", {
+    type: "geojson", data: { type: "FeatureCollection", features: [] },
+    cluster: true, clusterMaxZoom: 15, clusterRadius: 46,
+  });
+  map.addLayer({
+    id: "clusters", type: "circle", source: "listings", filter: ["has", "point_count"],
+    paint: {
+      "circle-color": pal.cluster,
+      "circle-radius": ["step", ["get", "point_count"], 15, 10, 19, 40, 24],
+      "circle-stroke-width": 2, "circle-stroke-color": "#ffffff",
+    },
+  });
+  map.addLayer({
+    id: "cluster-count", type: "symbol", source: "listings", filter: ["has", "point_count"],
+    layout: { "text-field": ["get", "point_count_abbreviated"],
+      "text-font": ["Noto Sans Bold"], "text-size": 12 },
+    paint: { "text-color": "#ffffff" },
+  });
+  map.addLayer({
+    id: "prices", type: "symbol", source: "listings", filter: ["!", ["has", "point_count"]],
+    layout: {
+      "icon-image": "pill", "icon-text-fit": "both",
+      "text-field": ["get", "price"], "text-font": ["Noto Sans Bold"], "text-size": 12,
+      "icon-allow-overlap": false, "text-allow-overlap": false,
+      "icon-padding": 2,
+    },
+    paint: { "text-color": pal.pillText },
+  });
+
+  map.on("click", "clusters", function (e) {
+    var f = map.queryRenderedFeatures(e.point, { layers: ["clusters"] })[0];
+    map.getSource("listings").getClusterExpansionZoom(f.properties.cluster_id)
+      .then(function (z) { map.easeTo({ center: f.geometry.coordinates, zoom: z + 0.5 }); });
+  });
+  map.on("click", "prices", function (e) {
+    var id = e.features[0].properties.id;
+    var l = App.listings.find(function (x) { return String(x.id) === id; });
+    if (l) showCard(l);
+  });
+  ["clusters", "prices"].forEach(function (layer) {
+    map.on("mouseenter", layer, function () { map.getCanvas().style.cursor = "pointer"; });
+    map.on("mouseleave", layer, function () { map.getCanvas().style.cursor = ""; });
+  });
+
+  App.ready.then(refresh);
+});
+
+// сегмент типа аренды
+document.querySelectorAll("#mType button").forEach(function (b) {
+  b.classList.toggle("active", b.dataset.val === state.type);
+  b.onclick = function () {
+    state.type = b.dataset.val;
+    document.querySelectorAll("#mType button").forEach(function (x) {
+      x.classList.toggle("active", x === b);
+    });
+    $("#mCard").classList.remove("show");
+    if (map.getSource("listings")) refresh();
+    if (typeof haptic === "function") haptic("select");
+  };
+});
+</script>
+</body>
+</html>

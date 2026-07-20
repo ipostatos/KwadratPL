@@ -335,7 +335,14 @@
     exFitGood:  { ru: "локация под твой профиль: {n}/100", pl: "lokalizacja pod twój profil: {n}/100", ua: "локація під твій профіль: {n}/100", by: "лакацыя пад твой профіль: {n}/100", en: "location for your profile: {n}/100" },
     exFitWeak:  { ru: "локация слабая для твоего профиля ({n}/100)", pl: "lokalizacja słaba jak na twój profil ({n}/100)", ua: "локація слабка для твого профілю ({n}/100)", by: "лакацыя слабая для твайго профілю ({n}/100)", en: "weak location for your profile ({n}/100)" },
     exCommuteOk: { ru: "до работы ~{n} мин (оценка)", pl: "do pracy ~{n} min (szacunkowo)", ua: "до роботи ~{n} хв (оцінка)", by: "да працы ~{n} хв (ацэнка)", en: "~{n} min to work (estimate)" },
-    exCommuteFar:{ ru: "до работы ~{n} мин — дольше твоего лимита {m}", pl: "do pracy ~{n} min — powyżej twojego limitu {m}", ua: "до роботи ~{n} хв — довше за твій ліміт {m}", by: "да працы ~{n} хв — даўжэй за твой ліміт {m}", en: "~{n} min to work — over your {m} min limit" }
+    exCommuteFar:{ ru: "до работы ~{n} мин — дольше твоего лимита {m}", pl: "do pracy ~{n} min — powyżej twojego limitu {m}", ua: "до роботи ~{n} хв — довше за твій ліміт {m}", by: "да працы ~{n} хв — даўжэй за твой ліміт {m}", en: "~{n} min to work — over your {m} min limit" },
+
+    /* ── карта объявлений (mapa.html) ── */
+    mapT:      { ru: "Карта объявлений", pl: "Mapa ogłoszeń", ua: "Мапа оголошень", by: "Мапа аб'яў", en: "Listings map" },
+    mapTileD:  { ru: "Варшава: все объявления с ценами на одной карте", pl: "Warszawa: wszystkie ogłoszenia z cenami na jednej mapie", ua: "Варшава: всі оголошення з цінами на одній мапі", by: "Варшава: усе аб'явы з цэнамі на адной мапе", en: "Warsaw: every listing with its price on one map" },
+    mapCountN: { ru: "На карте: {n}", pl: "Na mapie: {n}", ua: "На мапі: {n}", by: "На мапе: {n}", en: "On the map: {n}" },
+    mapApprox: { ru: "Часть меток приблизительные: точный адрес скрыт в объявлении", pl: "Część znaczników jest przybliżona: dokładny adres ukryty w ogłoszeniu", ua: "Частина міток приблизні: точна адреса прихована в оголошенні", by: "Частка метак прыблізныя: дакладны адрас схаваны ў аб'яве", en: "Some pins are approximate: the exact address is hidden in the listing" },
+    mapMore:   { ru: "Подробнее", pl: "Szczegóły", ua: "Детальніше", by: "Падрабязней", en: "Details" }
   };
 
   return { LANGS: LANGS, CITY_NAMES: CITY_NAMES, DICT: DICT };
