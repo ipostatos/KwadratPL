@@ -389,7 +389,7 @@ function openSheet(id) {
             "&prec=" + encodeURIComponent(l.geoPrec || "")
           : "lokacja.html?q=" +
             encodeURIComponent((l.street || l.district || "") + ", Warszawa")) +
-        '"><span class="emi">' + Icons.svg("map-pin") + "</span> " +
+        '"><span class="emi">' + Icons.svg("gauge") + "</span> " +
         App.esc(I18N.t("locT")) + "</a>"
       : "") +
     (descr ? '<p class="muted" style="font-size:var(--fs-sm)">' + App.esc(descr) + "</p>" : "") +

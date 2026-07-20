@@ -26,7 +26,7 @@ if (KW.LANGS.map((x) => x.code).join(",") !== LANGS.join(",")) {
 const NEED_ICONS = ["building", "search", "home", "key", "bed", "map-pin", "wallet",
   "bell", "heart", "trending-down", "shield-check", "message-circle", "send", "info",
   "file-text", "calculator", "check-square", "book-open", "paw-print", "trash",
-  "moon", "sliders", "coffee", "star"];
+  "moon", "sliders", "coffee", "star", "gauge"];
 for (const n of NEED_ICONS) {
   if (!Icons.svg(n)) errors.push(`icon отсутствует: ${n}`);
 }
