@@ -23,6 +23,23 @@ def test_listing_kb_no_coords_no_loc_button():
     assert len(kb.inline_keyboard[1]) == 1          # только «в приложении»
 
 
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_donate_link(client, auth, monkeypatch):
+    async def fake_link(**kw):
+        assert kw["currency"] == "XTR" and kw["prices"][0].amount == 100
+        return "https://t.me/$test-invoice"
+    monkeypatch.setattr(bot_module.bot, "create_invoice_link", fake_link)
+    r = await client.post("/api/donate/link", json={"amount": 100}, headers=auth)
+    assert r.status_code == 200 and r.json()["link"].startswith("https://t.me/$")
+    r2 = await client.post("/api/donate/link", json={"amount": 7}, headers=auth)
+    assert r2.status_code == 422                       # только 25/100/500
+    r3 = await client.post("/api/donate/link", json={"amount": 100})
+    assert r3.status_code == 401                       # без initData нельзя
+
+
 def test_market_pct():
     listings = [{"id": f"x{i}", "city": "warszawa", "district": "Wola", "type": "long",
                  "price": 3000 + i * 100, "area": 50} for i in range(8)]

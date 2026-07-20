@@ -84,6 +84,7 @@
       <a class="btn" href="#" id="btnStars">
         <span class="emi" data-icon="star"></span> <span data-i18n="donateStars"></span>
       </a>
+      <div id="starsRow" class="hidden" style="display:flex; gap:8px"></div>
       <a class="btn ghost" href="https://buymeacoffee.com/ipostatos" target="_blank" rel="noopener">
         <span class="emi" data-icon="coffee"></span> <span data-i18n="donateCoffee"></span>
       </a>
@@ -263,14 +264,59 @@ var BOTS = {
       '<div class="chev">›</div></a>';
   }).join("");
 
-  // Stars: диплинк в чат бота, где придёт меню сумм (/start donate)
+  // Stars: внутри Telegram — нативный платёж прямо в Mini App
+  // (createInvoiceLink на бэке + Telegram.WebApp.openInvoice), без ухода
+  // в чат. Вне Telegram — фолбэк-диплинк на /start donate.
+  var API = /\.vercel\.app$/.test(location.hostname)
+    ? "https://kwadratpl-46-224-220-94.sslip.io" : "";
+  var tg = window.Telegram && window.Telegram.WebApp;
+  var inApp = !!(tg && tg.initData && tg.openInvoice);
+
   document.getElementById("btnStars").onclick = function (e) {
     e.preventDefault();
-    var tg = window.Telegram && window.Telegram.WebApp;
-    var url = "https://t.me/KwadratPLBot?start=donate";
-    if (tg && tg.openTelegramLink) tg.openTelegramLink(url);
-    else window.open(url, "_blank", "noopener");
+    if (!inApp) {
+      var url = "https://t.me/KwadratPLBot?start=donate";
+      if (tg && tg.openTelegramLink) tg.openTelegramLink(url);
+      else window.open(url, "_blank", "noopener");
+      return;
+    }
+    var row = document.getElementById("starsRow");
+    if (!row.childNodes.length) {
+      [25, 100, 500].forEach(function (n) {
+        var b = document.createElement("button");
+        b.className = "btn ghost";
+        b.style.flex = "1";
+        b.textContent = "⭐ " + n;
+        b.onclick = function () { payStars(n, row); };
+        row.appendChild(b);
+      });
+    }
+    row.classList.toggle("hidden");
+    if (typeof haptic === "function") haptic("select");
   };
+
+  function payStars(amount, row) {
+    fetch(API + "/api/donate/link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json",
+                 "Authorization": "tma " + tg.initData },
+      body: JSON.stringify({ amount: amount }),
+    })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (d) {
+        tg.openInvoice(d.link, function (status) {
+          if (status === "paid") {
+            row.innerHTML = '<div style="flex:1; text-align:center; font-weight:700; padding:10px">💛 ' +
+              I18N.t("starsThanks") + "</div>";
+            if (typeof haptic === "function") haptic("success");
+          }
+        });
+      })
+      .catch(function () {
+        // бэкенд недоступен — фолбэк в чат бота
+        if (tg.openTelegramLink) tg.openTelegramLink("https://t.me/KwadratPLBot?start=donate");
+      });
+  }
 })();
 </script>
 </body>

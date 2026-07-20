@@ -53,11 +53,11 @@ T = {
                      "ua": "Підтримка Kwadrat PL", "by": "Падтрымка Kwadrat PL",
                      "en": "Support Kwadrat PL"},
     "donate_desc": {
-        "ru": "Бот бесплатный и без рекламы. Звёзды идут на сервер и развитие.",
-        "pl": "Bot jest darmowy i bez reklam. Gwiazdki idą na serwer i rozwój.",
-        "ua": "Бот безкоштовний і без реклами. Зірки йдуть на сервер і розвиток.",
-        "by": "Бот бясплатны і без рэкламы. Зоркі ідуць на сервер і развіццё.",
-        "en": "The bot is free and ad-free. Stars go to the server and development."},
+        "ru": "Бот бесплатный и без рекламы. Звёзды идут на домен, сервер, AI-разбор и Google API.",
+        "pl": "Bot jest darmowy i bez reklam. Gwiazdki pokrywają domenę, serwer, analizę AI i Google API.",
+        "ua": "Бот безкоштовний і без реклами. Зірки йдуть на домен, сервер, AI-розбір і Google API.",
+        "by": "Бот бясплатны і без рэкламы. Зоркі ідуць на дамен, сервер, AI-разбор і Google API.",
+        "en": "The bot is free and ad-free. Stars cover the domain, server, AI analysis and Google API."},
     "donate_thanks": {
         "ru": "Спасибо за поддержку! 💛 Пусть дом найдётся!",
         "pl": "Dziękuję za wsparcie! 💛 Niech dom się znajdzie!",
