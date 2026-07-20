@@ -77,6 +77,34 @@
     </label>
   </div>
 
+  <!-- Personal Fit: профиль для персональных подсказок в объявлениях -->
+  <div class="saved-item" style="flex-wrap:wrap">
+    <div class="ic-tile cyan" data-icon="map-pin"></div>
+    <div class="info">
+      <div class="name" data-i18n="profT"></div>
+      <div class="desc" data-i18n="profD"></div>
+    </div>
+    <div style="flex-basis:100%; margin-top:10px">
+      <label class="flabel" data-i18n="profWork"></label>
+      <div style="display:flex; gap:8px">
+        <input type="text" id="profAddr" autocomplete="off" style="flex:1">
+        <button class="btn sm" id="profFind" style="width:auto"></button>
+      </div>
+      <div id="profCands" style="display:flex; flex-direction:column; gap:6px; margin-top:6px"></div>
+      <div id="profWorkNow" class="muted" style="font-size:var(--fs-xs); margin-top:6px"></div>
+      <label class="flabel" style="margin-top:12px" data-i18n="profMaxT"></label>
+      <div class="seg" id="profMax">
+        <button data-val="0" data-i18n="profNoLim"></button>
+        <button data-val="30">30</button>
+        <button data-val="45">45</button>
+        <button data-val="60">60</button>
+      </div>
+      <label class="flabel" style="margin-top:12px" data-i18n="profPrioT"></label>
+      <div id="profPrio"></div>
+      <button class="btn ghost sm" id="profClear" style="margin-top:10px; width:auto"></button>
+    </div>
+  </div>
+
   <a class="btn" href="search.html" style="margin-top:var(--sp-4)">
     <span class="emi" data-icon="search"></span> <span data-i18n="toSearch"></span>
   </a>
@@ -295,6 +323,116 @@ if (btnDel) btnDel.onclick = function () {
 renderSaved();
 renderFavs();
 renderSettings();
+
+/* ── Personal Fit: профиль (kw_profile, только localStorage этого устройства) ── */
+(function () {
+  var API = /\.vercel\.app$/.test(location.hostname)
+    ? "https://kwadratpl-46-224-220-94.sslip.io" : "";
+  var CATS = [["catTransport", "🚇"], ["catInfra", "🛒"], ["catSchools", "🏫"], ["catGreen", "🌳"]];
+  var prof = App._load("kw_profile", null) || { work: null, maxCommute: 0, imp: [0, 0, 0, 0] };
+  if (!prof.imp || prof.imp.length !== 4) prof.imp = [0, 0, 0, 0];
+
+  function save() {
+    try { localStorage.setItem("kw_profile", JSON.stringify(prof)); } catch (e) {}
+    haptic("select");
+  }
+
+  $("#profFind").textContent = I18N.t("profFindB");
+  $("#profClear").textContent = I18N.t("profClearB");
+  $("#profAddr").placeholder = I18N.t("locInput");
+
+  function renderWork() {
+    $("#profWorkNow").textContent = prof.work && prof.work.label
+      ? I18N.t("profWorkSet", { s: prof.work.label }) : "";
+  }
+
+  // приоритеты: строка на категорию, сегмент неважно/важно/очень
+  var prioBox = $("#profPrio");
+  prioBox.innerHTML = CATS.map(function (c, i) {
+    return '<div style="display:flex; align-items:center; gap:8px; margin-top:6px">' +
+      '<span style="flex:1; font-size:var(--fs-sm)">' + c[1] + " " + App.esc(I18N.t(c[0])) + "</span>" +
+      '<div class="seg" data-cat="' + i + '" style="flex:0 0 auto">' +
+      [0, 1, 2].map(function (v) {
+        return '<button data-val="' + v + '"' +
+          (prof.imp[i] === v ? ' class="active"' : "") + ">" +
+          App.esc(I18N.t("profImp" + v)) + "</button>";
+      }).join("") + "</div></div>";
+  }).join("");
+  prioBox.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-val]");
+    if (!b) return;
+    var seg = b.closest("[data-cat]");
+    prof.imp[+seg.dataset.cat] = +b.dataset.val;
+    seg.querySelectorAll("button").forEach(function (x) {
+      x.classList.toggle("active", x === b);
+    });
+    save();
+  });
+
+  var maxSeg = $("#profMax");
+  maxSeg.querySelectorAll("button").forEach(function (b) {
+    b.classList.toggle("active", +b.dataset.val === (+prof.maxCommute || 0));
+    b.onclick = function () {
+      prof.maxCommute = +b.dataset.val;
+      maxSeg.querySelectorAll("button").forEach(function (x) {
+        x.classList.toggle("active", x === b);
+      });
+      save();
+    };
+  });
+
+  function findWork() {
+    var q = $("#profAddr").value.trim();
+    if (q.length < 2) return;
+    var box = $("#profCands");
+    box.innerHTML = '<span class="muted" style="font-size:var(--fs-xs)">…</span>';
+    fetch(API + "/api/location/geocode?q=" + encodeURIComponent(q) + "&lang=" + I18N.lang)
+      .then(function (r) { return r.ok ? r.json() : { results: [] }; })
+      .then(function (d) {
+        var res = d.results || [];
+        if (!res.length) {
+          box.innerHTML = '<span class="muted" style="font-size:var(--fs-xs)">' +
+            App.esc(I18N.t("locNotFound")) + "</span>";
+          return;
+        }
+        box.innerHTML = "";
+        res.forEach(function (c) {
+          var b = document.createElement("button");
+          b.className = "btn ghost sm";
+          b.style.width = "100%";
+          b.style.justifyContent = "flex-start";
+          b.textContent = c.label;
+          b.onclick = function () {
+            prof.work = { label: c.label, lat: c.lat, lon: c.lon };
+            box.innerHTML = "";
+            save(); renderWork();
+            App.toast("📍", I18N.t("profT"), I18N.t("profWorkSet", { s: c.label }));
+          };
+          box.appendChild(b);
+        });
+      })
+      .catch(function () { box.innerHTML = ""; });
+  }
+  $("#profFind").onclick = findWork;
+  $("#profAddr").addEventListener("keydown", function (e) { if (e.key === "Enter") findWork(); });
+
+  $("#profClear").onclick = function () {
+    try { localStorage.removeItem("kw_profile"); } catch (e) {}
+    prof = { work: null, maxCommute: 0, imp: [0, 0, 0, 0] };
+    renderWork();
+    maxSeg.querySelectorAll("button").forEach(function (x) {
+      x.classList.toggle("active", +x.dataset.val === 0);
+    });
+    prioBox.querySelectorAll("[data-cat]").forEach(function (seg) {
+      seg.querySelectorAll("button").forEach(function (x) {
+        x.classList.toggle("active", +x.dataset.val === 0);
+      });
+    });
+    haptic("light");
+  };
+
+  renderWork();
+})();
 </script>
 </body>
 </html>

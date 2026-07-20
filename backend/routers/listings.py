@@ -88,7 +88,7 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
         #     listings.json только здесь — файл вне инжеста не переписывается
         with db() as c:
             geo_rows = {r["id"]: r for r in c.execute(
-                "SELECT id, lat, lon, precision, score FROM geo_listings "
+                "SELECT id, lat, lon, precision, score, cats FROM geo_listings "
                 "WHERE lat IS NOT NULL")}
         for l in listings:
             g = geo_rows.get(str(l.get("id") or ""))
@@ -99,6 +99,11 @@ async def ingest(request: Request, x_ingest_token: str = Header("")):
             l["geoPrec"] = l.get("geoPrec") or g["precision"]
             if g["score"] is not None:
                 l["locScore"] = g["score"]
+            if g["cats"]:
+                try:
+                    l["locCats"] = json.loads(g["cats"])   # [transport,infra,schools,green]
+                except ValueError:
+                    pass
 
         # 3) запись файла (уже с проставленным oldPrice) — в тред
         await asyncio.to_thread(_write_listings, payload)

@@ -136,9 +136,12 @@ def enrich_once():
 
     scored = 0
     with db() as c:
+        # score IS NULL — новые; cats IS NULL — бэкфилл разбивки категорий
+        # (добавлена позже) по кэшированным POI, живых вызовов почти не ест
         todo = c.execute(
             """SELECT id, lat, lon FROM geo_listings
-               WHERE precision IN (?,?,?) AND score IS NULL AND lat IS NOT NULL
+               WHERE precision IN (?,?,?) AND lat IS NOT NULL
+                 AND (score IS NULL OR cats IS NULL)
                LIMIT ?""", (*SCOREABLE, SCORES_PER_CYCLE)).fetchall()
     for r in todo:
         # бюджет проверяем ДО запроса: кэш-хит бесплатен, живой вызов — нет
@@ -150,9 +153,11 @@ def enrich_once():
         except RuntimeError:
             break   # зеркала легли или глобальный кап — не долбим дальше
         res = geo.score_point(elements, r["lat"], r["lon"])
+        cats = json.dumps([res["categories"][c]["score"]
+                           for c in ("transport", "infra", "schools", "green")])
         with db() as c:
-            c.execute("UPDATE geo_listings SET score=?, score_ts=? WHERE id=?",
-                      (res["score"], now, r["id"]))
+            c.execute("UPDATE geo_listings SET score=?, cats=?, score_ts=? WHERE id=?",
+                      (res["score"], cats, now, r["id"]))
         scored += 1
     if geocoded or scored:
         log.info("geo_enrich: %d geocoded, %d scored", geocoded, scored)

@@ -60,6 +60,7 @@ def test_enrich_assigns_precision_и_scores_only_exact(geo_mocks):
     assert rows["olx-1"]["score"] is None             # рандомизированную точку не скорим
     assert rows["otodom-2"]["precision"] == "address"  # улица с номером
     assert rows["otodom-2"]["score"] is not None       # точную — скорим
+    assert len(json.loads(rows["otodom-2"]["cats"])) == 4  # разбивка для Personal Fit
     assert rows["morizon-3"]["precision"] == "district"
     assert rows["morizon-3"]["score"] is None
     assert rows["olx-4"]["precision"] == "unknown"
@@ -109,8 +110,8 @@ def test_upgrade_precision_when_street_appears(geo_mocks):
 @pytest.mark.asyncio
 async def test_ingest_merges_geo(client, ingest_headers):
     with db() as c:
-        c.execute("""INSERT INTO geo_listings(id, lat, lon, precision, score, ts)
-                     VALUES('olx-77', 52.23, 21.02, 'address', 71, 1)""")
+        c.execute("""INSERT INTO geo_listings(id, lat, lon, precision, score, ts, cats)
+                     VALUES('olx-77', 52.23, 21.02, 'address', 71, 1, '[80,70,60,90]')""")
     payload = {"generated_at": "2026-07-20", "listings": [
         {"id": "olx-77", "city": "warszawa", "district": "Wola",
          "type": "long", "price": 3200, "title": "T"}]}
@@ -121,3 +122,4 @@ async def test_ingest_merges_geo(client, ingest_headers):
     assert written["lat"] == 52.23 and written["lon"] == 21.02
     assert written["geoPrec"] == "address"
     assert written["locScore"] == 71
+    assert written["locCats"] == [80, 70, 60, 90]

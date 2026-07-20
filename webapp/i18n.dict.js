@@ -317,7 +317,25 @@
     exPrivate:    { ru: "частник — без комиссии агентства", pl: "od właściciela — bez prowizji", ua: "власник — без комісії агентства", by: "уласнік — без камісіі агенцтва", en: "private owner — no agency fee" },
     exAgency:     { ru: "агентство — заложи комиссию ≈ 1 месяц", pl: "agencja — dolicz prowizję ≈ 1 miesiąc", ua: "агентство — закладай комісію ≈ 1 місяць", by: "агенцтва — закладзі камісію ≈ 1 месяц", en: "agency — budget ≈ 1 month commission" },
     exThin:       { ru: "мало деталей в объявлении", pl: "mało szczegółów w ogłoszeniu", ua: "мало деталей в оголошенні", by: "мала дэталяў у аб'яве", en: "listing has few details" },
-    exNoArea:     { ru: "не указана площадь — сравнить цену с рынком нельзя", pl: "brak metrażu — nie da się porównać ceny z rynkiem", ua: "не вказана площа — порівняти ціну з ринком не можна", by: "не пазначана плошча — параўнаць цану з рынкам нельга", en: "no area given — can't compare price to market" }
+    exNoArea:     { ru: "не указана площадь — сравнить цену с рынком нельзя", pl: "brak metrażu — nie da się porównać ceny z rynkiem", ua: "не вказана площа — порівняти ціну з ринком не можна", by: "не пазначана плошча — параўнаць цану з рынкам нельга", en: "no area given — can't compare price to market" },
+
+    /* ── Personal Fit v1: профиль пользователя ── */
+    profT:      { ru: "Мой профиль", pl: "Mój profil", ua: "Мій профіль", by: "Мой профіль", en: "My profile" },
+    profD:      { ru: "Персональные подсказки в объявлениях: время до работы и что важно рядом. Хранится только на этом устройстве. Пока только Варшава.", pl: "Osobiste podpowiedzi w ogłoszeniach: czas do pracy i co ważne w okolicy. Zapisywane tylko na tym urządzeniu. Na razie tylko Warszawa.", ua: "Персональні підказки в оголошеннях: час до роботи та що важливо поруч. Зберігається лише на цьому пристрої. Поки лише Варшава.", by: "Персанальныя падказкі ў аб'явах: час да працы і што важна побач. Захоўваецца толькі на гэтай прыладзе. Пакуль толькі Варшава.", en: "Personal hints on listings: commute time and what matters nearby. Stored on this device only. Warsaw only for now." },
+    profWork:   { ru: "Работа / учёба (адрес в Варшаве)", pl: "Praca / uczelnia (adres w Warszawie)", ua: "Робота / навчання (адреса у Варшаві)", by: "Праца / вучоба (адрас у Варшаве)", en: "Work / study (Warsaw address)" },
+    profFindB:  { ru: "Найти", pl: "Znajdź", ua: "Знайти", by: "Знайсці", en: "Find" },
+    profWorkSet:{ ru: "Точка: {s}", pl: "Punkt: {s}", ua: "Точка: {s}", by: "Кропка: {s}", en: "Point: {s}" },
+    profMaxT:   { ru: "Максимум времени до работы, мин", pl: "Maks. czas do pracy, min", ua: "Максимум часу до роботи, хв", by: "Максімум часу да працы, хв", en: "Max commute, min" },
+    profNoLim:  { ru: "Неважно", pl: "Nieważne", ua: "Байдуже", by: "Няважна", en: "Any" },
+    profPrioT:  { ru: "Что важно рядом", pl: "Co ważne w okolicy", ua: "Що важливо поруч", by: "Што важна побач", en: "What matters nearby" },
+    profImp0:   { ru: "неважно", pl: "nieważne", ua: "байдуже", by: "няважна", en: "skip" },
+    profImp1:   { ru: "важно", pl: "ważne", ua: "важливо", by: "важна", en: "matters" },
+    profImp2:   { ru: "очень", pl: "bardzo", ua: "дуже", by: "вельмі", en: "a lot" },
+    profClearB: { ru: "Сбросить профиль", pl: "Wyczyść profil", ua: "Скинути профіль", by: "Скінуць профіль", en: "Reset profile" },
+    exFitGood:  { ru: "локация под твой профиль: {n}/100", pl: "lokalizacja pod twój profil: {n}/100", ua: "локація під твій профіль: {n}/100", by: "лакацыя пад твой профіль: {n}/100", en: "location for your profile: {n}/100" },
+    exFitWeak:  { ru: "локация слабая для твоего профиля ({n}/100)", pl: "lokalizacja słaba jak na twój profil ({n}/100)", ua: "локація слабка для твого профілю ({n}/100)", by: "лакацыя слабая для твайго профілю ({n}/100)", en: "weak location for your profile ({n}/100)" },
+    exCommuteOk: { ru: "до работы ~{n} мин (оценка)", pl: "do pracy ~{n} min (szacunkowo)", ua: "до роботи ~{n} хв (оцінка)", by: "да працы ~{n} хв (ацэнка)", en: "~{n} min to work (estimate)" },
+    exCommuteFar:{ ru: "до работы ~{n} мин — дольше твоего лимита {m}", pl: "do pracy ~{n} min — powyżej twojego limitu {m}", ua: "до роботи ~{n} хв — довше за твій ліміт {m}", by: "да працы ~{n} хв — даўжэй за твой ліміт {m}", en: "~{n} min to work — over your {m} min limit" }
   };
 
   return { LANGS: LANGS, CITY_NAMES: CITY_NAMES, DICT: DICT };

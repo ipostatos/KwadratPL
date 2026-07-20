@@ -66,7 +66,7 @@ const API = [
   "toast", "timeAgo", "esc", "safePhotoUrl", "openListingUrl",
   "priceVerdict", "priceBadge", "priceInsight",
   "trustBadges", "moveInCost", "dataQuality", "landlordInfo",
-  "explain", "explainData",
+  "explain", "explainData", "profile", "commuteMin", "personalLoc",
   "commuteInfo", "deleteAccount",
   "aiAvailable", "analyzeListing", "mountAiButton",
   "priceUnit", "cityName", "isFav", "toggleFav",
@@ -123,6 +123,24 @@ ok(App.aiAvailable() === false, "AI недоступен вне Telegram");
   ok(ed2.risks.length >= 3, "explain: дорогое объявление собирает риски");
   ok(App.explain(bad).includes("ex-box"), "explain: рендерит блок");
   ok(App.priceInsight(bad).includes("ex-box"), "explain: встроен в priceInsight");
+
+  // Personal Fit v1: профиль → коммьют и персональная локация
+  storage.set("kw_profile", JSON.stringify(
+    { work: { label: "W", lat: 52.22, lon: 21.01 }, maxCommute: 30, imp: [2, 1, 0, 0] }));
+  ok(App.profile().maxCommute === 30, "profile: читается из kw_profile");
+  const near = { id: "near", city: "warszawa", district: "Wola", type: "long",
+    area: 50, price: 3300, lat: 52.225, lon: 21.015, locCats: [90, 50, 10, 70] };
+  const cmNear = App.commuteMin(near);
+  ok(cmNear != null && cmNear <= 15, "commute: рядом с работой ≈ короткий");
+  ok(App.personalLoc(near) === 77, "personalLoc: (2·90+1·50)/3 = 77");
+  const edN = App.explainData(near);
+  ok(edN.strengths.some((x) => x.includes("exCommuteOk")), "explain: близкая работа в плюсах");
+  ok(edN.strengths.some((x) => x.includes("exFitGood")), "explain: персональная локация в плюсах");
+  const far = { ...near, id: "far", lat: 52.35, lon: 21.2 };
+  ok(App.explainData(far).risks.some((x) => x.includes("exCommuteFar")),
+    "explain: дальше лимита — в рисках");
+  storage.delete("kw_profile");
+  ok(App.profile() === null, "profile: null без kw_profile");
   App.live = false;   // дальше тесты App.listings не используют
 }
 

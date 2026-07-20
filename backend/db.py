@@ -115,5 +115,12 @@ def init_db():
             precision TEXT,
             score INTEGER,
             score_ts INTEGER,
-            ts INTEGER
+            ts INTEGER,
+            cats TEXT
         )""")
+        # миграция: разбивка оценки по категориям [transport,infra,schools,green]
+        # для Personal Fit (персональные веса пользователя на клиенте)
+        try:
+            c.execute("ALTER TABLE geo_listings ADD COLUMN cats TEXT")
+        except sqlite3.OperationalError:
+            pass
