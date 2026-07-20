@@ -130,5 +130,6 @@ async def score(request: Request, response: Response,
         label = None
     return {
         "lat": round(lat, 5), "lon": round(lon, 5), "label": label,
-        "radius": geo.RADIUS, "cached": cached, **result,
+        "radius": geo.RADIUS, "cached": cached, "model": geo.MODEL_VERSION,
+        **result,
     }

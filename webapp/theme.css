@@ -282,6 +282,19 @@ select:focus, input:focus{ border-color:var(--accent) }
 .mi-row.total b{ font-size:var(--fs-body); font-weight:800 }
 .mi-note{ font-size:var(--fs-xs); color:var(--hint); margin-top:8px; line-height:1.5 }
 
+/* ── карточка-объяснение (js/explain.js): ✅ сильные стороны / ⚠️ проверь ── */
+.ex-box{ margin-top:12px; background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--r-md); padding:12px 14px }
+.ex-status{ font-weight:800; font-size:var(--fs-sm); margin-bottom:8px }
+.ex-status.ok{ color:var(--ok) } .ex-status.warn{ color:var(--warn) }
+.ex-h{ font-size:var(--fs-xs); font-weight:700; text-transform:uppercase;
+  letter-spacing:.04em; margin:8px 0 4px }
+.ex-h:first-child{ margin-top:0 }
+.ex-h.ok{ color:var(--ok) } .ex-h.warn{ color:var(--warn) }
+.ex-l{ margin:0; padding-left:18px; font-size:var(--fs-sm); line-height:1.55 }
+.ex-l li{ margin-bottom:3px }
+.ex-box .pv-line{ margin-top:8px }
+
 /* ── AI-разбор объявления ── */
 .ai-btn{ margin-top:12px }
 .ai-box{ margin-top:12px; background:var(--card); border:1px solid var(--border);

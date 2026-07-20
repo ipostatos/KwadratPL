@@ -47,7 +47,7 @@ const ok = (cond, msg) => {
 };
 
 // ── порядок подключения как в HTML ──
-for (const f of ["core.js", "subs.js", "price.js", "ai.js"]) {
+for (const f of ["core.js", "subs.js", "price.js", "explain.js", "ai.js"]) {
   try {
     vm.runInContext(js(f), sandbox, { filename: "js/" + f });
   } catch (e) {
@@ -66,6 +66,7 @@ const API = [
   "toast", "timeAgo", "esc", "safePhotoUrl", "openListingUrl",
   "priceVerdict", "priceBadge", "priceInsight",
   "trustBadges", "moveInCost", "dataQuality", "landlordInfo",
+  "explain", "explainData",
   "commuteInfo", "deleteAccount",
   "aiAvailable", "analyzeListing", "mountAiButton",
   "priceUnit", "cityName", "isFav", "toggleFav",
@@ -110,6 +111,18 @@ ok(App.aiAvailable() === false, "AI недоступен вне Telegram");
   ok(vv.betterPct === 100, "v2: все аналоги дороже → выгоднее 100%");
   ok(vv.conf === "B", "v2: район с выборкой 10 и малым разбросом = B");
   ok(typeof vv.mad === "number" && vv.mad > 0, "v2: MAD посчитан");
+
+  // карточка-объяснение (I18N-шим возвращает ключи — проверяем по ключам)
+  const ed = App.explainData(cheap);
+  ok(ed.strengths.some((x) => x.includes("pvDeal")), "explain: дешёвое → ценовой плюс");
+  ok(ed.risks.some((x) => x.includes("exThin")), "explain: пустая карточка → риск thin");
+  const bad = { id: "bad", city: "warszawa", district: "Wola", type: "long",
+    area: 50, price: 4500, agency: true, ts: Date.now() - 20 * 86400000 };
+  const ed2 = App.explainData(bad);
+  ok(ed2.status === "check", "explain: дорогое+агентство+старое = статус «проверь»");
+  ok(ed2.risks.length >= 3, "explain: дорогое объявление собирает риски");
+  ok(App.explain(bad).includes("ex-box"), "explain: рендерит блок");
+  ok(App.priceInsight(bad).includes("ex-box"), "explain: встроен в priceInsight");
   App.live = false;   // дальше тесты App.listings не используют
 }
 

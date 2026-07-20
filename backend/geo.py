@@ -27,6 +27,11 @@ from db import db
 
 UA = "KwadratPL-location/1.0 (+https://kwadratpl.pl)"
 
+# версия скоринговой модели (принцип «все коэффициенты имеют версию»):
+# менять при ЛЮБОЙ правке констант скоринга + прогонять калибровочный бенчмарк
+# (docs/LOCATION_SCORE.md, раздел «Калибровка и стабильность»)
+MODEL_VERSION = "1.1.0"
+
 # границы Варшавы (bbox с небольшим запасом; город ~52.10–52.37 / 20.85–21.27)
 WARSAW = {"lat_min": 52.08, "lat_max": 52.38, "lon_min": 20.82, "lon_max": 21.30}
 # viewbox Nominatim: left,top,right,bottom

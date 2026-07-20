@@ -168,26 +168,20 @@
       '<div class="mi-note">' + esc(I18N.t("miNote")) + calc + "</div></div>";
   }
 
-  // блок в шторке: trust-слой + сравнение с рынком + анти-скам + стоимость входа
+  // блок в шторке: trust-слой + карточка-объяснение + анти-скам + стоимость входа
   function priceInsight(l) {
     var out = trustBadges(l), v = priceVerdict(l);
-    if (v && v.level !== "fair") {
+    if (App.explain) {
+      // js/explain.js собирает цену/локацию/свежесть в ✅/⚠️-списки
+      out += App.explain(l);
+    } else if (v && v.level !== "fair") {
+      // фолбэк, если explain.js не загрузился: старая строка сравнения
       var pct = Math.round(Math.abs(v.pct) * 100);
       var scope = I18N.t(v.scope === "district" ? "pvVsDistrict" : "pvVsCity");
       var cls = v.level === "scam" ? "scam" : v.level;
       var txt = v.level === "above" ? I18N.t("pvAbove", { n: pct }) : I18N.t("pvDeal", { n: pct });
       out += '<div class="pv-line">📊 <span class="em ' + cls + '">' + esc(txt) +
         "</span> · " + esc(scope) + "</div>";
-    }
-    // Value Score v2: перцентиль по аналогам + размер выборки + уверенность —
-    // показываем и для fair-цен (полезно даже без вердикта «выше/ниже рынка»)
-    if (v && v.betterPct != null) {
-      var valTxt = v.betterPct >= 50
-        ? I18N.t("pvBetter", { p: v.betterPct })
-        : I18N.t("pvWorse", { p: 100 - v.betterPct });
-      out += '<div class="pv-line">⚖️ ' + esc(valTxt) + " · " +
-        esc(I18N.t("pvCompsN", { n: v.n })) + " · " +
-        esc(I18N.t("pvConf", { c: v.conf })) + "</div>";
     }
     if (v && v.level === "scam") {
       out += '<div class="scam-warn"><span class="ic">🚨</span><div><b>' +

@@ -301,7 +301,23 @@
     pvBetter:    { ru: "выгоднее {p}% похожих", pl: "taniej niż {p}% podobnych", ua: "вигідніше за {p}% схожих", by: "выгадней за {p}% падобных", en: "cheaper than {p}% of similar" },
     pvWorse:     { ru: "дороже {p}% похожих", pl: "drożej niż {p}% podobnych", ua: "дорожче за {p}% схожих", by: "даражэй за {p}% падобных", en: "pricier than {p}% of similar" },
     pvCompsN:    { ru: "аналогов: {n}", pl: "porównań: {n}", ua: "аналогів: {n}", by: "аналагаў: {n}", en: "comps: {n}" },
-    pvConf:      { ru: "точность {c}", pl: "dokładność {c}", ua: "точність {c}", by: "дакладнасць {c}", en: "confidence {c}" }
+    pvConf:      { ru: "точность {c}", pl: "dokładność {c}", ua: "точність {c}", by: "дакладнасць {c}", en: "confidence {c}" },
+
+    /* ── карточка-объяснение (js/explain.js) ── */
+    exGoodT:      { ru: "Похоже на хороший вариант", pl: "Wygląda na dobrą opcję", ua: "Схоже на хороший варіант", by: "Падобна на добры варыянт", en: "Looks like a good option" },
+    exCheckT:     { ru: "Есть что проверить", pl: "Jest co sprawdzić", ua: "Є що перевірити", by: "Ёсць што праверыць", en: "Worth double-checking" },
+    exStrengthsT: { ru: "Сильные стороны", pl: "Mocne strony", ua: "Сильні сторони", by: "Моцныя бакі", en: "Strengths" },
+    exRisksT:     { ru: "Проверь перед просмотром", pl: "Sprawdź przed oglądaniem", ua: "Перевір перед переглядом", by: "Правер перад праглядам", en: "Check before viewing" },
+    exLocGood:    { ru: "отличная локация ({n}/100)", pl: "świetna lokalizacja ({n}/100)", ua: "чудова локація ({n}/100)", by: "выдатная лакацыя ({n}/100)", en: "excellent location ({n}/100)" },
+    exLocWeak:    { ru: "слабая локация ({n}/100)", pl: "słaba lokalizacja ({n}/100)", ua: "слабка локація ({n}/100)", by: "слабая лакацыя ({n}/100)", en: "weak location ({n}/100)" },
+    exCenter:     { ru: "до центра ~{n} мин", pl: "do centrum ~{n} min", ua: "до центру ~{n} хв", by: "да цэнтра ~{n} хв", en: "~{n} min to the centre" },
+    exFresh:      { ru: "свежее объявление", pl: "świeże ogłoszenie", ua: "свіже оголошення", by: "свежая аб'ява", en: "freshly posted" },
+    exOld:        { ru: "висит уже {n} дн. — уточни актуальность", pl: "wisi już {n} dni — potwierdź aktualność", ua: "висить уже {n} дн. — уточни актуальність", by: "вісіць ужо {n} дз. — удакладні актуальнасць", en: "listed {n} days ago — confirm it's still available" },
+    exDrop:       { ru: "цену недавно снизили", pl: "cena niedawno obniżona", ua: "ціну нещодавно знизили", by: "цану нядаўна знізілі", en: "price recently dropped" },
+    exPrivate:    { ru: "частник — без комиссии агентства", pl: "od właściciela — bez prowizji", ua: "власник — без комісії агентства", by: "уласнік — без камісіі агенцтва", en: "private owner — no agency fee" },
+    exAgency:     { ru: "агентство — заложи комиссию ≈ 1 месяц", pl: "agencja — dolicz prowizję ≈ 1 miesiąc", ua: "агентство — закладай комісію ≈ 1 місяць", by: "агенцтва — закладзі камісію ≈ 1 месяц", en: "agency — budget ≈ 1 month commission" },
+    exThin:       { ru: "мало деталей в объявлении", pl: "mało szczegółów w ogłoszeniu", ua: "мало деталей в оголошенні", by: "мала дэталяў у аб'яве", en: "listing has few details" },
+    exNoArea:     { ru: "не указана площадь — сравнить цену с рынком нельзя", pl: "brak metrażu — nie da się porównać ceny z rynkiem", ua: "не вказана площа — порівняти ціну з ринком не можна", by: "не пазначана плошча — параўнаць цану з рынкам нельга", en: "no area given — can't compare price to market" }
   };
 
   return { LANGS: LANGS, CITY_NAMES: CITY_NAMES, DICT: DICT };
