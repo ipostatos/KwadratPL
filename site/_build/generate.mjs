@@ -4,7 +4,7 @@
 // Запуск: node site/_build/generate.mjs  →  пишет site/index.html, site/pl|ua|en,
 // robots.txt, sitemap.xml. Контент правится здесь, потом перегенерировать.
 // ===========================================================================
-import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync, cpSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
@@ -791,11 +791,10 @@ a.card:active{ transform:scale(.98); opacity:.8 }
   padding:9px 17px; border-radius:999px; transition:transform .12s ease, opacity .12s ease }
 a.chip:active{ transform:scale(.96); opacity:.75 }
 
-/* screenshots */
+/* screenshots — device-framed PNGs already carry their own shadow, no extra chrome here */
 .shots{ display:flex; gap:18px; justify-content:center; flex-wrap:wrap }
 .shot{ margin:0; flex:0 1 240px; max-width:250px }
-.shot img{ width:100%; height:auto; display:block; border-radius:20px;
-  border:.5px solid var(--border); box-shadow:var(--shadow); background:var(--card) }
+.shot img{ width:100%; height:auto; display:block }
 
 /* widget */
 .widget-sec{ display:flex; gap:32px; align-items:center; flex-wrap:wrap; justify-content:center }
@@ -921,9 +920,18 @@ footer{ border-top:.5px solid var(--border); padding:40px 0; margin-top:20px }
       <h2 class="sec-h">${esc(c.shotsTitle)}</h2>
       <p class="sec-lead">${esc(c.shotsLead)}</p>
       <div class="shots">
-        <figure class="shot"><img src="/shots/shot-home.webp" width="400" height="870" loading="lazy" alt="${esc(c.altHome)}"></figure>
-        <figure class="shot"><img src="/shots/shot-cards.webp" width="400" height="870" loading="lazy" alt="${esc(c.altCards)}"></figure>
-        <figure class="shot"><img src="/shots/shot-sheet.webp" width="385" height="700" loading="lazy" alt="${esc(c.altSheet)}"></figure>
+        <figure class="shot"><picture>
+          <source srcset="/shots/shot-home-dark.webp" media="(prefers-color-scheme: dark)">
+          <img src="/shots/shot-home.webp" width="760" height="1643" loading="lazy" alt="${esc(c.altHome)}">
+        </picture></figure>
+        <figure class="shot"><picture>
+          <source srcset="/shots/shot-cards-dark.webp" media="(prefers-color-scheme: dark)">
+          <img src="/shots/shot-cards.webp" width="760" height="930" loading="lazy" alt="${esc(c.altCards)}">
+        </picture></figure>
+        <figure class="shot"><picture>
+          <source srcset="/shots/shot-sheet-dark.webp" media="(prefers-color-scheme: dark)">
+          <img src="/shots/shot-sheet.webp" width="760" height="1643" loading="lazy" alt="${esc(c.altSheet)}">
+        </picture></figure>
       </div>
     </div>
   </section>
@@ -958,6 +966,7 @@ footer{ border-top:.5px solid var(--border); padding:40px 0; margin-top:20px }
       <h2 class="sec-h">${esc(c.citiesTitle)}</h2>
       <p class="sec-lead">${esc(c.citiesLead)}</p>
       <div class="chips">${cityChips}</div>
+      <p style="text-align:center; margin-top:18px"><a class="btn sm ghost" href="${url(meta.path + TOOL_SLUG)}">📍 ${esc(TOOL[lang].h1)}</a></p>
     </div>
   </section>
 
@@ -1034,6 +1043,7 @@ function sitemap() {
     { suffix: "", priority: (m) => (m.code === "ru" ? "1.0" : "0.9"), changefreq: "daily" },
     { suffix: "privacy/", priority: () => "0.3", changefreq: "monthly" },
     { suffix: "guides/", priority: () => "0.6", changefreq: "monthly" },
+    { suffix: TOOL_SLUG, priority: () => "0.8", changefreq: "weekly" },
     ...GUIDES.map((g) => ({ suffix: `guides/${g.slug}/`, priority: () => "0.7", changefreq: "monthly" })),
     ...SITE.cities.map((c) => ({ suffix: `cities/${c}/`, priority: () => "0.7", changefreq: "weekly" })),
   ];
@@ -1613,7 +1623,7 @@ function chromeClose(meta) {
       <div class="foot-langs">${langSwitcherAt(meta.code, meta._suffix || "")}</div>
     </div>
   </div>
-  <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)} · <a href="${url(meta.path + "privacy/")}" style="color:var(--link)">${esc(PRIVACY_LABEL[meta.code])}</a>${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--link)">${esc(c.donateCta)}</a>` : ""}</div>
+  <div class="foot-legal">© ${esc(SITE.name)} · ${esc(c.footRights)} · <a href="${url(meta.path + TOOL_SLUG)}" style="color:var(--link)">${esc(KW.DICT.locT[meta.code])}</a> · <a href="${url(meta.path + "privacy/")}" style="color:var(--link)">${esc(PRIVACY_LABEL[meta.code])}</a>${SITE.donate ? ` · <a href="${SITE.donate}" target="_blank" rel="noopener" style="color:var(--link)">${esc(c.donateCta)}</a>` : ""}</div>
 </footer>
 </body>
 </html>
@@ -1903,6 +1913,313 @@ function cityPage(meta, slug) {
     chromeClose(chromeMeta);
 }
 
+// ── инструмент «Оценка локации» (Варшава) ────────────────────────────────────
+// Живой веб-инструмент на статическом сайте: страница ходит в API бота на VPS
+// (CORS-allowlist kwadratpl.pl на бэке). UI-строки — из словаря Mini App
+// (KW.DICT.loc*/k*/verdict*/cat*, single source), SEO-тексты — здесь.
+const TOOL_SLUG = "ocena-lokalizacji/";
+const TOOL = {
+  ru: {
+    title: "Оценка локации в Варшаве — проверь адрес бесплатно",
+    desc: "Введи адрес в Варшаве и получи балл 0–100 за транспорт, магазины, школы и зелёные зоны. Ближайшие объекты с расстояниями. Бесплатно и без регистрации.",
+    h1: "Оценка локации в Варшаве",
+    lead: "Введи адрес или тапни точку на карте — покажем, насколько удобно там жить: общий балл 0–100 и разбор по транспорту, инфраструктуре, школам и зелени, с ближайшими объектами и расстояниями.",
+    cta: "Ищешь квартиру или комнату в Варшаве? Бот покажет свежие объявления OLX, Otodom и Morizon — с оценкой цены, анти-скам-фильтром и уведомлениями.",
+    faq: [
+      { q: "Как считается оценка?", a: "Мы смотрим реальные объекты вокруг адреса: станции метро и SKM, остановки, магазины, аптеки, школы, детские сады и парки. Балл каждой категории складывается из близости и количества объектов, итог — взвешенная сумма, в которой провал одной категории заметно снижает результат. Данные: OpenStreetMap и Google." },
+      { q: "Почему только Варшава?", a: "Начали с города с самым большим арендным спросом. Другие города Польши добавим позже — а бот Kwadrat PL уже ищет жильё в 8 городах." },
+      { q: "Насколько точны данные?", a: "Карты обновляются с задержкой: новый магазин или садик мог ещё не попасть в данные. Оценка — ориентир для сравнения адресов между собой, а не абсолютная истина." },
+    ],
+  },
+  ua: {
+    title: "Оцінка локації у Варшаві — перевір адресу безкоштовно",
+    desc: "Введи адресу у Варшаві та отримай бал 0–100 за транспорт, магазини, школи й зелені зони. Найближчі об'єкти з відстанями. Безкоштовно й без реєстрації.",
+    h1: "Оцінка локації у Варшаві",
+    lead: "Введи адресу або тапни точку на карті — покажемо, наскільки зручно там жити: загальний бал 0–100 і розбір за транспортом, інфраструктурою, школами та зеленню, з найближчими об'єктами й відстанями.",
+    cta: "Шукаєш квартиру чи кімнату у Варшаві? Бот покаже свіжі оголошення OLX, Otodom і Morizon — з оцінкою ціни, анти-скам-фільтром і сповіщеннями.",
+    faq: [
+      { q: "Як рахується оцінка?", a: "Ми дивимося реальні об'єкти навколо адреси: станції метро та SKM, зупинки, магазини, аптеки, школи, садки й парки. Бал кожної категорії складається з близькості та кількості об'єктів, підсумок — зважена сума, де провал однієї категорії помітно знижує результат. Дані: OpenStreetMap і Google." },
+      { q: "Чому лише Варшава?", a: "Почали з міста з найбільшим орендним попитом. Інші міста Польщі додамо пізніше — а бот Kwadrat PL уже шукає житло у 8 містах." },
+      { q: "Наскільки точні дані?", a: "Карти оновлюються із затримкою: новий магазин чи садок міг ще не потрапити в дані. Оцінка — орієнтир для порівняння адрес між собою, а не абсолютна істина." },
+    ],
+  },
+  by: {
+    title: "Ацэнка лакацыі ў Варшаве — правер адрас бясплатна",
+    desc: "Увядзі адрас у Варшаве і атрымай бал 0–100 за транспарт, крамы, школы і зялёныя зоны. Найбліжэйшыя аб'екты з адлегласцямі. Бясплатна і без рэгістрацыі.",
+    h1: "Ацэнка лакацыі ў Варшаве",
+    lead: "Увядзі адрас або тапні кропку на карце — пакажам, наколькі зручна там жыць: агульны бал 0–100 і разбор па транспарце, інфраструктуры, школах і зеляніне, з найбліжэйшымі аб'ектамі і адлегласцямі.",
+    cta: "Шукаеш кватэру ці пакой у Варшаве? Бот пакажа свежыя аб'явы OLX, Otodom і Morizon — з ацэнкай цаны, анты-скам-фільтрам і апавяшчэннямі.",
+    faq: [
+      { q: "Як лічыцца ацэнка?", a: "Мы глядзім рэальныя аб'екты вакол адраса: станцыі метро і SKM, прыпынкі, крамы, аптэкі, школы, садкі і паркі. Бал кожнай катэгорыі складаецца з блізкасці і колькасці аб'ектаў, вынік — узважаная сума, дзе правал адной катэгорыі прыкметна зніжае вынік. Даныя: OpenStreetMap і Google." },
+      { q: "Чаму толькі Варшава?", a: "Пачалі з горада з найбольшым арэндным попытам. Іншыя гарады Польшчы дадамо пазней — а бот Kwadrat PL ужо шукае жыллё ў 8 гарадах." },
+      { q: "Наколькі дакладныя даныя?", a: "Карты абнаўляюцца з затрымкай: новая крама ці садок мог яшчэ не трапіць у даныя. Ацэнка — арыенцір для параўнання адрасоў паміж сабой, а не абсалютная ісціна." },
+    ],
+  },
+  pl: {
+    title: "Ocena lokalizacji w Warszawie — sprawdź adres za darmo",
+    desc: "Wpisz adres w Warszawie i zobacz wynik 0–100 za transport, sklepy, szkoły i tereny zielone. Najbliższe obiekty z odległościami. Za darmo i bez rejestracji.",
+    h1: "Ocena lokalizacji w Warszawie",
+    lead: "Wpisz adres albo stuknij punkt na mapie — pokażemy, jak wygodnie się tam mieszka: łączny wynik 0–100 i rozbicie na transport, infrastrukturę, szkoły i zieleń, z najbliższymi obiektami i odległościami.",
+    cta: "Szukasz mieszkania lub pokoju w Warszawie? Bot pokaże świeże ogłoszenia z OLX, Otodom i Morizon — z oceną ceny, filtrem anty-scam i powiadomieniami.",
+    faq: [
+      { q: "Jak liczony jest wynik?", a: "Patrzymy na realne obiekty wokół adresu: stacje metra i SKM, przystanki, sklepy, apteki, szkoły, przedszkola i parki. Wynik każdej kategorii wynika z bliskości i liczby obiektów, a łączna ocena to suma ważona, w której słaba kategoria wyraźnie obniża rezultat. Dane: OpenStreetMap i Google." },
+      { q: "Dlaczego tylko Warszawa?", a: "Zaczęliśmy od miasta z największym popytem na najem. Kolejne miasta dodamy później — a bot Kwadrat PL już teraz szuka mieszkań w 8 miastach." },
+      { q: "Jak dokładne są dane?", a: "Mapy aktualizują się z opóźnieniem: nowy sklep czy przedszkole mogły jeszcze nie trafić do danych. Wynik to punkt odniesienia do porównywania adresów, nie absolutna prawda." },
+    ],
+  },
+  en: {
+    title: "Warsaw location score — check any address for free",
+    desc: "Enter a Warsaw address and get a 0–100 score for transit, shops, schools and green areas. Nearest places with distances. Free, no sign-up.",
+    h1: "Warsaw location score",
+    lead: "Enter an address or tap a point on the map — we'll show how liveable it is: an overall 0–100 score with a breakdown for transit, infrastructure, schools and greenery, plus the nearest places and distances.",
+    cta: "Looking for a flat or room in Warsaw? The bot shows fresh OLX, Otodom and Morizon listings — with price insights, an anti-scam filter and alerts.",
+    faq: [
+      { q: "How is the score calculated?", a: "We look at real places around the address: metro and SKM stations, stops, shops, pharmacies, schools, kindergartens and parks. Each category score combines proximity and density, and the total is a weighted sum where one weak category clearly drags the result down. Data: OpenStreetMap and Google." },
+      { q: "Why Warsaw only?", a: "We started with the city with the highest rental demand. More Polish cities will follow — and the Kwadrat PL bot already searches homes in 8 cities." },
+      { q: "How accurate is the data?", a: "Maps update with a delay: a new shop or kindergarten may not be in the data yet. The score is a benchmark for comparing addresses, not absolute truth." },
+    ],
+  },
+};
+
+// строки UI инструмента — из словаря Mini App (не дублируем переводы)
+function toolL10n(lang) {
+  const keys = ["locInput", "locBtn", "locMapHint", "locPick", "locNotFound", "locLoad",
+    "locErr", "locBusy", "locRate", "locOnlyWaw", "locNearT",
+    "verdictExcellent", "verdictGood", "verdictAverage", "verdictWeak",
+    "catTransport", "catInfra", "catSchools", "catGreen",
+    "kMetro", "kRail", "kTram", "kBus", "kGrocery", "kPharmacy", "kHealth", "kFood",
+    "kServices", "kSport", "kVet", "kPlayground", "kMall", "kMarketplace",
+    "kSchool", "kKindergarten", "kPark", "kForest", "kGreen"];
+  const out = {};
+  for (const k of keys) out[k] = KW.DICT[k][lang];
+  return out;
+}
+
+const TOOL_CSS = `
+.lt-bar{ display:flex; gap:10px; margin:18px 0 8px }
+.lt-bar input{ flex:1; background:var(--card); border:1px solid var(--border); color:var(--text);
+  border-radius:12px; padding:12px 14px; font-size:16px; outline:none; font-family:inherit }
+.lt-bar input:focus{ border-color:var(--accent) }
+.lt-bar .btn{ flex:0 0 auto }
+.lt-cands{ display:flex; flex-direction:column; gap:6px; margin:0 0 10px }
+.lt-cands button{ text-align:left; background:var(--card); border:1px solid var(--border);
+  color:var(--text); border-radius:10px; padding:10px 12px; font-size:14px; cursor:pointer; font-family:inherit }
+.lt-hint{ color:var(--muted); font-size:13px; margin:0 0 10px }
+#lt-map{ height:320px; border-radius:16px; border:1px solid var(--border); margin:0 0 18px; z-index:0 }
+.lt-state{ color:var(--muted); text-align:center; padding:18px 0 }
+.lt-card{ background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:18px; margin-bottom:18px }
+.lt-head{ display:flex; align-items:center; gap:16px; margin-bottom:14px }
+.lt-num{ font-size:46px; font-weight:800; line-height:1; min-width:80px; text-align:center }
+.lt-num small{ display:block; font-size:11px; font-weight:400; color:var(--muted) }
+.lt-verdict{ font-size:18px; font-weight:800 }
+.lt-addr{ color:var(--muted); font-size:13.5px; margin-top:3px; line-height:1.4 }
+.lt-v-excellent,.lt-v-good{ color:#1a8a56 } .lt-v-average{ color:#a8730b } .lt-v-weak{ color:#c33 }
+.lt-cat{ margin-bottom:14px }
+.lt-cat .t{ display:flex; justify-content:space-between; font-size:14px; margin-bottom:5px }
+.lt-cat .t b{ font-variant-numeric:tabular-nums }
+.lt-meter{ height:8px; background:var(--border); border-radius:99px; overflow:hidden }
+.lt-meter i{ display:block; height:100% }
+.lt-objs{ margin:6px 0 0; padding:0; list-style:none; font-size:12.5px; color:var(--muted); line-height:1.6 }
+.lt-objs b{ color:var(--text); font-weight:600 }
+.lt-legal{ color:var(--muted); font-size:12px; line-height:1.6; margin:14px 0 26px }
+@media (prefers-color-scheme: dark){
+  .lt-dark-tiles .leaflet-tile{ filter:invert(1) hue-rotate(180deg) brightness(.92) saturate(.7) }
+  .lt-dark-tiles .leaflet-container{ background:#111 }
+}
+`;
+
+function toolPage(meta) {
+  const lang = meta.code;
+  const t = TOOL[lang];
+  const suffix = TOOL_SLUG;
+  const canonical = url(meta.path + suffix);
+  const title = `${t.title} | ${SITE.name}`;
+  const L10N = toolL10n(lang);
+  const faqHtml = t.faq.map((f, i) => `
+    <details class="faq" id="faq-${i + 1}">
+      <summary><span role="heading" aria-level="3">${esc(f.q)}</span></summary>
+      <div class="faq-a">${esc(f.a)}</div>
+    </details>`).join("");
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "WebApplication", "@id": canonical + "#app", name: t.h1, url: canonical,
+        applicationCategory: "UtilitiesApplication", operatingSystem: "Any",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "PLN" },
+        description: t.desc, inLanguage: meta.hreflang },
+      { "@type": "FAQPage", "@id": canonical + "#faq", inLanguage: meta.hreflang,
+        mainEntity: t.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+      { "@type": "BreadcrumbList", "@id": canonical + "#breadcrumb", itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE.name, item: url(meta.path) },
+        { "@type": "ListItem", position: 2, name: t.h1, item: canonical },
+      ] },
+    ],
+  });
+  const chromeMeta = { ...meta, _suffix: suffix };
+  return chromeOpen(chromeMeta, { title, desc: t.desc, canonical, altHtml: altLinksAt(suffix), jsonLd }) +
+    `<link rel="stylesheet" href="/assets/leaflet/leaflet.css">
+<style>${TOOL_CSS}</style>
+<div class="crumb"><a href="${url(meta.path)}">${esc(SITE.name)}</a> / <span>${esc(t.h1)}</span></div>
+<h1 class="art-h1">${esc(t.h1)}</h1>
+<p class="art-lead">${esc(t.lead)}</p>
+<div class="lt-bar">
+  <input type="text" id="lt-q" autocomplete="off" placeholder="${esc(L10N.locInput)}">
+  <button class="btn" id="lt-go">${esc(L10N.locBtn)}</button>
+</div>
+<div class="lt-cands" id="lt-cands" hidden></div>
+<p class="lt-hint">${esc(L10N.locMapHint)}</p>
+<div id="lt-map"></div>
+<div class="lt-state" id="lt-state" hidden></div>
+<div id="lt-result" hidden>
+  <div class="lt-card">
+    <div class="lt-head">
+      <div class="lt-num"><span id="lt-score">–</span><small>/ 100</small></div>
+      <div><div class="lt-verdict" id="lt-verdict"></div><div class="lt-addr" id="lt-addr"></div></div>
+    </div>
+    <div id="lt-cats"></div>
+  </div>
+</div>
+<p class="lt-legal">${esc(KW.DICT.locData[lang])} ${esc(KW.DICT.locLegal[lang])}</p>
+<div class="art-cta" style="margin:6px 0 30px">
+  <p style="margin:0 0 12px; color:var(--muted)">${esc(t.cta)}</p>
+  <a class="btn" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} ${esc(C[lang].ctaPrimary)}</a>
+</div>
+<h2 class="sec-h">${esc(C[lang].faqTitle)}</h2>
+<div class="faq-list">${faqHtml}</div>
+<script src="/assets/leaflet/leaflet.js"></script>
+<script>
+(function () {
+  "use strict";
+  var API = "https://kwadratpl-46-224-220-94.sslip.io";
+  var T = ${JSON.stringify(L10N)};
+  var LANG = ${JSON.stringify(lang)};
+  var KINDL = { metro: "kMetro", rail: "kRail", tram: "kTram", bus: "kBus", grocery: "kGrocery",
+    pharmacy: "kPharmacy", health: "kHealth", food: "kFood", services: "kServices", sport: "kSport",
+    vet: "kVet", playground: "kPlayground", mall: "kMall", marketplace: "kMarketplace",
+    school: "kSchool", kindergarten: "kKindergarten", park: "kPark", forest: "kForest", green: "kGreen" };
+  var CATS = [["transport", "catTransport", "🚇"], ["infra", "catInfra", "🛒"],
+    ["schools", "catSchools", "🏫"], ["green", "catGreen", "🌳"]];
+  var TONE = { transport: "#3390ec", infra: "#e0a13a", schools: "#8e7bef", green: "#4caf72" };
+  function $(s) { return document.querySelector(s); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  document.body.classList.add("lt-dark-tiles");
+  var map = L.map("lt-map", { zoomControl: false }).setView([52.2318, 21.006], 11);
+  L.control.zoom({ position: "bottomright" }).addTo(map);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    { maxZoom: 18, attribution: "&copy; OpenStreetMap" }).addTo(map);
+  var marker = null, circle = null, pins = [];
+  map.on("click", function (e) { score(e.latlng.lat, e.latlng.lng, null); });
+
+  function setState(key) {
+    var el = $("#lt-state");
+    if (!key) { el.hidden = true; return; }
+    el.textContent = T[key];
+    el.hidden = false;
+    $("#lt-result").hidden = true;
+  }
+  function errKey(status, detail) {
+    if (status === 400) return "locOnlyWaw";
+    if (status === 429) return "locRate";
+    if (status === 503 && detail === "daily_capacity") return "locBusy";
+    return "locErr";
+  }
+  function jfetch(u) {
+    return fetch(u).then(function (r) {
+      if (!r.ok) return r.json().catch(function () { return {}; })
+        .then(function (d) { throw { s: r.status, d: d && d.detail }; });
+      return r.json();
+    });
+  }
+  var busy = false;
+  function lookup() {
+    var q = $("#lt-q").value.trim();
+    if (q.length < 2 || busy) return;
+    busy = true;
+    $("#lt-cands").hidden = true;
+    setState("locLoad");
+    jfetch(API + "/api/location/geocode?q=" + encodeURIComponent(q) + "&lang=" + LANG)
+      .then(function (d) {
+        busy = false;
+        var res = d.results || [];
+        if (!res.length) { setState("locNotFound"); return; }
+        if (res.length === 1) { score(res[0].lat, res[0].lon, res[0].label); return; }
+        setState(null);
+        var box = $("#lt-cands");
+        box.innerHTML = "";
+        res.forEach(function (c) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.textContent = c.label;
+          b.onclick = function () { box.hidden = true; score(c.lat, c.lon, c.label); };
+          box.appendChild(b);
+        });
+        box.hidden = false;
+      })
+      .catch(function (e) { busy = false; setState(errKey(e.s, e.d)); });
+  }
+  $("#lt-go").onclick = lookup;
+  $("#lt-q").addEventListener("keydown", function (e) { if (e.key === "Enter") lookup(); });
+
+  function score(lat, lon, label) {
+    if (busy === "s") return;
+    busy = "s";
+    setState("locLoad");
+    jfetch(API + "/api/location/score?lat=" + lat.toFixed(5) + "&lon=" + lon.toFixed(5) + "&lang=" + LANG)
+      .then(function (d) { busy = false; render(d, label); })
+      .catch(function (e) { busy = false; setState(errKey(e.s, e.d)); });
+  }
+  function render(d, label) {
+    setState(null);
+    if (marker) map.removeLayer(marker);
+    if (circle) map.removeLayer(circle);
+    pins.forEach(function (p) { map.removeLayer(p); });
+    pins = [];
+    marker = L.marker([d.lat, d.lon]).addTo(map);
+    circle = L.circle([d.lat, d.lon], { radius: d.radius || 1200, weight: 1,
+      color: "#3390ec", opacity: .5, fillOpacity: .05 }).addTo(map);
+    CATS.forEach(function (c) {
+      (d.categories[c[0]].objects || []).forEach(function (o) {
+        if (o.lat == null) return;
+        var p = L.circleMarker([o.lat, o.lon], { radius: 5, weight: 1, color: "#fff",
+          fillColor: TONE[c[0]], fillOpacity: .95 })
+          .bindTooltip((o.name ? esc(o.name) + " · " : "") + esc(T[KINDL[o.kind]] || o.kind) + " · " + o.dist + " m");
+        p.addTo(map);
+        pins.push(p);
+      });
+    });
+    map.setView([d.lat, d.lon], 14);
+    $("#lt-score").textContent = d.score;
+    var v = $("#lt-verdict");
+    v.textContent = T["verdict" + d.verdict.charAt(0).toUpperCase() + d.verdict.slice(1)];
+    v.className = "lt-verdict lt-v-" + d.verdict;
+    $("#lt-addr").textContent = label || d.label || (d.lat.toFixed(4) + ", " + d.lon.toFixed(4));
+    $("#lt-cats").innerHTML = CATS.map(function (c) {
+      var cat = d.categories[c[0]];
+      var objs = (cat.objects || []).slice(0, 3).map(function (o) {
+        var kind = esc(T[KINDL[o.kind]] || o.kind);
+        return o.name
+          ? "<li><b>" + esc(o.name) + "</b> · " + kind.toLowerCase() + " · " + o.dist + " m</li>"
+          : "<li><b>" + kind + "</b> · " + o.dist + " m</li>";
+      }).join("");
+      return '<div class="lt-cat"><div class="t"><span>' + c[2] + " " + esc(T[c[1]]) +
+        "</span><b>" + cat.score + "</b></div>" +
+        '<div class="lt-meter"><i style="width:' + cat.score + '%; background:' + TONE[c[0]] + '"></i></div>' +
+        (objs ? '<ul class="lt-objs">' + objs + "</ul>" : "") + "</div>";
+    }).join("");
+    $("#lt-result").hidden = false;
+  }
+  var p = new URLSearchParams(location.search);
+  if (p.get("q")) { $("#lt-q").value = p.get("q"); lookup(); }
+})();
+</script>` +
+    chromeClose(chromeMeta);
+}
+
 // AI-краулеры перечислены явно (сайт и так открыт '*' — это фиксирует намерение
 // на будущее: если кто-то добавит точечный Disallow, эти строки не потеряются)
 const AI_CRAWLERS = [
@@ -1953,6 +2270,9 @@ ${citiesLines}
 ## FAQ
 ${faqLines}
 
+## Free tools
+- [${TOOL.en.h1}](${url(TOOL_SLUG)}): ${TOOL.en.desc}
+
 ## Links
 - Telegram bot: ${SITE.bot}
 - Website: ${url("")} (RU) · ${url("pl/")} (PL) · ${url("ua/")} (UA) · ${url("en/")} (EN)
@@ -1993,7 +2313,15 @@ for (const meta of LANGS) {
     writeFileSync(join(cDir, "index.html"), cityPage(meta, slug));
     count += 1;
   }
+
+  const toolDir = join(dir, TOOL_SLUG.replace(/\/$/, ""));
+  mkdirSync(toolDir, { recursive: true });
+  writeFileSync(join(toolDir, "index.html"), toolPage(meta));
+  count += 1;
 }
+// Leaflet для инструмента — синк из webapp/vendor (single source, без CDN)
+cpSync(join(__dirname, "..", "..", "webapp", "vendor", "leaflet"),
+  join(OUT, "assets", "leaflet"), { recursive: true });
 writeFileSync(join(OUT, "sitemap.xml"), sitemap());
 writeFileSync(join(OUT, "robots.txt"), robots);
 writeFileSync(join(OUT, "llms.txt"), llmsTxt());

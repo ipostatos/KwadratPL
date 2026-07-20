@@ -224,8 +224,10 @@ function render(d, label) {
   $("#rCats").innerHTML = CATS.map(function (c) {
     var cat = d.categories[c[0]];
     var objs = (cat.objects || []).slice(0, 3).map(function (o) {
-      return "<li><b>" + (o.name ? esc(o.name) : esc(I18N.t(KINDL[o.kind] || o.kind))) +
-        "</b> · " + esc(I18N.t(KINDL[o.kind] || o.kind)).toLowerCase() + " · " + o.dist + " m</li>";
+      var kind = esc(I18N.t(KINDL[o.kind] || o.kind));
+      return o.name
+        ? "<li><b>" + esc(o.name) + "</b> · " + kind.toLowerCase() + " · " + o.dist + " m</li>"
+        : "<li><b>" + kind + "</b> · " + o.dist + " m</li>";
     }).join("");
     return '<div class="catrow">' +
       '<div class="cr-top"><span>' + c[2] + " " + esc(I18N.t(c[1])) + "</span><b>" +

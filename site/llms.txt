@@ -58,6 +58,9 @@ A: No. Kwadrat PL runs inside Telegram as a Mini App — nothing to install.
 Q: Is there an iPhone widget?
 A: Yes. Via the free Scriptable app you can add a home-screen widget showing the number of matching flats and the latest prices — no App Store payments. Step-by-step guide above.
 
+## Free tools
+- [Warsaw location score](https://kwadratpl.pl/ocena-lokalizacji/): Enter a Warsaw address and get a 0–100 score for transit, shops, schools and green areas. Nearest places with distances. Free, no sign-up.
+
 ## Links
 - Telegram bot: https://t.me/KwadratPLBot
 - Website: https://kwadratpl.pl/ (RU) · https://kwadratpl.pl/pl/ (PL) · https://kwadratpl.pl/ua/ (UA) · https://kwadratpl.pl/en/ (EN)
@@ -66,4 +69,4 @@ A: Yes. Via the free Scriptable app you can add a home-screen widget showing the
 - Support the project: https://buymeacoffee.com/ipostatos
 
 ## Last updated
-2026-07-17
+2026-07-20
