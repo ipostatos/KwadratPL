@@ -54,16 +54,18 @@ POI_TTL = 7 * 86400
 # и вежливость к зеркалам, и барьер от выкачивания города по сетке координат
 GEO_DAILY_LIMIT = int(os.environ.get("GEO_DAILY_LIMIT", "400"))
 _live_day = {"day": "", "n": 0}
+_live_lock = threading.Lock()   # роутер зовёт через to_thread — read-check-increment под локом
 
 
 def _live_budget_take():
-    day = _today()
-    if _live_day["day"] != day:
-        _live_day.update(day=day, n=0)
-    if _live_day["n"] >= GEO_DAILY_LIMIT:
-        return False
-    _live_day["n"] += 1
-    return True
+    with _live_lock:
+        day = _today()
+        if _live_day["day"] != day:
+            _live_day.update(day=day, n=0)
+        if _live_day["n"] >= GEO_DAILY_LIMIT:
+            return False
+        _live_day["n"] += 1
+        return True
 
 # порядок = приоритет; бенчмарк с VPS 2026-07-21: mail.ru ~1.1с стабильно,
 # de быстрый, но 429-ит бурсты, coffee/kumi периодически лежат целиком

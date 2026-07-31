@@ -28,6 +28,7 @@ from contextlib import asynccontextmanager
 
 from aiogram.types import BotCommand
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from auth import validate_init_data  # noqa: F401 (re-export для тестов)
 from bot import bot, digest_loop, dp, notify_user  # noqa: F401 (notify_user — re-export для тестов)
@@ -65,6 +66,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+# CORS: Mini App живёт на одном хосте с API (относительные /api-пути), но сайт
+# kwadratpl.pl и зеркало на Vercel ходят на VPS кросс-доменно (см. var API в
+# webapp/lokacja.html, saved.html, about.html). Middleware отвечает и на
+# preflight OPTIONS — POST с JSON/Authorization (donate) без него не проходит.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://kwadratpl.pl", "https://www.kwadratpl.pl",
+                   "https://kwadratpl.vercel.app"],
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 app.include_router(health.router)
 app.include_router(widget.router)
 app.include_router(analyze.router)

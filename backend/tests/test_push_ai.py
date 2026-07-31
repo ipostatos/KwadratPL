@@ -66,6 +66,7 @@ def test_market_pct():
              "price": 2000, "area": 50}
     with open(os.environ["LISTINGS_PATH"], "w", encoding="utf-8") as f:
         json.dump({"listings": listings}, f)
+    bot_module._market_cache["ts"] = None   # _market_pct читает кэш _push_market
     pct = _market_pct(cheap)
     assert pct is not None and pct < -30            # сильно ниже медианы
 

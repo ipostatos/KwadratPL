@@ -198,14 +198,24 @@
   // ── матчинг объявления под сохранённый поиск ──
   // Для реальных данных pets/parking/balcony бывают null (неизвестно):
   // включённый фильтр пропускает только подтверждённые объявления.
+  // Числовые поля подписки приводим к Number: старые записи localStorage
+  // могли хранить их строками (зеркалит _int_or_none в backend/matching.py —
+  // строгое l.rooms === s.rooms со строкой молча отбрасывало бы совпадения).
+  function _num(v) {
+    if (v == null || v === "") return null;
+    var n = Number(v);
+    return isNaN(n) ? null : n;
+  }
   function matches(l, s) {
+    var pMin = _num(s.priceMin), pMax = _num(s.priceMax),
+        aMin = _num(s.areaMin), rooms = _num(s.rooms);
     return l.city === s.city && l.type === s.type &&
       (!s.owner || (s.owner === "agency" ? l.agency === true : l.agency !== true)) &&
       (!s.district || l.district === s.district) &&
-      (s.priceMin == null || l.price >= s.priceMin) &&
-      (s.priceMax == null || l.price <= s.priceMax) &&
-      (s.areaMin == null || (l.area != null && l.area >= s.areaMin)) &&
-      (!s.rooms || (l.rooms != null && (s.rooms === 4 ? l.rooms >= 4 : l.rooms === s.rooms))) &&
+      (pMin == null || l.price >= pMin) &&
+      (pMax == null || l.price <= pMax) &&
+      (aMin == null || (l.area != null && l.area >= aMin)) &&
+      (!rooms || (l.rooms != null && (rooms === 4 ? l.rooms >= 4 : l.rooms === rooms))) &&
       (!s.pets || l.pets === true) &&
       (!s.parking || l.parking === true) &&
       (!s.balcony || l.balcony === true);

@@ -7,24 +7,15 @@
 import asyncio
 import time
 
-from fastapi import APIRouter, HTTPException, Query, Request, Response
+from fastapi import APIRouter, HTTPException, Query, Request
 
 import geo
 from config import log
 
 router = APIRouter(prefix="/api/location", tags=["location"])
 
-# сайт живёт на другом домене, чем API → CORS. GET без кастомных заголовков —
-# «simple request», preflight не нужен, достаточно echo разрешённого Origin.
-_CORS_ORIGINS = {"https://kwadratpl.pl", "https://kwadratpl.vercel.app"}
-
-
-def _cors(request: Request, response: Response):
-    origin = request.headers.get("origin", "")
-    if origin in _CORS_ORIGINS or origin.startswith(("http://localhost:", "http://127.0.0.1:")):
-        response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Vary"] = "Origin"
-
+# CORS для сайта/зеркала — глобальный CORSMiddleware в app.py (единый
+# allowlist на все роуты, включая preflight OPTIONS).
 
 # ── анти-парсинг: браузерный gate ──────────────────────────────────────────
 # Запросы без Origin/Referer с наших страниц (curl, requests, wget «в лоб»)
@@ -86,11 +77,10 @@ def _lang_q(lang: str) -> str:
 
 
 @router.get("/geocode")
-async def geocode(request: Request, response: Response,
+async def geocode(request: Request,
                   q: str = Query(..., min_length=2, max_length=120),
                   lang: str = "pl", city: str = "warszawa"):
     """Адрес → кандидаты в границах города. results=[] — честное «не нашли»."""
-    _cors(request, response)
     _browser_gate(request)
     _throttle(request, "geocode")
     if city not in geo.CITY_BOUNDS:
@@ -104,11 +94,10 @@ async def geocode(request: Request, response: Response,
 
 
 @router.get("/score")
-async def score(request: Request, response: Response,
+async def score(request: Request,
                 lat: float = Query(...), lon: float = Query(...),
                 lang: str = "pl"):
     """Оценка точки: общий балл 0–100, 4 категории, ближайшие объекты."""
-    _cors(request, response)
     _browser_gate(request)
     point_city = geo.city_of(lat, lon)
     if not point_city:

@@ -7,7 +7,9 @@ from config import DB_PATH
 
 
 def db():
-    c = sqlite3.connect(DB_PATH)
+    # timeout: при конкурентной записи (инжест + favs + ai-кэш) ждём снятия
+    # блокировки, а не падаем сразу «database is locked»
+    c = sqlite3.connect(DB_PATH, timeout=15.0)
     c.row_factory = sqlite3.Row
     c.execute("PRAGMA journal_mode=WAL")
     return c

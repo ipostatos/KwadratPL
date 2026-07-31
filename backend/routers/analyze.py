@@ -4,6 +4,7 @@
 # Кэш и суточные лимиты — в SQLite (ai_cache/ai_user_day), а не в памяти
 # процесса: переживают рестарт и не разъезжаются при нескольких воркерах.
 # ===========================================================================
+import asyncio
 import hmac
 import json
 import time
@@ -15,9 +16,9 @@ from fastapi import APIRouter, Header, HTTPException, Request
 import community
 from ai_usage import _ai_stats
 from auth import _auth_user
-from bot import bot
+from bot import _push_market, bot
 from config import (AI_DAILY_LIMIT, AI_ENABLED, ANALYZE_MODEL, INGEST_TOKEN,
-                    LISTINGS_PATH, TZ, log)
+                    TZ, log)
 from db import db
 from texts import AI_LANG_NAME, _SHARE_BTN, fmt_share, lang_of
 
@@ -57,11 +58,11 @@ def ai_stats(x_ingest_token: str = Header("")):
 def _market_pct(l: dict) -> int | None:
     """Отклонение цены/м² объявления от медианы похожих (наш listings.json), %.
     Считаем по данным сервера, а не со слов клиента — тот же алгоритм, что
-    в community.py/webapp (медиана по город+тип+район с фолбэком на город)."""
+    в community.py/webapp (медиана по город+тип+район с фолбэком на город).
+    Рынок — из 10-минутного кэша _push_market (bot.py); на промахе кэша он
+    читает listings.json с диска, поэтому роутер зовёт нас через to_thread."""
     try:
-        with open(LISTINGS_PATH, encoding="utf-8") as f:
-            listings = json.load(f).get("listings") or []
-        market = community.build_market(listings)
+        market = _push_market()
         v = community._ppm(l)
         if v is None:
             return None
@@ -115,7 +116,7 @@ async def analyze(request: Request, authorization: str = Header("")):
     # от медианы похожих — сильнейший скам-сигнал; + оценка локации, если есть.
     # Решение «пускать ли AI в оценки»: да, как входной контекст — AI объясняет,
     # но числа считает детерминированный код, а не модель.
-    pct = _market_pct(l)
+    pct = await asyncio.to_thread(_market_pct, l)
     ctx = {}
     if pct is not None:
         ctx["price_vs_similar_median_pct"] = pct

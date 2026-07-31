@@ -5,6 +5,16 @@
 from texts import CITY
 
 
+def _int_or_none(v):
+    """Число или None: подписки, записанные в БД до _clean_sub, могли хранить
+    priceMin:"3000" строкой — int<str ронял бы TypeError'ом матчинг ВСЕХ
+    уведомлений на инжесте."""
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def matches(l: dict, s: dict) -> bool:
     if l.get("city") != s.get("city") or l.get("type") != s.get("type"):
         return False
@@ -15,16 +25,20 @@ def matches(l: dict, s: dict) -> bool:
         return False
     if s.get("district") and l.get("district") != s["district"]:
         return False
-    price = l.get("price") or 0
-    if s.get("priceMin") is not None and price < s["priceMin"]:
+    price = _int_or_none(l.get("price")) or 0
+    p_min, p_max = _int_or_none(s.get("priceMin")), _int_or_none(s.get("priceMax"))
+    if p_min is not None and price < p_min:
         return False
-    if s.get("priceMax") is not None and price > s["priceMax"]:
+    if p_max is not None and price > p_max:
         return False
-    if s.get("areaMin") is not None and (l.get("area") is None or l["area"] < s["areaMin"]):
-        return False
-    rooms = s.get("rooms")
+    a_min = _int_or_none(s.get("areaMin"))
+    if a_min is not None:
+        area = _int_or_none(l.get("area"))
+        if area is None or area < a_min:
+            return False
+    rooms = _int_or_none(s.get("rooms"))
     if rooms:
-        lr = l.get("rooms")
+        lr = _int_or_none(l.get("rooms"))
         if lr is None or (lr < 4 if rooms == 4 else lr != rooms):
             return False
     for feat in ("pets", "parking", "balcony"):
