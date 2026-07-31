@@ -42,6 +42,25 @@ jobs:
       - name: Build landing (generator must not throw)
         run: node site/_build/generate.mjs
 
+  fetcher-sync:
+    # Сторож ручного дублирования: боевой фетчер живёт в публичном репо
+    # ipostatos/kwadratpl-fetcher (fetch_olx.py), наш tools/fetch-olx.py —
+    # его исходник. Разъезд = тихий дрейф прод-данных. Красный джоб — сигнал
+    # «синхронизируй второй репо»; деплой от него НЕ зависит (иначе правка
+    # фетчера блокировала бы выкладку бэкенда до синка публичного репо).
+    name: Fetcher repo sync guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Diff tools/fetch-olx.py vs kwadratpl-fetcher/fetch_olx.py
+        run: |
+          curl -sfL https://raw.githubusercontent.com/ipostatos/kwadratpl-fetcher/main/fetch_olx.py -o /tmp/fetch_olx_remote.py
+          if ! diff -u /tmp/fetch_olx_remote.py tools/fetch-olx.py; then
+            echo "::error::tools/fetch-olx.py разъехался с ipostatos/kwadratpl-fetcher/fetch_olx.py — синхронизируйте оба репо"
+            exit 1
+          fi
+          echo "SYNC OK: файлы идентичны"
+
   deploy:
     name: Deploy to VPS
     needs: [backend, frontend]

@@ -92,6 +92,19 @@ async def test_subs_requires_auth(client):
     assert (await client.get("/api/subs")).status_code == 401
 
 
+async def test_sync_rate_limit(client, auth, monkeypatch):
+    """Per-IP лимит subs/favs (bucket "sync" в ratelimit.py): 429 сверх окна,
+    срабатывает ДО auth (флуд невалидным initData тоже режется)."""
+    import ratelimit
+    monkeypatch.setitem(ratelimit._RATE, "sync", ((2, 3600), (80, 86400)))
+    ratelimit._hits.clear()
+    assert (await client.get("/api/subs", headers=auth)).status_code == 200
+    assert (await client.get("/api/favs", headers=auth)).status_code == 200
+    r = await client.get("/api/subs")   # 3-й хит: 429 раньше, чем 401 без auth
+    assert r.status_code == 429
+    ratelimit._hits.clear()
+
+
 async def test_subs_put_get(client, auth):
     r = await client.put("/api/subs", headers=auth, json={
         "subs": [{"city": "warszawa", "type": "long", "priceMax": 3500, "notify": True}],

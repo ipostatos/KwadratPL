@@ -5,7 +5,6 @@
 # бережём публичные API и не даём выкачивать себя как прокси.
 # ===========================================================================
 import asyncio
-import time
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
@@ -39,32 +38,9 @@ def _browser_gate(request: Request):
     raise HTTPException(403, "forbidden")
 
 
-# ── per-IP лимиты: часовое окно + дневной потолок (память процесса) ────────
-_RATE = {"score": ((20, 3600), (80, 86400)),
-         "geocode": ((40, 3600), (160, 86400))}
-_hits: dict = {}
-
-
-def _client_ip(request: Request) -> str:
-    fwd = request.headers.get("x-forwarded-for", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
-    return request.client.host if request.client else "?"
-
-
-def _throttle(request: Request, bucket: str):
-    ip = _client_ip(request)
-    now = time.monotonic()
-    q = _hits.setdefault((bucket, ip), [])
-    max_window = max(w for _, w in _RATE[bucket])
-    q[:] = [t for t in q if now - t < max_window]
-    for limit, window in _RATE[bucket]:
-        if len([t for t in q if now - t < window]) >= limit:
-            raise HTTPException(429, "rate_limited")
-    q.append(now)
-    if len(_hits) > 10000:   # страховка от распухания на множестве IP
-        _hits.clear()
-
+# per-IP лимиты живут в общем ratelimit.py; re-export имён — тесты патчат
+# loc._RATE / loc._hits (это те же объекты-словари, что в ratelimit)
+from ratelimit import _RATE, _hits, _throttle  # noqa: F401
 
 # Overpass: не больше 2 одновременных запросов от нас (вежливость к зеркалам)
 _overpass_sem = asyncio.Semaphore(2)

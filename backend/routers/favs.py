@@ -10,6 +10,7 @@ from fastapi import APIRouter, Header, HTTPException, Request
 
 from auth import _auth_user
 from db import db
+from ratelimit import _throttle
 
 router = APIRouter()
 
@@ -17,7 +18,8 @@ MAX_FAVS = 300
 
 
 @router.get("/api/favs")
-def get_favs(authorization: str = Header("")):
+def get_favs(request: Request, authorization: str = Header("")):
+    _throttle(request, "sync")   # до auth: режет и флуд невалидным initData
     user = _auth_user(authorization)
     with db() as c:
         rows = c.execute("SELECT listing_id FROM favs WHERE user_id=? ORDER BY ts",
@@ -27,6 +29,7 @@ def get_favs(authorization: str = Header("")):
 
 @router.put("/api/favs")
 async def put_favs(request: Request, authorization: str = Header("")):
+    _throttle(request, "sync")
     user = _auth_user(authorization)
     body = await request.json()
     ids = body.get("ids")

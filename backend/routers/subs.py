@@ -11,13 +11,15 @@ from auth import _auth_user
 from config import log
 from db import db
 from matching import _clean_sub
+from ratelimit import _throttle
 from texts import lang_of
 
 router = APIRouter()
 
 
 @router.get("/api/subs")
-def get_subs(authorization: str = Header("")):
+def get_subs(request: Request, authorization: str = Header("")):
+    _throttle(request, "sync")   # до auth: режет и флуд невалидным initData
     user = _auth_user(authorization)
     with db() as c:
         rows = c.execute("SELECT data, notify FROM subs WHERE user_id=? ORDER BY idx",
@@ -37,6 +39,7 @@ def get_subs(authorization: str = Header("")):
 
 @router.put("/api/subs")
 async def put_subs(request: Request, authorization: str = Header("")):
+    _throttle(request, "sync")
     user = _auth_user(authorization)
     body = await request.json()
     subs = body.get("subs")
@@ -71,10 +74,11 @@ async def put_subs(request: Request, authorization: str = Header("")):
 
 
 @router.delete("/api/subs")
-def delete_me(authorization: str = Header("")):
+def delete_me(request: Request, authorization: str = Header("")):
     """Право на удаление (RODO/GDPR): стирает подписки, буфер уведомлений и
     учётную запись пользователя по его initData. Локальные данные (localStorage:
     избранное, сохранённые поиски) очищает клиент на своей стороне."""
+    _throttle(request, "sync")
     user = _auth_user(authorization)
     uid = user["id"]
     with db() as c:
