@@ -1095,6 +1095,7 @@ function sitemap() {
     { suffix: "privacy/", priority: () => "0.3", changefreq: "monthly" },
     { suffix: "guides/", priority: () => "0.6", changefreq: "monthly" },
     { suffix: TOOL_SLUG, priority: () => "0.8", changefreq: "weekly" },
+    { suffix: TOOL_KRK_SLUG, priority: () => "0.8", changefreq: "weekly" },
     ...GUIDES.map((g) => ({ suffix: `guides/${g.slug}/`, priority: () => "0.7", changefreq: "monthly" })),
     ...SITE.cities.map((c) => ({ suffix: `cities/${c}/`, priority: () => "0.7", changefreq: "weekly" })),
   ];
@@ -1971,6 +1972,7 @@ function cityPage(meta, slug) {
     <h1 class="art-h1">${esc(h1)}</h1>
     <p class="art-lead">${esc(lead)}</p>
     <div class="art-cta"><a class="btn" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} ${esc(C[lang].ctaPrimary)}</a></div>
+    ${TOOL_PAGES[slug] ? `<p style="margin:-6px 0 20px">📍 <a href="${url(meta.path + TOOL_PAGES[slug].slug)}" style="color:var(--link)">${esc(TOOL_PAGES[slug].texts[lang].h1)}</a></p>` : ""}
     <h2 class="sec-h">${esc(seo.districts)}</h2>
     <div class="chips">${chips}</div>
     <h2 class="sec-h">${esc(seo.faqTitle)}</h2>
@@ -1978,11 +1980,15 @@ function cityPage(meta, slug) {
     chromeClose(chromeMeta);
 }
 
-// ── инструмент «Оценка локации» (Варшава) ────────────────────────────────────
+// ── инструмент «Оценка локации» (Варшава + Краков) ──────────────────────────
 // Живой веб-инструмент на статическом сайте: страница ходит в API бота на VPS
 // (CORS-allowlist kwadratpl.pl на бэке). UI-строки — из словаря Mini App
 // (KW.DICT.loc*/k*/verdict*/cat*, single source), SEO-тексты — здесь.
+// Варшавский slug исторический (проиндексирован, не менять); Краков — своя
+// страница со своими текстами: другой транспортный каркас (метро нет,
+// трамваи+SKA) и свой SEO-угол (зимний смог → FAQ про штраф GIOŚ).
 const TOOL_SLUG = "ocena-lokalizacji/";
+const TOOL_KRK_SLUG = "ocena-lokalizacji-krakow/";
 const TOOL = {
   ru: {
     title: "Оценка локации в Варшаве — проверь адрес бесплатно",
@@ -1993,7 +1999,7 @@ const TOOL = {
     cta: "Ищешь квартиру или комнату в Варшаве? Бот покажет свежие объявления OLX, Otodom и Morizon — с оценкой цены, анти-скам-фильтром и уведомлениями.",
     faq: [
       { q: "Как считается оценка?", a: "Мы смотрим реальные объекты вокруг адреса: станции метро и SKM, остановки, магазины, аптеки, школы, детские сады и парки. Балл каждой категории складывается из близости и количества объектов, итог — взвешенная сумма, в которой провал одной категории заметно снижает результат. Данные: OpenStreetMap и Google." },
-      { q: "Почему только Варшава?", a: "Начали с города с самым большим арендным спросом. Другие города Польши добавим позже — а бот Kwadrat PL уже ищет жильё в 8 городах." },
+      { q: "В каких городах работает оценка?", a: "В Варшаве и Кракове. Другие города Польши добавим позже — а бот Kwadrat PL уже ищет жильё в 8 городах." },
       { q: "Насколько точны данные?", a: "Карты обновляются с задержкой: новый магазин или садик мог ещё не попасть в данные. Оценка — ориентир для сравнения адресов между собой, а не абсолютная истина." },
     ],
   },
@@ -2006,7 +2012,7 @@ const TOOL = {
     cta: "Шукаєш квартиру чи кімнату у Варшаві? Бот покаже свіжі оголошення OLX, Otodom і Morizon — з оцінкою ціни, анти-скам-фільтром і сповіщеннями.",
     faq: [
       { q: "Як рахується оцінка?", a: "Ми дивимося реальні об'єкти навколо адреси: станції метро та SKM, зупинки, магазини, аптеки, школи, садки й парки. Бал кожної категорії складається з близькості та кількості об'єктів, підсумок — зважена сума, де провал однієї категорії помітно знижує результат. Дані: OpenStreetMap і Google." },
-      { q: "Чому лише Варшава?", a: "Почали з міста з найбільшим орендним попитом. Інші міста Польщі додамо пізніше — а бот Kwadrat PL уже шукає житло у 8 містах." },
+      { q: "У яких містах працює оцінка?", a: "У Варшаві та Кракові. Інші міста Польщі додамо пізніше — а бот Kwadrat PL уже шукає житло у 8 містах." },
       { q: "Наскільки точні дані?", a: "Карти оновлюються із затримкою: новий магазин чи садок міг ще не потрапити в дані. Оцінка — орієнтир для порівняння адрес між собою, а не абсолютна істина." },
     ],
   },
@@ -2019,7 +2025,7 @@ const TOOL = {
     cta: "Шукаеш кватэру ці пакой у Варшаве? Бот пакажа свежыя аб'явы OLX, Otodom і Morizon — з ацэнкай цаны, анты-скам-фільтрам і апавяшчэннямі.",
     faq: [
       { q: "Як лічыцца ацэнка?", a: "Мы глядзім рэальныя аб'екты вакол адраса: станцыі метро і SKM, прыпынкі, крамы, аптэкі, школы, садкі і паркі. Бал кожнай катэгорыі складаецца з блізкасці і колькасці аб'ектаў, вынік — узважаная сума, дзе правал адной катэгорыі прыкметна зніжае вынік. Даныя: OpenStreetMap і Google." },
-      { q: "Чаму толькі Варшава?", a: "Пачалі з горада з найбольшым арэндным попытам. Іншыя гарады Польшчы дадамо пазней — а бот Kwadrat PL ужо шукае жыллё ў 8 гарадах." },
+      { q: "У якіх гарадах працуе ацэнка?", a: "У Варшаве і Кракаве. Іншыя гарады Польшчы дадамо пазней — а бот Kwadrat PL ужо шукае жыллё ў 8 гарадах." },
       { q: "Наколькі дакладныя даныя?", a: "Карты абнаўляюцца з затрымкай: новая крама ці садок мог яшчэ не трапіць у даныя. Ацэнка — арыенцір для параўнання адрасоў паміж сабой, а не абсалютная ісціна." },
     ],
   },
@@ -2032,7 +2038,7 @@ const TOOL = {
     cta: "Szukasz mieszkania lub pokoju w Warszawie? Bot pokaże świeże ogłoszenia z OLX, Otodom i Morizon — z oceną ceny, filtrem anty-scam i powiadomieniami.",
     faq: [
       { q: "Jak liczony jest wynik?", a: "Patrzymy na realne obiekty wokół adresu: stacje metra i SKM, przystanki, sklepy, apteki, szkoły, przedszkola i parki. Wynik każdej kategorii wynika z bliskości i liczby obiektów, a łączna ocena to suma ważona, w której słaba kategoria wyraźnie obniża rezultat. Dane: OpenStreetMap i Google." },
-      { q: "Dlaczego tylko Warszawa?", a: "Zaczęliśmy od miasta z największym popytem na najem. Kolejne miasta dodamy później — a bot Kwadrat PL już teraz szuka mieszkań w 8 miastach." },
+      { q: "Jakie miasta są obsługiwane?", a: "Warszawa i Kraków. Kolejne miasta dodamy później — a bot Kwadrat PL już teraz szuka mieszkań w 8 miastach." },
       { q: "Jak dokładne są dane?", a: "Mapy aktualizują się z opóźnieniem: nowy sklep czy przedszkole mogły jeszcze nie trafić do danych. Wynik to punkt odniesienia do porównywania adresów, nie absolutna prawda." },
     ],
   },
@@ -2045,10 +2051,89 @@ const TOOL = {
     cta: "Looking for a flat or room in Warsaw? The bot shows fresh OLX, Otodom and Morizon listings — with price insights, an anti-scam filter and alerts.",
     faq: [
       { q: "How is the score calculated?", a: "We look at real places around the address: metro and SKM stations, stops, shops, pharmacies, schools, kindergartens and parks. Each category score combines proximity and density, and the total is a weighted sum where one weak category clearly drags the result down. Data: OpenStreetMap and Google." },
-      { q: "Why Warsaw only?", a: "We started with the city with the highest rental demand. More Polish cities will follow — and the Kwadrat PL bot already searches homes in 8 cities." },
+      { q: "Which cities are supported?", a: "Warsaw and Kraków. More Polish cities will follow — and the Kwadrat PL bot already searches homes in 8 cities." },
       { q: "How accurate is the data?", a: "Maps update with a delay: a new shop or kindergarten may not be in the data yet. The score is a benchmark for comparing addresses, not absolute truth." },
     ],
   },
+};
+
+const TOOL_KRK = {
+  ru: {
+    title: "Оценка локации в Кракове — проверь адрес бесплатно",
+    btn: "Оценить адрес бесплатно",
+    desc: "Введи адрес в Кракове и получи балл 0–100 за транспорт, магазины, школы и зелёные зоны. Ближайшие объекты с расстояниями. Бесплатно и без регистрации.",
+    h1: "Оценка локации в Кракове",
+    lead: "Введи адрес или тапни точку на карте — покажем, насколько удобно там жить: общий балл 0–100 и разбор по транспорту, инфраструктуре, школам и зелени, с ближайшими объектами и расстояниями.",
+    cta: "Ищешь квартиру или комнату в Кракове? Бот покажет свежие объявления OLX, Otodom и Morizon — с оценкой цены, анти-скам-фильтром и уведомлениями.",
+    faq: [
+      { q: "Как считается оценка?", a: "Мы смотрим реальные объекты вокруг адреса: трамвайные остановки, железнодорожные станции (SKA), автобусы, магазины, аптеки, школы, детские сады и парки. Метро в Кракове нет, поэтому каркас транспорта — трамваи и электрички: без них высокий балл не набрать. Итог — взвешенная сумма, в которой провал одной категории заметно снижает результат. Данные: OpenStreetMap и Google." },
+      { q: "Учитывается ли смог?", a: "Да. Текущий индекс качества воздуха ближайшей станции GIOŚ даёт штраф к общему баллу — для Кракова с его зимним смогом это особенно важно. Штраф показан отдельной строкой, а не спрятан в среднем." },
+      { q: "В каких городах работает оценка?", a: "В Кракове и Варшаве. Другие города Польши добавим позже — а бот Kwadrat PL уже ищет жильё в 8 городах." },
+      { q: "Насколько точны данные?", a: "Карты обновляются с задержкой: новый магазин или садик мог ещё не попасть в данные. Оценка — ориентир для сравнения адресов между собой, а не абсолютная истина." },
+    ],
+  },
+  ua: {
+    title: "Оцінка локації у Кракові — перевір адресу безкоштовно",
+    btn: "Оцінити адресу безкоштовно",
+    desc: "Введи адресу у Кракові та отримай бал 0–100 за транспорт, магазини, школи й зелені зони. Найближчі об'єкти з відстанями. Безкоштовно й без реєстрації.",
+    h1: "Оцінка локації у Кракові",
+    lead: "Введи адресу або тапни точку на карті — покажемо, наскільки зручно там жити: загальний бал 0–100 і розбір за транспортом, інфраструктурою, школами та зеленню, з найближчими об'єктами й відстанями.",
+    cta: "Шукаєш квартиру чи кімнату у Кракові? Бот покаже свіжі оголошення OLX, Otodom і Morizon — з оцінкою ціни, анти-скам-фільтром і сповіщеннями.",
+    faq: [
+      { q: "Як рахується оцінка?", a: "Ми дивимося реальні об'єкти навколо адреси: трамвайні зупинки, залізничні станції (SKA), автобуси, магазини, аптеки, школи, садки й парки. Метро у Кракові немає, тому каркас транспорту — трамваї та електрички: без них високий бал не набрати. Підсумок — зважена сума, де провал однієї категорії помітно знижує результат. Дані: OpenStreetMap і Google." },
+      { q: "Чи враховується смог?", a: "Так. Поточний індекс якості повітря найближчої станції GIOŚ дає штраф до загального балу — для Кракова з його зимовим смогом це особливо важливо. Штраф показано окремим рядком, а не сховано в середньому." },
+      { q: "У яких містах працює оцінка?", a: "У Кракові та Варшаві. Інші міста Польщі додамо пізніше — а бот Kwadrat PL уже шукає житло у 8 містах." },
+      { q: "Наскільки точні дані?", a: "Карти оновлюються із затримкою: новий магазин чи садок міг ще не потрапити в дані. Оцінка — орієнтир для порівняння адрес між собою, а не абсолютна істина." },
+    ],
+  },
+  by: {
+    title: "Ацэнка лакацыі ў Кракаве — правер адрас бясплатна",
+    btn: "Ацаніць адрас бясплатна",
+    desc: "Увядзі адрас у Кракаве і атрымай бал 0–100 за транспарт, крамы, школы і зялёныя зоны. Найбліжэйшыя аб'екты з адлегласцямі. Бясплатна і без рэгістрацыі.",
+    h1: "Ацэнка лакацыі ў Кракаве",
+    lead: "Увядзі адрас або тапні кропку на карце — пакажам, наколькі зручна там жыць: агульны бал 0–100 і разбор па транспарце, інфраструктуры, школах і зеляніне, з найбліжэйшымі аб'ектамі і адлегласцямі.",
+    cta: "Шукаеш кватэру ці пакой у Кракаве? Бот пакажа свежыя аб'явы OLX, Otodom і Morizon — з ацэнкай цаны, анты-скам-фільтрам і апавяшчэннямі.",
+    faq: [
+      { q: "Як лічыцца ацэнка?", a: "Мы глядзім рэальныя аб'екты вакол адраса: трамвайныя прыпынкі, чыгуначныя станцыі (SKA), аўтобусы, крамы, аптэкі, школы, садкі і паркі. Метро ў Кракаве няма, таму каркас транспарту — трамваі і электрычкі: без іх высокі бал не набраць. Вынік — узважаная сума, дзе правал адной катэгорыі прыкметна зніжае вынік. Даныя: OpenStreetMap і Google." },
+      { q: "Ці ўлічваецца смог?", a: "Так. Бягучы індэкс якасці паветра найбліжэйшай станцыі GIOŚ дае штраф да агульнага бала — для Кракава з яго зімовым смогам гэта асабліва важна. Штраф паказаны асобным радком, а не схаваны ў сярэднім." },
+      { q: "У якіх гарадах працуе ацэнка?", a: "У Кракаве і Варшаве. Іншыя гарады Польшчы дадамо пазней — а бот Kwadrat PL ужо шукае жыллё ў 8 гарадах." },
+      { q: "Наколькі дакладныя даныя?", a: "Карты абнаўляюцца з затрымкай: новая крама ці садок мог яшчэ не трапіць у даныя. Ацэнка — арыенцір для параўнання адрасоў паміж сабой, а не абсалютная ісціна." },
+    ],
+  },
+  pl: {
+    title: "Ocena lokalizacji w Krakowie — sprawdź adres za darmo",
+    btn: "Oceń adres za darmo",
+    desc: "Wpisz adres w Krakowie i zobacz wynik 0–100 za transport, sklepy, szkoły i tereny zielone. Najbliższe obiekty z odległościami. Za darmo i bez rejestracji.",
+    h1: "Ocena lokalizacji w Krakowie",
+    lead: "Wpisz adres albo stuknij punkt na mapie — pokażemy, jak wygodnie się tam mieszka: łączny wynik 0–100 i rozbicie na transport, infrastrukturę, szkoły i zieleń, z najbliższymi obiektami i odległościami.",
+    cta: "Szukasz mieszkania lub pokoju w Krakowie? Bot pokaże świeże ogłoszenia z OLX, Otodom i Morizon — z oceną ceny, filtrem anty-scam i powiadomieniami.",
+    faq: [
+      { q: "Jak liczony jest wynik?", a: "Patrzymy na realne obiekty wokół adresu: przystanki tramwajowe, stacje kolejowe (SKA), autobusy, sklepy, apteki, szkoły, przedszkola i parki. W Krakowie nie ma metra, więc kręgosłupem transportu są tramwaje i kolej — bez nich trudno o wysoki wynik. Łączna ocena to suma ważona, w której słaba kategoria wyraźnie obniża rezultat. Dane: OpenStreetMap i Google." },
+      { q: "Czy smog jest uwzględniany?", a: "Tak. Bieżący indeks jakości powietrza z najbliższej stacji GIOŚ obniża łączny wynik — w Krakowie, z jego zimowym smogiem, to szczególnie istotne. Kara pokazywana jest w osobnej linii, nie znika w średniej." },
+      { q: "Jakie miasta są obsługiwane?", a: "Kraków i Warszawa. Kolejne miasta dodamy później — a bot Kwadrat PL już teraz szuka mieszkań w 8 miastach." },
+      { q: "Jak dokładne są dane?", a: "Mapy aktualizują się z opóźnieniem: nowy sklep czy przedszkole mogły jeszcze nie trafić do danych. Wynik to punkt odniesienia do porównywania adresów, nie absolutna prawda." },
+    ],
+  },
+  en: {
+    title: "Kraków location score — check any address for free",
+    btn: "Check an address for free",
+    desc: "Enter a Kraków address and get a 0–100 score for transit, shops, schools and green areas. Nearest places with distances. Free, no sign-up.",
+    h1: "Kraków location score",
+    lead: "Enter an address or tap a point on the map — we'll show how liveable it is: an overall 0–100 score with a breakdown for transit, infrastructure, schools and greenery, plus the nearest places and distances.",
+    cta: "Looking for a flat or room in Kraków? The bot shows fresh OLX, Otodom and Morizon listings — with price insights, an anti-scam filter and alerts.",
+    faq: [
+      { q: "How is the score calculated?", a: "We look at real places around the address: tram stops, railway stations (SKA), buses, shops, pharmacies, schools, kindergartens and parks. Kraków has no metro, so trams and trains form the transit backbone — without them a high score is out of reach. The total is a weighted sum where one weak category clearly drags the result down. Data: OpenStreetMap and Google." },
+      { q: "Is smog taken into account?", a: "Yes. The current air quality index from the nearest GIOŚ station lowers the overall score — especially relevant in Kraków with its winter smog. The penalty is shown as a separate line, not hidden in the average." },
+      { q: "Which cities are supported?", a: "Kraków and Warsaw. More Polish cities will follow — and the Kwadrat PL bot already searches homes in 8 cities." },
+      { q: "How accurate is the data?", a: "Maps update with a delay: a new shop or kindergarten may not be in the data yet. The score is a benchmark for comparing addresses, not absolute truth." },
+    ],
+  },
+};
+
+// город → страница инструмента: тексты, slug, центр/зум карты, ссылка на пару
+const TOOL_PAGES = {
+  warszawa: { slug: TOOL_SLUG, texts: TOOL, center: [52.2318, 21.006], zoom: 11, other: "krakow" },
+  krakow: { slug: TOOL_KRK_SLUG, texts: TOOL_KRK, center: [50.0619, 19.9369], zoom: 12, other: "warszawa" },
 };
 
 // строки UI инструмента — из словаря Mini App (не дублируем переводы)
@@ -2109,10 +2194,12 @@ const TOOL_CSS = `
 }
 `;
 
-function toolPage(meta) {
+function toolPage(meta, cityKey = "warszawa") {
   const lang = meta.code;
-  const t = TOOL[lang];
-  const suffix = TOOL_SLUG;
+  const cfg = TOOL_PAGES[cityKey];
+  const t = cfg.texts[lang];
+  const suffix = cfg.slug;
+  const other = TOOL_PAGES[cfg.other];
   const canonical = url(meta.path + suffix);
   const title = `${t.title} | ${SITE.name}`;
   const L10N = toolL10n(lang);
@@ -2161,6 +2248,7 @@ function toolPage(meta) {
   </div>
 </div>
 <p class="lt-legal">${esc(KW.DICT.locData[lang])} ${esc(KW.DICT.locLegal[lang])}</p>
+<p class="lt-hint">📍 <a href="${url(meta.path + other.slug)}" style="color:var(--link)">${esc(other.texts[lang].h1)}</a></p>
 <div class="art-cta" style="margin:6px 0 30px">
   <p style="margin:0 0 12px; color:var(--muted)">${esc(t.cta)}</p>
   <a class="btn" href="${SITE.bot}" rel="noopener">${Icons.svg("send")} ${esc(C[lang].ctaPrimary)}</a>
@@ -2174,6 +2262,7 @@ function toolPage(meta) {
   var API = "https://kwadratpl-46-224-220-94.sslip.io";
   var T = ${JSON.stringify(L10N)};
   var LANG = ${JSON.stringify(lang)};
+  var CITY = ${JSON.stringify(cityKey)};
   var KINDL = { metro: "kMetro", rail: "kRail", tram: "kTram", bus: "kBus", grocery: "kGrocery",
     pharmacy: "kPharmacy", health: "kHealth", food: "kFood", services: "kServices", sport: "kSport",
     vet: "kVet", playground: "kPlayground", mall: "kMall", marketplace: "kMarketplace",
@@ -2188,7 +2277,7 @@ function toolPage(meta) {
     });
   }
   document.body.classList.add("lt-dark-tiles");
-  var map = L.map("lt-map", { zoomControl: false }).setView([52.2318, 21.006], 11);
+  var map = L.map("lt-map", { zoomControl: false }).setView(${JSON.stringify(cfg.center)}, ${cfg.zoom});
   L.control.zoom({ position: "bottomright" }).addTo(map);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     { maxZoom: 18, attribution: "&copy; OpenStreetMap" }).addTo(map);
@@ -2238,7 +2327,7 @@ function toolPage(meta) {
     busy = true;
     $("#lt-cands").hidden = true;
     setState("locLoad");
-    jfetch(API + "/api/location/geocode?q=" + encodeURIComponent(q) + "&lang=" + LANG)
+    jfetch(API + "/api/location/geocode?q=" + encodeURIComponent(q) + "&lang=" + LANG + "&city=" + CITY)
       .then(function (d) {
         busy = false;
         var res = d.results || [];
@@ -2384,6 +2473,7 @@ ${faqLines}
 
 ## Free tools
 - [${TOOL.en.h1}](${url(TOOL_SLUG)}): ${TOOL.en.desc}
+- [${TOOL_KRK.en.h1}](${url(TOOL_KRK_SLUG)}): ${TOOL_KRK.en.desc}
 
 ## Links
 - Telegram bot: ${SITE.bot}
@@ -2426,10 +2516,12 @@ for (const meta of LANGS) {
     count += 1;
   }
 
-  const toolDir = join(dir, TOOL_SLUG.replace(/\/$/, ""));
-  mkdirSync(toolDir, { recursive: true });
-  writeFileSync(join(toolDir, "index.html"), toolPage(meta));
-  count += 1;
+  for (const cityKey of Object.keys(TOOL_PAGES)) {
+    const toolDir = join(dir, TOOL_PAGES[cityKey].slug.replace(/\/$/, ""));
+    mkdirSync(toolDir, { recursive: true });
+    writeFileSync(join(toolDir, "index.html"), toolPage(meta, cityKey));
+    count += 1;
+  }
 }
 // Leaflet для инструмента — синк из webapp/vendor (single source, без CDN)
 cpSync(join(__dirname, "..", "..", "webapp", "vendor", "leaflet"),
