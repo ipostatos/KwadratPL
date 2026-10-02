@@ -102,6 +102,11 @@ def _resolve_coords(l, geocodes_left):
     return None, None, "unknown", used
 
 
+def _src_sig(l):
+    """Входные данные, от которых зависит геокод: при их смене пробуем заново."""
+    return f"{l.get('lat')}|{l.get('lon')}|{(l.get('street') or '').strip()}"
+
+
 # точность, достаточная для предрасчёта оценки и бейджа в карточке
 SCOREABLE = ("point", "address", "street")
 
@@ -114,8 +119,8 @@ def enrich_once():
         return {"geocoded": 0, "scored": 0}
     now = int(time.time())
     with db() as c:
-        known = {r["id"]: r["precision"] for r in
-                 c.execute("SELECT id, precision FROM geo_listings")}
+        known = {r["id"]: (r["precision"], r["src"]) for r in
+                 c.execute("SELECT id, precision, src FROM geo_listings")}
         # retention: строки старше 60 дней (объявление давно умерло)
         c.execute("DELETE FROM geo_listings WHERE ts < ?", (now - 60 * 86400,))
 
@@ -124,21 +129,25 @@ def enrich_once():
     upgradeable = ("district", "unknown")
     for l in listings:
         lid = str(l["id"])
+        src = _src_sig(l)
         prev = known.get(lid)
         if prev is not None:
             # апгрейд точности: слабая запись (district/unknown) пересчитывается,
             # если у объявления появились координаты или улица (данные фетчера
-            # могли прийти ПОСЛЕ первого прохода — write-once терял точность)
+            # могли прийти ПОСЛЕ первого прохода — write-once терял точность).
+            # Но только если входные данные ИЗМЕНИЛИСЬ с прошлой попытки —
+            # иначе негеокодируемая улица крутилась бы вечно.
+            prev_prec, prev_src = prev
             better = isinstance(l.get("lat"), (int, float)) or bool(l.get("street"))
-            if not (prev in upgradeable and better):
+            if not (prev_prec in upgradeable and better and src != prev_src):
                 continue
         lat, lon, prec, used = _resolve_coords(l, budget)
         budget -= used
         if prec == "defer":
             break   # бюджет геокодов вышел — доделаем в следующем цикле
         with db() as c:
-            c.execute("""INSERT OR REPLACE INTO geo_listings(id, lat, lon, precision, ts)
-                         VALUES(?,?,?,?,?)""", (lid, lat, lon, prec, now))
+            c.execute("""INSERT OR REPLACE INTO geo_listings(id, lat, lon, precision, ts, src)
+                         VALUES(?,?,?,?,?,?)""", (lid, lat, lon, prec, now, src))
         geocoded += 1
 
     scored = 0
@@ -176,6 +185,9 @@ async def enrich_loop():
     while True:
         try:
             await asyncio.to_thread(enrich_once)
+            n = await asyncio.to_thread(geo.evict_cache)
+            if n:
+                log.info("geo_cache: evicted %d expired rows", n)
         except Exception as e:
             log.warning("geo_enrich cycle failed: %s", e)
         await asyncio.sleep(ENRICH_INTERVAL)

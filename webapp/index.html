@@ -83,12 +83,12 @@
   <!-- РАЗДЕЛЫ -->
   <div class="section-title" data-i18n="secSearch"></div>
   <div class="grid">
-    <a class="cell" href="search.html?type=long">
+    <a class="cell" id="cellLong" href="search.html?type=long">
       <div class="ic-tile blue" data-icon="home"></div>
       <div class="t" data-i18n="long"></div>
       <div class="d" data-i18n="cellLongD"></div>
     </a>
-    <a class="cell" href="search.html?type=short">
+    <a class="cell" id="cellShort" href="search.html?type=short">
       <div class="ic-tile amber" data-icon="key"></div>
       <div class="t" data-i18n="short"></div>
       <div class="d" data-i18n="cellShortD"></div>
@@ -101,7 +101,7 @@
       </div>
       <div class="chev">›</div>
     </a>
-    <a class="cell wide" href="search.html?pets=1">
+    <a class="cell wide" id="cellPets" href="search.html?pets=1">
       <div class="ic-tile green" data-icon="paw-print"></div>
       <div class="body">
         <div class="t" data-i18n="cellPetsT"></div>
@@ -189,6 +189,14 @@ App.ready.then(function () {
     grid.appendChild(a);
   });
   Icons.hydrate(grid);
+
+  // «нет данных — нет плитки»: посуточно и «с животными» показываем, только
+  // если в живой выдаче такие объявления есть (вернутся сами вместе с данными)
+  if (!App.typeAvailable("short")) {
+    document.getElementById("cellShort").style.display = "none";
+    document.getElementById("cellLong").style.gridColumn = "1 / -1";
+  }
+  if (!App.flagAvailable("pets")) document.getElementById("cellPets").style.display = "none";
 
   document.getElementById("statTotal").textContent = App.listings.length;
   document.getElementById("statSaved").textContent = App.saved.length;

@@ -293,3 +293,19 @@ async def test_rate_limit(client, geo_net, monkeypatch):
     r = await client.get(f"/api/location/score?lat={LAT}&lon={LON}", headers=SITE)
     assert r.status_code == 429
     loc._hits.clear()
+
+
+def test_evict_cache_by_prefix_ttl():
+    import time as _t
+    from db import db as _db
+    now = int(_t.time())
+    rows = [("p:1,1", now - 8 * 86400), ("p:2,2", now - 3600),
+            ("g:warszawa:pl:x", now - 8 * 86400), ("g:warszawa:pl:y", now - 31 * 86400),
+            ("air:warszawa", now - 7200)]
+    with _db() as c:
+        for k, ts in rows:
+            c.execute("INSERT OR REPLACE INTO geo_cache(key,data,ts) VALUES(?,?,?)", (k, "[]", ts))
+    assert geo.evict_cache() == 3
+    with _db() as c:
+        left = {r[0] for r in c.execute("SELECT key FROM geo_cache")}
+    assert left == {"p:2,2", "g:warszawa:pl:x"}

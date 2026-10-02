@@ -61,7 +61,10 @@ async def on_donate(m: Message):
 
 @dp.callback_query(F.data.startswith("don:"))
 async def on_donate_pick(q):
-    amount = int(q.data.split(":", 1)[1])
+    try:
+        amount = int(q.data.split(":", 1)[1])
+    except ValueError:
+        amount = 0
     if amount not in _STAR_AMOUNTS:
         await q.answer()
         return
@@ -140,6 +143,10 @@ async def on_stats(m: Message):
 async def on_widget(m: Message):
     uid = m.from_user.id if m.from_user else 0
     lang = lang_of(m.from_user.language_code if m.from_user else None)
+    if m.chat.type != "private":
+        # токен — секрет; в группе его увидели бы все участники
+        await m.answer("📱 /widget — только в личном чате с ботом.")
+        return
     tok = _issue_widget_token(uid, lang)
     txt = (
         "📱 <b>Виджет KWADRAT для iPhone</b>\n\n"
@@ -172,7 +179,7 @@ def _search_url(sub: dict) -> str:
 # ── explain-строка в пуше: рынок из listings.json, кэш 10 минут ────────────
 # ts=None — «ещё не строили»: сравнение с 0.0 ломалось на свежезагруженной
 # машине (monotonic < 600 сек аптайма → кэш казался валидным; поймано CI)
-_market_cache = {"ts": None, "market": {}}
+_market_cache = {"ts": None, "market": {}, "byid": {}}
 
 
 def _push_market() -> dict:
@@ -186,11 +193,34 @@ def _push_market() -> dict:
             with open(LISTINGS_PATH, encoding="utf-8") as f:
                 listings = _json.load(f).get("listings") or []
             _market_cache["market"] = community.build_market(listings)
+            _market_cache["byid"] = {str(x["id"]): x for x in listings
+                                     if isinstance(x, dict) and x.get("id")}
         except Exception as e:
             log.warning("push market build failed: %s", e)
             _market_cache["market"] = {}
+            _market_cache["byid"] = {}
         _market_cache["ts"] = now
     return _market_cache["market"]
+
+
+async def alert_admins(text: str):
+    """Служебный алерт владельцу (ADMIN_IDS из .env). Без ADMIN_IDS — только лог."""
+    if not ADMIN_IDS:
+        log.warning("admin alert (ADMIN_IDS empty): %s", text)
+        return
+    for aid in ADMIN_IDS:
+        try:
+            await bot.send_message(aid, text)
+        except Exception as e:
+            log.warning("admin alert to %s failed: %s", aid, e)
+
+
+def server_listing(lid: str) -> dict | None:
+    """Объявление из НАШЕГО listings.json (тот же 10-минутный кэш). AI-разбор
+    и шеринг работают только с серверной копией: клиент присылает лишь id —
+    иначе можно было закэшировать под чужим id подложный текст и вердикт."""
+    _push_market()
+    return _market_cache["byid"].get(str(lid))
 
 
 def push_explain_line(l: dict, lang: str) -> str:
@@ -261,6 +291,11 @@ async def on_fav_toggle(q):
             c.execute("DELETE FROM favs WHERE user_id=? AND listing_id=?",
                       (q.from_user.id, lid))
         else:
+            n = c.execute("SELECT COUNT(*) FROM favs WHERE user_id=?",
+                          (q.from_user.id,)).fetchone()[0]
+            if n >= 300:   # тот же потолок, что у PUT /api/favs
+                await q.answer("⚠️ 300+")
+                return
             c.execute("INSERT OR IGNORE INTO favs(user_id, listing_id, ts) VALUES(?,?,?)",
                       (q.from_user.id, lid, int(time.time())))
     await q.answer(T["fav_removed" if row else "fav_added"][lang])

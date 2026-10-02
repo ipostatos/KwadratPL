@@ -108,6 +108,37 @@ def test_upgrade_precision_when_street_appears(geo_mocks):
     assert row["score"] is not None      # точную точку тут же скорим
 
 
+def test_unresolvable_street_not_retried_forever(geo_mocks, monkeypatch):
+    # улица, которую Nominatim не находит → падаем на район; в следующих
+    # циклах её НЕ надо геокодить снова (иначе пара таких объявлений съедает
+    # весь бюджет цикла и остальные не обрабатываются никогда — «0 scored»)
+    def picky_geocode(q, lang="pl", city="warszawa"):
+        geo_mocks["geocode"].append(q)
+        return [] if q.startswith("Nieznana") else [{"label": q, "lat": 52.22, "lon": 21.01}]
+    monkeypatch.setattr(geo, "geocode", picky_geocode)
+    _write_listings([dict(L_OTO, street="Nieznana 1")])
+    geo_enrich.enrich_once()
+    assert _rows()["otodom-2"]["precision"] == "district"
+    before = len(geo_mocks["geocode"])
+    assert geo_enrich.enrich_once() == {"geocoded": 0, "scored": 0}
+    assert len(geo_mocks["geocode"]) == before
+    # а если улица у объявления поменялась — пробуем снова
+    _write_listings([dict(L_OTO, street="Chłodna 20")])
+    geo_enrich.enrich_once()
+    assert _rows()["otodom-2"]["precision"] == "address"
+
+
+def test_stuck_rows_do_not_starve_others(geo_mocks, monkeypatch):
+    monkeypatch.setattr(geo, "geocode",
+                        lambda q, lang="pl", city="warszawa": [])
+    monkeypatch.setattr(geo_enrich, "GEOCODES_PER_CYCLE", 4)
+    items = [dict(L_OTO, id=f"otodom-{i}", street=f"Nieznana {i}") for i in range(10)]
+    _write_listings(items)
+    for _ in range(6):
+        geo_enrich.enrich_once()
+    assert len(_rows()) == 10      # все объявления в итоге обработаны
+
+
 @pytest.mark.asyncio
 async def test_ingest_merges_geo(client, ingest_headers):
     with db() as c:

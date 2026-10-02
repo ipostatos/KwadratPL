@@ -1,10 +1,10 @@
 # Kwadrat PL
 
-> Flats and rooms for rent in Poland: OLX, Otodom and Morizon in one bot. Warsaw listings map and location score, instant alerts, AI breakdown. Free.
+> Flats and rooms for rent in Poland: Otodom and Morizon in one bot. Warsaw listings map and location score, alerts, AI breakdown. Free.
 
 ## What it does
-- Search 3 portals at once: Flats, rooms and short stays from OLX, Otodom and Morizon. The same listing across sites is merged — no duplicates in your feed.
-- Instant alerts: Subscribe to your search and matching homes reach your chat within minutes. Quiet hours at night and pause with /off.
+- Two portals in one search: Long-term flats and rooms from Otodom and Morizon. The same listing across sites is merged — no duplicates in your feed.
+- New-listing alerts: Subscribe to your search and matching homes reach your chat as soon as they hit our database (refreshed several times a day). Quiet hours at night and pause with /off.
 - Fair price & anti-scam: A below/above district-market badge from our own data, plus a warning on suspiciously cheap listings — a classic scam bait.
 - AI listing breakdown: One button: translate the listing into your language, summarise the essentials and score the scam risk from the text.
 - Move-in calculator: How much cash you need upfront: rent, czynsz, utilities, deposit and agent fee — all counted at once, no surprises.
@@ -13,9 +13,10 @@
 ## Key facts
 - Price: completely free, no sign-up, no app to install — runs inside Telegram.
 - Cities covered: Warsaw, Kraków, Wrocław, Gdańsk, Poznań, Łódź, Zakopane, Białystok.
-- Listing sources: OLX, Otodom, Morizon (public listings only).
+- Listing sources: Otodom and Morizon (public listings only).
+- Listing types: long-term flats and rooms.
 - Interface languages: Russian, Ukrainian, Belarusian, Polish, English.
-- Update frequency: new listings pulled and pushed within minutes.
+- Update frequency: listings refreshed several times a day; new matches are pushed to subscribers after each refresh.
 - Not a real-estate agency; listings remain the property of their original source sites.
 
 ## Renter guides
@@ -42,7 +43,7 @@ Q: Is it free?
 A: Yes, fully. Search, alerts, guides and the calculator — no fees and no sign-up.
 
 Q: Where do listings come from?
-A: We gather public listings from OLX, Otodom and Morizon and refresh them every few minutes. The same offer across sites is merged.
+A: We gather public listings from Otodom and Morizon and refresh the database several times a day. The same offer across sites is merged.
 
 Q: What is the AI breakdown?
 A: A button on each listing: it translates the text into your language, writes a short summary and scores the scam risk from the description.
@@ -71,4 +72,4 @@ A: Yes. Via the free Scriptable app you can add a home-screen widget showing the
 - Support the project: https://buymeacoffee.com/ipostatos
 
 ## Last updated
-2026-07-31
+2026-10-02

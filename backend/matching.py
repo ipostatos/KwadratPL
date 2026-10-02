@@ -21,7 +21,9 @@ def matches(l: dict, s: dict) -> bool:
     owner = s.get("owner")
     if owner == "agency" and l.get("agency") is not True:
         return False
-    if owner == "private" and l.get("agency") is True:
+    # «частник» = источник ЯВНО сказал, что не агентство; agency=None
+    # (Morizon не размечает) раньше считался частником — это были агентства
+    if owner == "private" and l.get("agency") is not False:
         return False
     if s.get("district") and l.get("district") != s["district"]:
         return False

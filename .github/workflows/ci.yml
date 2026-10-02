@@ -21,6 +21,8 @@ jobs:
       - name: Run pytest
         working-directory: backend
         run: pytest
+      - name: Fetcher parser tests (offline)
+        run: python tools/test_fetch.py
 
   frontend:
     name: Frontend checks
@@ -32,7 +34,7 @@ jobs:
           node-version: "20"
       - name: Syntax-check webapp JS
         run: |
-          for f in webapp/js/core.js webapp/js/subs.js webapp/js/price.js webapp/js/ai.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
+          for f in webapp/js/core.js webapp/js/subs.js webapp/js/price.js webapp/js/ai.js webapp/js/explain.js webapp/i18n.dict.js webapp/icons.js webapp/i18n.js webapp/guide.js webapp/nav.js; do
             node --check "$f"
           done
       - name: Check i18n dictionary + icons integrity
@@ -107,6 +109,6 @@ jobs:
           # webapp/data/ сервисом kwadratpl (PermissionError), т.к. scp раньше
           # так не делал (перезаписывал контент, не трогая владельца).
           rsync -a --chown=kwadratpl:kwadratpl --delete -e "$SSH" --exclude='_test/' --exclude='data/listings.json' webapp/ "$VPS:/opt/kwadratpl/webapp/"
-          rsync -a --chown=kwadratpl:kwadratpl --delete -e "$SSH" --exclude='tests/' --exclude='state.db*' --exclude='.venv/' --exclude='__pycache__/' backend/ "$VPS:/opt/kwadratpl/backend/"
+          rsync -a --chown=kwadratpl:kwadratpl --delete -e "$SSH" --exclude='tests/' --exclude='state.db*' --exclude='backups/' --exclude='.venv/' --exclude='__pycache__/' backend/ "$VPS:/opt/kwadratpl/backend/"
           rsync -a --chown=kwadratpl:kwadratpl --delete -e "$SSH" tools/ "$VPS:/opt/kwadratpl/tools/"
           $SSH "$VPS" "systemctl restart kwadratpl-api && sleep 2 && systemctl is-active kwadratpl-api"

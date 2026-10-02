@@ -27,7 +27,8 @@ ru: {
   sections: [
   { h: "Какие данные мы храним", list: [
     "<b>На сервере</b>: ваш Telegram ID, выбранный язык, ваши подписки (город, тип аренды, фильтры) и настройки тихих часов. Это нужно, чтобы присылать уведомления.",
-    "<b>На вашем устройстве</b> (localStorage браузера/Telegram): избранное и сохранённые поиски. Мы это не видим — данные лежат только у вас." ] },
+    "<b>Избранное</b>: список ID отмеченных объявлений тоже хранится на сервере — чтобы ❤️ совпадало на всех ваших устройствах.",
+    "<b>На вашем устройстве</b> (localStorage браузера/Telegram): копии избранного и поисков, профиль (точка работы/учёбы, приоритеты) и настройки интерфейса." ] },
   { h: "Сколько храним", list: [
     "Подписки и учётная запись — пока вы их не удалите.",
     "Буфер ночных уведомлений (тихие часы) — до 3 дней.",
@@ -36,6 +37,10 @@ ru: {
   { h: "AI-разбор объявления", p: [
     "Когда вы нажимаете «✨ AI-разбор», текст объявления и выбранный язык отправляются провайдеру Anthropic (Claude) для перевода, выжимки и оценки риска. Ответ кэшируется до суток, чтобы не гонять один и тот же разбор.",
     "Мы не отправляем в AI ваши личные данные и не используем ваши запросы для обучения моделей." ] },
+  { h: "Сторонние сервисы", list: [
+    "<b>Карта</b>: фрагменты карты грузятся с tile.openstreetmap.org и tiles.openfreemap.org — эти серверы видят ваш IP-адрес, как любой сайт.",
+    "<b>Фото объявлений</b> грузятся напрямую с серверов площадок (Otodom — olxcdn.com, Morizon — staticmorizon.com.pl).",
+    "<b>Адрес работы/учёбы</b> из профиля отправляется на наш сервер, который ищет координаты через Nominatim (OpenStreetMap). Результат поиска кэшируется без привязки к вам, выбранная точка хранится только на устройстве." ] },
   { h: "Чего мы НЕ собираем", list: [
     "Номер телефона, e-mail и платёжные данные.",
     "Точную геолокацию.",
@@ -46,14 +51,15 @@ ru: {
     "Написать нам по любому вопросу о данных." ] }
   ],
   contact: "Вопросы о данных: ",
-  updated: "Обновлено: июль 2026"
+  updated: "Обновлено: октябрь 2026"
 },
 pl: {
   sub: "Krótko i uczciwie: jakie dane przechowujemy, jak długo i jak je usunąć.",
   sections: [
   { h: "Jakie dane przechowujemy", list: [
     "<b>Na serwerze</b>: Twój Telegram ID, wybrany język, Twoje subskrypcje (miasto, typ najmu, filtry) i ustawienia ciszy nocnej. Potrzebne, by wysyłać powiadomienia.",
-    "<b>Na Twoim urządzeniu</b> (localStorage): ulubione i zapisane wyszukiwania. Nie widzimy ich — zostają tylko u Ciebie." ] },
+    "<b>Ulubione</b>: lista ID zapisanych ogłoszeń też jest na serwerze — żeby ❤️ zgadzało się na wszystkich Twoich urządzeniach.",
+    "<b>Na Twoim urządzeniu</b> (localStorage): kopie ulubionych i wyszukiwań, profil (punkt pracy/uczelni, priorytety) i ustawienia interfejsu." ] },
   { h: "Jak długo przechowujemy", list: [
     "Subskrypcje i konto — dopóki ich nie usuniesz.",
     "Bufor nocnych powiadomień (cisza nocna) — do 3 dni.",
@@ -62,6 +68,10 @@ pl: {
   { h: "Analiza AI ogłoszenia", p: [
     "Gdy klikniesz „✨ Analiza AI”, treść ogłoszenia i wybrany język trafiają do dostawcy Anthropic (Claude) w celu tłumaczenia, streszczenia i oceny ryzyka. Odpowiedź jest buforowana do doby.",
     "Nie wysyłamy do AI Twoich danych osobowych i nie używamy Twoich zapytań do trenowania modeli." ] },
+  { h: "Usługi zewnętrzne", list: [
+    "<b>Mapa</b>: fragmenty mapy ładują się z tile.openstreetmap.org i tiles.openfreemap.org — te serwery widzą Twój adres IP, jak każda strona.",
+    "<b>Zdjęcia ogłoszeń</b> ładują się bezpośrednio z serwerów portali (Otodom — olxcdn.com, Morizon — staticmorizon.com.pl).",
+    "<b>Adres pracy/uczelni</b> z profilu trafia na nasz serwer, który szuka współrzędnych przez Nominatim (OpenStreetMap). Wynik jest buforowany bez powiązania z Tobą, wybrany punkt zostaje tylko na urządzeniu." ] },
   { h: "Czego NIE zbieramy", list: [
     "Numeru telefonu, e-maila ani danych płatniczych.",
     "Dokładnej lokalizacji.",
@@ -72,14 +82,15 @@ pl: {
     "Napisać do nas w każdej sprawie dotyczącej danych." ] }
   ],
   contact: "Pytania o dane: ",
-  updated: "Aktualizacja: lipiec 2026"
+  updated: "Aktualizacja: październik 2026"
 },
 ua: {
   sub: "Коротко й чесно: які дані ми зберігаємо, скільки і як їх видалити.",
   sections: [
   { h: "Які дані ми зберігаємо", list: [
     "<b>На сервері</b>: ваш Telegram ID, вибрану мову, ваші підписки (місто, тип оренди, фільтри) і налаштування тихих годин. Це потрібно, щоб надсилати сповіщення.",
-    "<b>На вашому пристрої</b> (localStorage): обране й збережені пошуки. Ми цього не бачимо — дані лежать лише у вас." ] },
+    "<b>Обране</b>: список ID відмічених оголошень теж зберігається на сервері — щоб ❤️ збігалося на всіх ваших пристроях.",
+    "<b>На вашому пристрої</b> (localStorage): копії обраного й пошуків, профіль (точка роботи/навчання, пріоритети) і налаштування інтерфейсу." ] },
   { h: "Скільки зберігаємо", list: [
     "Підписки й обліковий запис — доки ви їх не видалите.",
     "Буфер нічних сповіщень (тихі години) — до 3 днів.",
@@ -88,6 +99,10 @@ ua: {
   { h: "AI-розбір оголошення", p: [
     "Коли ви натискаєте «✨ AI-розбір», текст оголошення й вибрана мова надсилаються провайдеру Anthropic (Claude) для перекладу, вижимки й оцінки ризику. Відповідь кешується до доби.",
     "Ми не надсилаємо в AI ваші особисті дані й не використовуємо ваші запити для навчання моделей." ] },
+  { h: "Сторонні сервіси", list: [
+    "<b>Мапа</b>: фрагменти мапи вантажаться з tile.openstreetmap.org і tiles.openfreemap.org — ці сервери бачать вашу IP-адресу, як будь-який сайт.",
+    "<b>Фото оголошень</b> вантажаться напряму із серверів майданчиків (Otodom — olxcdn.com, Morizon — staticmorizon.com.pl).",
+    "<b>Адреса роботи/навчання</b> з профілю надсилається на наш сервер, який шукає координати через Nominatim (OpenStreetMap). Результат кешується без прив'язки до вас, вибрана точка зберігається лише на пристрої." ] },
   { h: "Чого ми НЕ збираємо", list: [
     "Номер телефону, e-mail і платіжні дані.",
     "Точну геолокацію.",
@@ -98,14 +113,15 @@ ua: {
     "Написати нам з будь-якого питання про дані." ] }
   ],
   contact: "Питання про дані: ",
-  updated: "Оновлено: липень 2026"
+  updated: "Оновлено: жовтень 2026"
 },
 by: {
   sub: "Коратка і сумленна: якія дадзеныя мы захоўваем, колькі і як іх выдаліць.",
   sections: [
   { h: "Якія дадзеныя мы захоўваем", list: [
     "<b>На серверы</b>: ваш Telegram ID, выбраную мову, вашы падпіскі (горад, тып арэнды, фільтры) і налады ціхіх гадзін. Гэта патрэбна, каб дасылаць апавяшчэнні.",
-    "<b>На вашай прыладзе</b> (localStorage браўзера/Telegram): абранае і захаваныя пошукі. Мы гэтага не бачым — дадзеныя ляжаць толькі ў вас." ] },
+    "<b>Абранае</b>: спіс ID адзначаных аб'яў таксама захоўваецца на серверы — каб ❤️ супадала на ўсіх вашых прыладах.",
+    "<b>На вашай прыладзе</b> (localStorage браўзера/Telegram): копіі абранага і пошукаў, профіль (кропка працы/вучобы, прыярытэты) і налады інтэрфейсу." ] },
   { h: "Колькі захоўваем", list: [
     "Падпіскі і ўліковы запіс — пакуль вы іх не выдаліце.",
     "Буфер начных апавяшчэнняў (ціхія гадзіны) — да 3 дзён.",
@@ -114,6 +130,10 @@ by: {
   { h: "AI-разбор аб'явы", p: [
     "Калі вы націскаеце «✨ AI-разбор», тэкст аб'явы і выбраная мова адпраўляюцца правайдару Anthropic (Claude) для перакладу, выжымкі і ацэнкі рызыкі. Адказ кэшуецца да сутак, каб не ганяць адзін і той жа разбор.",
     "Мы не адпраўляем у AI вашыя асабістыя дадзеныя і не выкарыстоўваем вашыя запыты для навучання мадэляў." ] },
+  { h: "Староннія сэрвісы", list: [
+    "<b>Мапа</b>: фрагменты мапы загружаюцца з tile.openstreetmap.org і tiles.openfreemap.org — гэтыя серверы бачаць ваш IP-адрас, як любы сайт.",
+    "<b>Фота аб'яў</b> загружаюцца наўпрост з сервераў пляцовак (Otodom — olxcdn.com, Morizon — staticmorizon.com.pl).",
+    "<b>Адрас працы/вучобы</b> з профілю адпраўляецца на наш сервер, які шукае каардынаты праз Nominatim (OpenStreetMap). Вынік кэшуецца без прывязкі да вас, абраная кропка захоўваецца толькі на прыладзе." ] },
   { h: "Чаго мы НЕ збіраем", list: [
     "Нумар тэлефона, e-mail і плацежныя дадзеныя.",
     "Дакладную геалакацыю.",
@@ -124,14 +144,15 @@ by: {
     "Напісаць нам па любым пытанні пра дадзеныя." ] }
   ],
   contact: "Пытанні пра дадзеныя: ",
-  updated: "Абноўлена: ліпень 2026"
+  updated: "Абноўлена: кастрычнік 2026"
 },
 en: {
   sub: "Short and honest: what data we keep, for how long, and how to delete it.",
   sections: [
   { h: "What data we store", list: [
     "<b>On the server</b>: your Telegram ID, chosen language, your alerts (city, rental type, filters) and quiet-hours settings. Needed to send you notifications.",
-    "<b>On your device</b> (localStorage): favourites and saved searches. We don't see them — they stay only with you." ] },
+    "<b>Favourites</b>: the list of saved listing IDs is also kept on the server, so your ❤️ match on all your devices.",
+    "<b>On your device</b> (localStorage): copies of favourites and searches, your profile (work/study point, priorities) and interface settings." ] },
   { h: "How long we keep it", list: [
     "Alerts and account — until you delete them.",
     "Night-notification buffer (quiet hours) — up to 3 days.",
@@ -140,6 +161,10 @@ en: {
   { h: "AI listing breakdown", p: [
     "When you tap “✨ AI breakdown”, the listing text and your chosen language are sent to the provider Anthropic (Claude) for translation, a summary and a risk score. The answer is cached for up to a day.",
     "We don't send your personal data to the AI and don't use your requests to train models." ] },
+  { h: "Third-party services", list: [
+    "<b>Map</b>: map tiles load from tile.openstreetmap.org and tiles.openfreemap.org — these servers see your IP address, like any website.",
+    "<b>Listing photos</b> load directly from the portals' servers (Otodom — olxcdn.com, Morizon — staticmorizon.com.pl).",
+    "<b>The work/study address</b> you enter in your profile is sent to our server, which looks up coordinates via Nominatim (OpenStreetMap). The lookup is cached without linking it to you; the chosen point stays on your device." ] },
   { h: "What we do NOT collect", list: [
     "Phone number, e-mail or payment details.",
     "Precise location.",
@@ -150,7 +175,7 @@ en: {
     "Write to us about anything data-related." ] }
   ],
   contact: "Data questions: ",
-  updated: "Updated: July 2026"
+  updated: "Updated: October 2026"
 }
 };
 

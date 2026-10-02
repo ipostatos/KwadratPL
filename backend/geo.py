@@ -127,8 +127,25 @@ def _cache_put(key, data):
     with db() as c:
         c.execute("INSERT OR REPLACE INTO geo_cache(key, data, ts) VALUES(?,?,?)",
                   (key, json.dumps(data, ensure_ascii=False), int(time.time())))
-        # ленивая уборка совсем протухших записей (как в ai_cache)
-        c.execute("DELETE FROM geo_cache WHERE ts < ?", (int(time.time()) - 60 * 86400,))
+
+
+def evict_cache():
+    """Удаляет протухшие записи по TTL их типа. Раньше чистились только
+    записи старше 60 дней, а POI (≈90 КБ каждая) живут 7 — база выросла до
+    ~900 МБ мёртвого кэша. Зовётся из цикла энрайчера, а не на каждой записи."""
+    now = int(time.time())
+    ttl = {"p:": POI_TTL, "gp:": _PLACES_TTL, "g:": GEOCODE_TTL,
+           "r:": GEOCODE_TTL, "air:": AIR_TTL}
+    removed = 0
+    with db() as c:
+        for prefix, t in ttl.items():
+            removed += c.execute(
+                "DELETE FROM geo_cache WHERE key >= ? AND key < ? AND ts < ?",
+                (prefix, prefix[:-1] + ";", now - t)).rowcount
+        # всё неизвестное — по старому потолку
+        removed += c.execute("DELETE FROM geo_cache WHERE ts < ?",
+                             (now - 60 * 86400,)).rowcount
+    return removed
 
 
 # ── геокодинг ───────────────────────────────────────────────────────────────
@@ -291,6 +308,10 @@ def fetch_poi(lat, lon):
             except Exception as e:
                 last = e
                 log.warning("overpass %s failed: %s", url, e)
+    # ни одно зеркало не ответило — слот дневного бюджета не потрачен на
+    # данные, возвращаем его (иначе сбойный день съедал кап впустую)
+    with _live_lock:
+        _live_day["n"] = max(0, _live_day["n"] - 1)
     raise RuntimeError(f"all overpass mirrors failed: {last}")
 
 

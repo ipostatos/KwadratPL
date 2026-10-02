@@ -135,14 +135,14 @@ map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom
 var OK_PREC = { point: 1, address: 1, street: 1, approx: 1 };
 
 function fmtPrice(l) {
-  return l.price.toLocaleString() + " zł";
+  return (+l.price || 0).toLocaleString() + " zł";
 }
 
 function geojson() {
   var feats = [];
   App.listings.forEach(function (l) {
     if (l.city !== state.city || l.type !== state.type) return;
-    if (l.lat == null || l.lon == null || !OK_PREC[l.geoPrec]) return;
+    if (!hasPoint(l)) return;
     if (state.priceMax && l.price > state.priceMax) return;
     if (state.rooms && !(l.rooms != null &&
         (state.rooms === 4 ? l.rooms >= 4 : l.rooms === state.rooms))) return;
@@ -184,7 +184,7 @@ function showCard(l) {
   ph.style.background = safe ? 'url("' + safe + '") center/cover'
     : "linear-gradient(135deg," + (l.grad ? l.grad[0] + "," + l.grad[1] : "#3a6186,#89253e") + ")";
   ph.innerHTML = safe ? "" : (window.Icons ? Icons.svg(l.icon || "home") : "");
-  $("#mcPrice").innerHTML = App.esc(l.price.toLocaleString() + " " + App.priceUnit(l.type)) +
+  $("#mcPrice").innerHTML = App.esc((+l.price || 0).toLocaleString() + " " + App.priceUnit(l.type)) +
     (App.priceBadge ? App.priceBadge(l) : "");
   var meta = [];
   if (l.district) meta.push(l.district);
@@ -192,7 +192,8 @@ function showCard(l) {
   if (l.area != null) meta.push(l.area + " m²");
   if (l.locScore != null) meta.push("📍 " + l.locScore + "/100");
   $("#mcMeta").textContent = meta.join(" · ");
-  $("#mcOpen").href = "search.html?city=warszawa&type=" + l.type + "&open=" + encodeURIComponent(l.id);
+  $("#mcOpen").href = "search.html?city=" + encodeURIComponent(l.city || state.city) +
+    "&type=" + encodeURIComponent(l.type) + "&open=" + encodeURIComponent(l.id);
   renderFav();
   $("#mCard").classList.add("show");
   if (typeof haptic === "function") haptic("light");
@@ -211,10 +212,40 @@ $("#mcFav").onclick = function () {
 };
 $("#mcClose").onclick = function () { $("#mCard").classList.remove("show"); };
 
+// метка на карте только с честными координатами (см. OK_PREC)
+function hasPoint(l) {
+  return l.lat != null && l.lon != null && !!OK_PREC[l.geoPrec];
+}
+
+// «нет данных — нет кнопки»: посуточно и значения комнат, по которым в
+// городе/типе нет ни одной метки, прячем (в демо всё доступно)
+function syncAvailability() {
+  var shortBtn = document.querySelector('#mType button[data-val="short"]');
+  if (shortBtn) shortBtn.style.display = App.typeAvailable("short") ? "" : "none";
+  var avail = App.roomsAvailable(state.city, state.type, hasPoint);
+  var any = false;
+  document.querySelectorAll("#mRooms button").forEach(function (b) {
+    var v = +b.dataset.val;
+    if (!v) return;
+    b.style.display = avail[v] ? "" : "none";
+    if (avail[v]) any = true;
+  });
+  $("#mRooms").style.display = any ? "" : "none";
+  if (state.rooms && !avail[state.rooms]) {
+    state.rooms = 0;
+    document.querySelectorAll("#mRooms button").forEach(function (x) {
+      x.classList.toggle("active", +x.dataset.val === 0);
+    });
+  }
+}
+
 function refresh() {
+  syncAvailability();
   var data = geojson();
   map.getSource("listings").setData(data);
-  $("#mCount").textContent = I18N.t("mapCountN", { n: data.features.length });
+  var n = data.features.length;
+  // пустая карта без пояснения выглядит как поломка — говорим словами
+  $("#mCount").textContent = n ? I18N.t("mapCountN", { n: n }) : I18N.t("mapEmpty");
 }
 
 map.on("load", function () {

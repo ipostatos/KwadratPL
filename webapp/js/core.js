@@ -8,10 +8,13 @@
 //   js/price.js → ценовой движок, trust-слой, стоимость въезда
 //   js/ai.js    → AI-разбор объявления (/api/analyze)
 //
-// Инвентарь: реальные объявления с OLX (data/listings.json, собирает
-// tools/fetch-olx.py на сервере). Если файл недоступен (file://, сбой сети) —
-// фолбэк на демо-генератор с фиксированным сидом. App.live говорит, какой
-// режим активен. Страницы ждут App.ready перед первым рендером.
+// Инвентарь: реальные объявления (data/listings.json, собирают фетчеры
+// tools/ на сервере; сейчас живые источники — Otodom и Morizon, код OLX
+// сохранён и подхватится сам, если источник вернётся). Если файл недоступен
+// (file://, сбой сети) — фолбэк на демо-генератор с фиксированным сидом.
+// App.live говорит, какой режим активен. Страницы ждут App.ready перед
+// первым рендером. Что показывать в UI (посуточно, 🐾/🅿️/🌿, комнаты),
+// решают хелперы доступности ниже — по факту живых данных.
 // ===========================================================================
 (function (global) {
   "use strict";
@@ -56,8 +59,9 @@
 
   var STREETS = ["ul. Marszałkowska", "ul. Puławska", "ul. Grzybowska", "al. Jana Pawła II",
     "ul. Długa", "ul. Karmelicka", "ul. Piotrkowska", "ul. Świdnicka", "ul. Głogowska", "ul. Grunwaldzka"];
-  // ведущие порталы-источники (взвешенно: Otodom и OLX — лидеры рынка)
-  var SOURCES = ["Otodom", "Otodom", "OLX", "OLX", "Gratka", "Nieruchomości-online"];
+  // демо-источники = реальные живые (Otodom, Morizon); длина массива та же,
+  // чтобы сид давал прежний демо-инвентарь
+  var SOURCES = ["Otodom", "Otodom", "Morizon", "Morizon", "Otodom", "Morizon"];
   var ICON_NAMES = ["building", "home", "key", "bed"];
   var GRADS = [
     ["#3a6186", "#89253e"], ["#134e5e", "#71b280"], ["#2c3e50", "#4ca1af"],
@@ -210,7 +214,9 @@
     var pMin = _num(s.priceMin), pMax = _num(s.priceMax),
         aMin = _num(s.areaMin), rooms = _num(s.rooms);
     return l.city === s.city && l.type === s.type &&
-      (!s.owner || (s.owner === "agency" ? l.agency === true : l.agency !== true)) &&
+      // «частник» — только подтверждённый agency === false: у Morizon agency
+      // бывает null (неизвестно), такие не выдаём за частника
+      (!s.owner || (s.owner === "agency" ? l.agency === true : l.agency === false)) &&
       (!s.district || l.district === s.district) &&
       (pMin == null || l.price >= pMin) &&
       (pMax == null || l.price <= pMax) &&
@@ -248,9 +254,52 @@
     return ds.length ? ds : CITIES[city].districts;
   }
 
+  // ── доступность фич по факту данных (правило «нет данных — нет кнопки») ──
+  // В демо-режиме всё доступно (демо-генератор заполняет все поля). В живом
+  // режиме кнопка/плитка показывается, только если в выдаче есть хотя бы одно
+  // объявление, на котором она что-то найдёт. Источник вернётся — кнопки
+  // вернутся сами, без правок кода.
+  function liveHas(pred) {
+    if (!App.live) return true;
+    for (var i = 0; i < listings.length; i++) if (pred(listings[i])) return true;
+    return false;
+  }
+  function typeAvailable(type) {
+    return liveHas(function (l) { return l.type === type; });
+  }
+  function flagAvailable(flag) {          // pets / parking / balcony
+    return liveHas(function (l) { return l[flag] === true; });
+  }
+  // какие значения фильтра «комнаты» (1..4, 4 = 4+) дают хоть одно объявление
+  // в городе/типе; extra — доп. условие (карта: только с координатами)
+  function roomsAvailable(city, type, extra) {
+    if (!App.live) return { 1: true, 2: true, 3: true, 4: true };
+    var out = { 1: false, 2: false, 3: false, 4: false };
+    listings.forEach(function (l) {
+      if (l.city !== city || l.type !== type || l.rooms == null) return;
+      if (extra && !extra(l)) return;
+      var r = Math.floor(+l.rooms);
+      if (r >= 4) out[4] = true; else if (r >= 1) out[r] = true;
+    });
+    return out;
+  }
+
+  // время публикации, не позже «сейчас»: у части источников ts приходит из
+  // будущего (часовые пояса) — иначе NEW/«свежее»/сортировка врут
+  function tsOf(l) {
+    var t = +(l && l.ts) || 0;
+    var now = Date.now();
+    return t > now ? now : t;
+  }
+
   // ── тост-уведомление (стиль badge-toast из ISSA) ──
   var _toastTimer = null;
   function toast(emoji, title, text) {
+    // вызов с одним аргументом (toast("Готово")) — это заголовок, а не эмодзи
+    if (title == null && text == null) { title = emoji; emoji = "ℹ️"; }
+    if (emoji == null) emoji = "";
+    if (title == null) title = "";
+    if (text == null) text = "";
     if (typeof haptic === "function") haptic("success");
     var el = document.getElementById("pushToast");
     if (!el) {
@@ -261,7 +310,7 @@
       document.body.appendChild(el);
     }
     // title/text бывают собраны из данных объявлений (district и т.п.) — экранируем
-    el.innerHTML = '<span class="em">' + emoji + '</span><span class="tt"><b>' +
+    el.innerHTML = '<span class="em">' + esc(emoji) + '</span><span class="tt"><b>' +
       esc(title) + "</b>" + esc(text) + "</span>";
     requestAnimationFrame(function () { el.classList.add("show"); });
     clearTimeout(_toastTimer);
@@ -269,7 +318,7 @@
   }
 
   function timeAgo(ts) {
-    var m = Math.floor((Date.now() - ts) / 60000);
+    var m = Math.max(0, Math.floor((Date.now() - ts) / 60000));
     if (m < 1) return I18N.t("justNow");
     if (m < 60) return I18N.t("minAgo", { n: m });
     if (m < 1440) return I18N.t("hAgo", { n: Math.floor(m / 60) });
@@ -283,10 +332,11 @@
   }
 
   // URL фото для inline-style: только https + вырезаем всё, чем можно
-  // вырваться из url("...") — кавычки, скобку, бэкслеш, пробелы
+  // вырваться из url("...") или из HTML-атрибута — кавычки, скобки, бэкслеш,
+  // пробелы, &, <, >. В style="…" всё равно вставлять через App.esc.
   function safePhotoUrl(u) {
     if (typeof u !== "string" || !/^https:\/\//.test(u)) return null;
-    return u.replace(/["'\\)\s]/g, "");
+    return u.replace(/["'\\()\s&<>]/g, "");
   }
 
   // наружу открываем только http(s) — url приходит из данных объявлений
@@ -314,6 +364,8 @@
     makeListing: function (over) { return makeListing(Math.random, over, "r"); },
     saved: saved, favs: favs, persist: persist,
     matches: matches, searchLabel: searchLabel, districtsFor: districtsFor,
+    typeAvailable: typeAvailable, flagAvailable: flagAvailable,
+    roomsAvailable: roomsAvailable, tsOf: tsOf,
     toast: toast, timeAgo: timeAgo, esc: esc,
     safePhotoUrl: safePhotoUrl, openListingUrl: openListingUrl,
     commuteInfo: commuteInfo,

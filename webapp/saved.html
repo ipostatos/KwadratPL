@@ -65,7 +65,9 @@
     </div>
   </div>
 
-  <div class="saved-item">
+  <!-- демо-источник Facebook: тумблер только в демо-режиме (в живом
+       режиме инвентарь из listings.json, флаг kw_src_fb ни на что не влияет) -->
+  <div class="saved-item" id="rowFb" style="display:none">
     <div class="ic-tile violet" data-icon="sliders"></div>
     <div class="info">
       <div class="name" data-i18n="fbT"></div>
@@ -141,6 +143,13 @@ I18N.hydrate();
 
 function $(s) { return document.querySelector(s); }
 
+// подписка на посуточную аренду, а таких объявлений в живых данных нет —
+// честная пометка вместо «уведомления включены» (до App.ready — не судим)
+var _ready = false;
+function subNoData(s) {
+  return _ready && s.type === "short" && !App.typeAvailable("short");
+}
+
 function renderSaved() {
   var box = $("#savedList");
   if (!App.saved.length) {
@@ -151,7 +160,7 @@ function renderSaved() {
     return '<div class="saved-item">' +
       '<div class="ic-tile ' + (s.notify ? "green" : "") + '">' + Icons.svg("bell") + "</div>" +
       '<div class="info"><div class="name">' + App.esc(App.searchLabel(s)) + "</div>" +
-      '<div class="desc">' + App.esc(I18N.t(s.notify ? "notifyOn" : "notifyOff")) + "</div></div>" +
+      '<div class="desc">' + App.esc(I18N.t(subNoData(s) ? "shortNone" : (s.notify ? "notifyOn" : "notifyOff"))) + "</div></div>" +
       '<label class="switch"><input type="checkbox" data-i="' + i + '"' +
       (s.notify ? " checked" : "") + '><span class="knob"></span></label>' +
       '<button class="del" data-del="' + i + '">' + Icons.svg("trash") + "</button>" +
@@ -179,12 +188,12 @@ function renderFavs() {
   }
   box.innerHTML = App.favs.map(function (l, i) {
     var bits = [];
-    if (l.rooms != null) bits.push(l.rooms + " " + I18N.t("roomsShort"));
-    if (l.area != null) bits.push(l.area + " m²");
+    if (l.rooms != null) bits.push((+l.rooms || 0) + " " + I18N.t("roomsShort"));
+    if (l.area != null) bits.push((+l.area || 0) + " m²");
     bits.push(App.esc(App.cityName(l.city)) + (l.district ? ", " + App.esc(l.district) : ""));
     return '<a class="row-card" href="#" data-fav-open="' + i + '">' +
       '<div class="ic-tile red">' + Icons.svg("heart") + "</div>" +
-      '<div class="body"><div class="t">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) + "</div>" +
+      '<div class="body"><div class="t">' + (+l.price || 0).toLocaleString() + " " + App.priceUnit(l.type) + "</div>" +
       '<div class="d">' + bits.join(" · ") + "</div></div>" +
       '<button class="del" data-fav-del="' + i + '" style="border:0;background:none;color:var(--hint);cursor:pointer;display:flex;padding:6px">' +
       Icons.svg("trash") + "</button>" +
@@ -216,7 +225,7 @@ function openSheet(l) {
   var _commute = App.commuteInfo(l);
   var specs = [
     [I18N.t("roomsLabel"), l.rooms],
-    [I18N.t("area"), l.area != null ? l.area + " m²" : null],
+    [I18N.t("area"), l.area != null ? (+l.area || 0) + " m²" : null],
     [I18N.t("floor"), l.floor],
     [I18N.t("toCenter"), _commute ? _commute.min + " " + I18N.t("minShort") : null],
     [I18N.t("published"), App.timeAgo(l.ts)]
@@ -224,12 +233,12 @@ function openSheet(l) {
   $("#sheet").innerHTML =
     '<div style="position:relative">' +
     '<button class="close" id="btnClose">✕</button>' +
-    '<div class="photo" style="background:' + bg + '">' +
+    '<div class="photo" style="background:' + App.esc(bg) + '">' +
     (photo ? "" : Icons.svg(l.icon || "home")) +
     '<span class="lbadge type">' + App.esc(I18N.t(l.type)) + "</span>" +
     "</div></div>" +
     '<div class="sbody">' +
-    '<div class="lprice" style="font-size:22px">' + l.price.toLocaleString() + " " + App.priceUnit(l.type) +
+    '<div class="lprice" style="font-size:22px">' + (+l.price || 0).toLocaleString() + " " + App.priceUnit(l.type) +
     App.priceBadge(l) + "</div>" +
     '<div class="ltitle">' + title + " · " + App.esc(App.cityName(l.city)) +
     (l.district ? ", " + App.esc(l.district) : "") + "</div>" +
@@ -311,7 +320,7 @@ if (btnDel) btnDel.onclick = function () {
   function run() {
     haptic("warning");
     App.deleteAccount().then(function (r) {
-      App.toast(I18N.t(r && r.deleted === false ? "delFail" : "delDone"));
+      App.toast(r && r.deleted === false ? "⚠️" : "🗑", I18N.t(r && r.deleted === false ? "delFail" : "delDone"));
       renderSaved(); renderFavs();
       try { renderSettings(); } catch (e) {}
     });
@@ -323,6 +332,13 @@ if (btnDel) btnDel.onclick = function () {
 renderSaved();
 renderFavs();
 renderSettings();
+// инвентарь загружен: тумблер демо-источника FB — только в демо-режиме,
+// пометки «нет данных» у подписок — по факту живой выдачи
+App.ready.then(function () {
+  _ready = true;
+  $("#rowFb").style.display = App.live ? "none" : "";
+  renderSaved();
+});
 
 /* ── Personal Fit: профиль (kw_profile, только localStorage этого устройства) ── */
 (function () {

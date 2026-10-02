@@ -75,10 +75,10 @@
           share.disabled = true;
           if (typeof haptic === "function") haptic("light");
           shareAnalysis(l).then(function () {
-            toast(I18N.t("aiShared"));
+            toast("✅", I18N.t("aiShared"));
           }).catch(function () {
             share.disabled = false;
-            toast(I18N.t("aiError"));
+            toast("⚠️", I18N.t("aiError"));
           });
         };
       }).catch(function (e) {

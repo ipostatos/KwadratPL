@@ -34,6 +34,7 @@ rsync -a --chown=kwadratpl:kwadratpl --delete tools/ "$REMOTE:$DEST/tools/"
 rsync -a --chown=kwadratpl:kwadratpl --delete \
   --exclude='tests/' \
   --exclude='state.db*' \
+  --exclude='backups/' \
   --exclude='.venv/' \
   --exclude='__pycache__/' \
   backend/ "$REMOTE:$DEST/backend/"

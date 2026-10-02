@@ -85,6 +85,10 @@ def delete_me(request: Request, authorization: str = Header("")):
         c.execute("DELETE FROM subs WHERE user_id=?", (uid,))
         c.execute("DELETE FROM pending WHERE user_id=?", (uid,))
         c.execute("DELETE FROM favs WHERE user_id=?", (uid,))
+        # виджет-токен иначе продолжал работать после «удалить мои данные»
+        # (и /api/widget/action воскрешал users-строку)
+        c.execute("DELETE FROM widget_tokens WHERE user_id=?", (uid,))
+        c.execute("DELETE FROM ai_user_day WHERE user_id=?", (uid,))
         c.execute("DELETE FROM users WHERE id=?", (uid,))
     log.info("user %s deleted own data on request", uid)
     return {"deleted": True}

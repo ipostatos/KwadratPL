@@ -71,6 +71,7 @@ const API = [
   "aiAvailable", "analyzeListing", "mountAiButton",
   "priceUnit", "cityName", "isFav", "toggleFav",
   "tgInitData", "_load",
+  "typeAvailable", "flagAvailable", "roomsAvailable", "tsOf",
 ];
 for (const k of API) ok(k in App, `App.${k} отсутствует`);
 
@@ -87,6 +88,29 @@ ok(App.matches(l, { city: "warszawa", type: "long", priceMax: l.price }), "match
 ok(typeof App.searchLabel({ city: "warszawa", type: "long", priceMax: 3000 }) === "string", "searchLabel строка");
 ok(App.esc("<b>&'") === "&lt;b&gt;&amp;&#39;", "esc экранирует");
 ok(App.safePhotoUrl("http://x/") === null, "safePhotoUrl режет http");
+ok(App.safePhotoUrl('https://a/b&c<d>e"f(g)') === "https://a/bcdefg",
+  "safePhotoUrl вырезает & < > кавычки и скобки");
+
+// «Кто сдаёт»: частник — только подтверждённый agency === false
+// (Morizon отдаёт agency: null — это «неизвестно», не частник)
+{
+  const b = { city: "warszawa", type: "long", price: 1000 };
+  const sp = { city: "warszawa", type: "long", owner: "private" };
+  const sa = { city: "warszawa", type: "long", owner: "agency" };
+  ok(App.matches({ ...b, agency: false }, sp), "owner private: agency=false проходит");
+  ok(!App.matches({ ...b, agency: null }, sp), "owner private: agency=null НЕ частник");
+  ok(!App.matches({ ...b, agency: true }, sp), "owner private: агентство отсекается");
+  ok(App.matches({ ...b, agency: true }, sa), "owner agency: agency=true проходит");
+  ok(!App.matches({ ...b, agency: null }, sa), "owner agency: agency=null не агентство");
+}
+
+// ts из будущего прижимается к «сейчас»
+ok(App.tsOf({ ts: Date.now() + 3600000 }) <= Date.now(), "tsOf: будущее → сейчас");
+ok(App.tsOf({ ts: 1000 }) === 1000, "tsOf: прошлое без изменений");
+
+// доступность фич: в демо всё есть
+ok(App.typeAvailable("short") && App.flagAvailable("pets"), "демо: посуточно и 🐾 доступны");
+ok(App.roomsAvailable("warszawa", "long")[4] === true, "демо: все варианты комнат");
 ok(App.priceVerdict(l) === null, "priceVerdict null на демо-данных (live=false)");
 ok(App.dataQuality({ price: 100 }) === "thin", "dataQuality: пустая карточка = thin");
 ok(App.aiAvailable() === false, "AI недоступен вне Telegram");
@@ -104,6 +128,21 @@ ok(App.aiAvailable() === false, "AI недоступен вне Telegram");
     type: "long", area: 50, price: 2400 };
   App.listings.length = 0;
   App.listings.push(...synth, cheap);
+
+  // живые данные без посуточной аренды/флагов/комнат → кнопки прячутся
+  ok(!App.typeAvailable("short"), "live: нет short → посуточно недоступно");
+  ok(App.typeAvailable("long"), "live: long доступен");
+  ok(!App.flagAvailable("pets"), "live: нет pets=true → 🐾 недоступно");
+  const ra = App.roomsAvailable("warszawa", "long");
+  ok(!ra[1] && !ra[2] && !ra[3] && !ra[4], "live: rooms=null → фильтр комнат пуст");
+  App.listings.push({ id: "r2", city: "warszawa", type: "long", rooms: 2, price: 3000,
+    pets: true, lat: 52.2, lon: 21 });
+  ok(App.roomsAvailable("warszawa", "long")[2] === true, "live: 2 комнаты появились");
+  ok(!App.roomsAvailable("warszawa", "long")[3], "live: 3 комнаты нет");
+  ok(!App.roomsAvailable("warszawa", "long", (x) => x.geoPrec === "point")[2],
+    "live: extra-фильтр (карта) учитывается");
+  ok(App.flagAvailable("pets"), "live: pets=true → 🐾 доступно");
+  App.listings.pop();
   const vv = App.priceVerdict(cheap);
   ok(vv && vv.level === "deal", "v2: дешёвое объявление = deal");
   ok(vv.scope === "district", "v2: сравнение по району");

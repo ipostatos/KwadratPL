@@ -6,7 +6,8 @@ import json
 
 from fastapi import APIRouter
 
-from config import AI_ENABLED, ANALYZE_MODEL, LISTINGS_PATH
+from config import AI_ENABLED, LISTINGS_PATH
+from db import db
 
 router = APIRouter()
 
@@ -20,5 +21,12 @@ def health():
         meta = {"count": d.get("count"), "generated_at": d.get("generated_at")}
     except Exception:
         meta = {"count": 0, "generated_at": None}
+    # здоровье источников по последнему инжесту (0 = источник лежит)
+    try:
+        with db() as c:
+            meta["sources"] = {r["source"]: r["ok"] for r in
+                               c.execute("SELECT source, ok FROM source_health")}
+    except Exception:
+        pass
     # ai: показывать ли кнопку «AI-разбор» в Mini App
-    return {"ok": True, "ai": AI_ENABLED, "model": ANALYZE_MODEL if AI_ENABLED else None, **meta}
+    return {"ok": True, "ai": AI_ENABLED, **meta}

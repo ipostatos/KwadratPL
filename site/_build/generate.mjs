@@ -159,23 +159,40 @@ const LANGS = [
 
 const FEATURE_ICONS = ["search", "bell", "shield-check", "zap", "calculator", "book-open"];
 
+// ── факты о данных: ЕДИНЫЙ источник для всех текстов сайта ─────────────────
+// Откуда объявления, как часто обновляются, что именно ищет бот. Поменялись
+// источники (например, вернулся OLX) — правим только здесь и перегенерируем.
+// Правило владельца: на сайте только то, что реально работает.
+const CLAIMS = {
+  ru: { src: "Otodom и Morizon", fresh: "несколько раз в день",
+        owner: "Видно, кто сдаёт: собственник или агентство" },
+  ua: { src: "Otodom і Morizon", fresh: "кілька разів на день",
+        owner: "Видно, хто здає: власник чи агентство" },
+  by: { src: "Otodom і Morizon", fresh: "некалькі разоў на дзень",
+        owner: "Відаць, хто здае: уласнік ці агенцтва" },
+  pl: { src: "Otodom i Morizon", fresh: "kilka razy dziennie",
+        owner: "Widać, kto wynajmuje: właściciel czy biuro" },
+  en: { src: "Otodom and Morizon", fresh: "several times a day",
+        owner: "See who's renting: owner or agency" },
+};
+
 // ── контент по языкам ───────────────────────────────────────────────────────
 const C = {
   ru: {
-    title: "Аренда жилья в Польше без посредников — бот Kwadrat PL",
-    desc: "Аренда квартир и комнат в Польше: OLX, Otodom и Morizon в одном боте. Карта объявлений и оценка локации Варшавы, уведомления, AI-разбор. Бесплатно.",
+    title: `Аренда жилья в Польше: ${CLAIMS.ru.src} в одном боте — Kwadrat PL`,
+    desc: `Аренда квартир и комнат в Польше: ${CLAIMS.ru.src} в одном боте. Карта объявлений и оценка локации Варшавы, уведомления, AI-разбор. Бесплатно.`,
     eyebrow: "Telegram-бот для аренды в Польше",
     h1: "Аренда жилья в Польше: пусть дом найдётся сам",
-    lead: "Kwadrat PL собирает свежие объявления с OLX, Otodom и Morizon в один Telegram-бот. Подпишитесь на поиск — новые квартиры и комнаты придут прямо в чат, раньше других.",
+    lead: `Kwadrat PL собирает свежие объявления с ${CLAIMS.ru.src} в один Telegram-бот. Подпишитесь на поиск — новые квартиры и комнаты придут прямо в чат.`,
     ctaPrimary: "Открыть бота в Telegram",
     ctaNote: "Без регистрации · 5 языков · внутри Telegram",
     donateText: "Kwadrat PL бесплатный и без рекламы. Донаты идут на оплату домена, сервера, AI-разбора и Google API.",
     donateCta: "Поддержать проект ☕",
-    trust: ["Бесплатно", "Прямые объявления, без агентств", "Обновление ~5 минут", "AI-разбор + анти-скам"],
+    trust: ["Бесплатно", CLAIMS.ru.owner, `Свежие объявления ${CLAIMS.ru.fresh}`, "AI-разбор + анти-скам"],
     featuresTitle: "Почему Kwadrat PL",
     features: [
-      { t: "Поиск по 3 площадкам сразу", d: "Квартиры, комнаты и посуточно с OLX, Otodom и Morizon. Одинаковые объявления с разных сайтов объединяются — без дублей в ленте." },
-      { t: "Мгновенные уведомления", d: "Подпишитесь на свой поиск — новое подходящее жильё приходит в чат за минуты. Тихие часы ночью и пауза командой /off." },
+      { t: "Две площадки в одном поиске", d: `Квартиры на долгий срок и комнаты с ${CLAIMS.ru.src}. Одинаковые объявления с разных сайтов объединяются — без дублей в ленте.` },
+      { t: "Уведомления о новом", d: `Подпишитесь на свой поиск — новое подходящее жильё придёт в чат, как только попадёт в базу (обновляем ${CLAIMS.ru.fresh}). Тихие часы ночью и пауза командой /off.` },
       { t: "Справедливая цена и анти-скам", d: "Бейдж «ниже/выше рынка района» по нашим данным и предупреждение о подозрительно дешёвых объявлениях — типичная приманка мошенников." },
       { t: "AI-разбор объявления", d: "Одна кнопка: перевод объявления на ваш язык, выжимка главного и оценка риска мошенничества по тексту." },
       { t: "Калькулятор заезда", d: "Сколько денег нужно на старте: аренда, czynsz, media, кауция и комиссия — считаем всё сразу, без сюрпризов." },
@@ -185,7 +202,7 @@ const C = {
     steps: [
       { t: "Откройте бота", d: "Нажмите кнопку и запустите Kwadrat PL в Telegram — приложение откроется прямо в чате." },
       { t: "Настройте поиск", d: "Выберите город, тип аренды, цену и фильтры. Результат обновляется мгновенно." },
-      { t: "Получайте новое первыми", d: "Подпишитесь — и свежие объявления будут приходить в чат раньше, чем их разберут." },
+      { t: "Получайте новое в чат", d: "Подпишитесь — и свежие объявления по вашему поиску будут приходить в чат сами." },
     ],
     shotsTitle: "Как это выглядит",
     shotsLead: "Поиск, справедливая цена и полная стоимость входа — всё внутри Telegram.",
@@ -211,14 +228,14 @@ const C = {
     widgetUse: [
       "Тап по виджету открывает приложение.",
       "Виджет обновляется по расписанию iOS (примерно раз в 15–30 минут) — это ограничение всех виджетов, не только нашего.",
-      "Свежие квартиры всё равно приходят мгновенно обычным уведомлением бота.",
+      "Свежие квартиры всё равно приходят обычным уведомлением бота.",
     ],
     citiesTitle: "Города Польши",
     citiesLead: "Аренда квартир и комнат в 8 городах Польши:",
     faqTitle: "Частые вопросы",
     faq: [
       { q: "Это бесплатно?", a: "Да, полностью. Поиск, уведомления, гайды и калькулятор — без платы и без регистрации." },
-      { q: "Откуда объявления?", a: "Мы собираем публичные объявления с OLX, Otodom и Morizon и обновляем их каждые несколько минут. Одинаковые лоты с разных сайтов объединяются." },
+      { q: "Откуда объявления?", a: `Мы собираем публичные объявления с ${CLAIMS.ru.src} и обновляем базу ${CLAIMS.ru.fresh}. Одинаковые лоты с разных сайтов объединяются.` },
       { q: "Что такое AI-разбор?", a: "Кнопка в карточке объявления: переводит текст на ваш язык, делает короткую выжимку и оценивает риск мошенничества по описанию." },
       { q: "На каких языках работает?", a: "Русский, украинский, белорусский, польский и английский. Язык переключается прямо в приложении." },
       { q: "Как понять, что цена справедливая?", a: "Бот считает медианную цену за м² по району и типу жилья из своих данных и показывает, насколько объявление дешевле или дороже рынка. Медиана берётся по выборке минимум из 6 объявлений; если по району данных мало, используется медиана по городу. Данные обновляются с каждым обновлением базы." },
@@ -234,25 +251,25 @@ const C = {
       flygo: "Дешёвые перелёты из Польши: Ryanair и Wizz Air, умные склейки маршрутов и уведомления о падении цен.",
       obshak: "Совместные расходы компании без неловкости: AI-сканер чеков, «кто кому сколько» и расчёт в один тап.",
     },
-    footAbout: "Kwadrat PL — поиск аренды жилья в Польше на 5 языках: русский, украинский, белорусский, польский, английский. OLX, Otodom, Morizon в одном боте.",
+    footAbout: `Kwadrat PL — поиск аренды жилья в Польше на 5 языках: русский, украинский, белорусский, польский, английский. ${CLAIMS.ru.src} в одном боте.`,
     footLang: "Язык",
     footRights: "Не является агентством недвижимости. Все объявления принадлежат их источникам.",
   },
   ua: {
-    title: "Оренда житла в Польщі без посередників — бот Kwadrat PL",
-    desc: "Оренда квартир і кімнат у Польщі: OLX, Otodom і Morizon в одному боті. Мапа оголошень і оцінка локації Варшави, сповіщення, AI-розбір. Безкоштовно.",
+    title: `Оренда житла в Польщі: ${CLAIMS.ua.src} в одному боті — Kwadrat PL`,
+    desc: `Оренда квартир і кімнат у Польщі: ${CLAIMS.ua.src} в одному боті. Мапа оголошень і оцінка локації Варшави, сповіщення, AI-розбір. Безкоштовно.`,
     eyebrow: "Telegram-бот для оренди в Польщі",
     h1: "Оренда житла в Польщі: хай дім знайдеться сам",
-    lead: "Kwadrat PL збирає свіжі оголошення з OLX, Otodom і Morizon в один Telegram-бот. Підпишіться на пошук — нові квартири й кімнати надійдуть просто в чат, раніше за інших.",
+    lead: `Kwadrat PL збирає свіжі оголошення з ${CLAIMS.ua.src} в один Telegram-бот. Підпишіться на пошук — нові квартири й кімнати надійдуть просто в чат.`,
     ctaPrimary: "Відкрити бота в Telegram",
     ctaNote: "Без реєстрації · 5 мов · всередині Telegram",
     donateText: "Kwadrat PL безкоштовний і без реклами. Донати йдуть на оплату домену, сервера, AI-розбору та Google API.",
     donateCta: "Підтримати проєкт ☕",
-    trust: ["Безкоштовно", "Прямі оголошення, без агентств", "Оновлення ~5 хвилин", "AI-розбір + анти-скам"],
+    trust: ["Безкоштовно", CLAIMS.ua.owner, `Свіжі оголошення ${CLAIMS.ua.fresh}`, "AI-розбір + анти-скам"],
     featuresTitle: "Чому Kwadrat PL",
     features: [
-      { t: "Пошук по 3 майданчиках одразу", d: "Квартири, кімнати й подобово з OLX, Otodom і Morizon. Однакові оголошення з різних сайтів об'єднуються — без дублів у стрічці." },
-      { t: "Миттєві сповіщення", d: "Підпишіться на свій пошук — нове відповідне житло надходить у чат за хвилини. Тихі години вночі та пауза командою /off." },
+      { t: "Два майданчики в одному пошуку", d: `Квартири на тривалий строк і кімнати з ${CLAIMS.ua.src}. Однакові оголошення з різних сайтів об'єднуються — без дублів у стрічці.` },
+      { t: "Сповіщення про нове", d: `Підпишіться на свій пошук — нове відповідне житло надійде в чат, щойно потрапить у базу (оновлюємо ${CLAIMS.ua.fresh}). Тихі години вночі та пауза командою /off.` },
       { t: "Справедлива ціна й анти-скам", d: "Бейдж «нижче/вище ринку району» за нашими даними та попередження про підозріло дешеві оголошення — типову приманку шахраїв." },
       { t: "AI-розбір оголошення", d: "Одна кнопка: переклад оголошення вашою мовою, вижимка головного й оцінка ризику шахрайства за текстом." },
       { t: "Калькулятор заїзду", d: "Скільки грошей потрібно на старті: оренда, czynsz, media, кауція та комісія — рахуємо все одразу, без сюрпризів." },
@@ -262,7 +279,7 @@ const C = {
     steps: [
       { t: "Відкрийте бота", d: "Натисніть кнопку й запустіть Kwadrat PL у Telegram — застосунок відкриється просто в чаті." },
       { t: "Налаштуйте пошук", d: "Виберіть місто, тип оренди, ціну та фільтри. Результат оновлюється миттєво." },
-      { t: "Отримуйте нове першими", d: "Підпишіться — і свіжі оголошення надходитимуть у чат раніше, ніж їх розберуть." },
+      { t: "Отримуйте нове в чат", d: "Підпишіться — і свіжі оголошення за вашим пошуком надходитимуть у чат самі." },
     ],
     shotsTitle: "Як це виглядає",
     shotsLead: "Пошук, справедлива ціна й повна вартість входу — усе всередині Telegram.",
@@ -288,14 +305,14 @@ const C = {
     widgetUse: [
       "Тап по віджету відкриває застосунок.",
       "Віджет оновлюється за розкладом iOS (приблизно раз на 15–30 хвилин) — це обмеження всіх віджетів, не тільки нашого.",
-      "Свіжі квартири все одно приходять миттєво звичайним сповіщенням бота.",
+      "Свіжі квартири все одно приходять звичайним сповіщенням бота.",
     ],
     citiesTitle: "Міста Польщі",
     citiesLead: "Оренда квартир і кімнат у 8 містах Польщі:",
     faqTitle: "Часті запитання",
     faq: [
       { q: "Це безкоштовно?", a: "Так, повністю. Пошук, сповіщення, гайди та калькулятор — без плати й без реєстрації." },
-      { q: "Звідки оголошення?", a: "Ми збираємо публічні оголошення з OLX, Otodom і Morizon та оновлюємо їх кожні кілька хвилин. Однакові лоти з різних сайтів об'єднуються." },
+      { q: "Звідки оголошення?", a: `Ми збираємо публічні оголошення з ${CLAIMS.ua.src} і оновлюємо базу ${CLAIMS.ua.fresh}. Однакові лоти з різних сайтів об'єднуються.` },
       { q: "Що таке AI-розбір?", a: "Кнопка в картці оголошення: перекладає текст вашою мовою, робить коротку вижимку й оцінює ризик шахрайства за описом." },
       { q: "Якими мовами працює?", a: "Українська, російська, білоруська, польська та англійська. Мова перемикається просто в застосунку." },
       { q: "Як зрозуміти, що ціна справедлива?", a: "Бот рахує медіанну ціну за м² по району й типу житла зі своїх даних і показує, наскільки оголошення дешевше або дорожче за ринок. Медіана береться з вибірки щонайменше з 6 оголошень; якщо по району даних мало, використовується медіана по місту. Дані оновлюються з кожним оновленням бази." },
@@ -311,25 +328,25 @@ const C = {
       flygo: "Дешеві перельоти з Польщі: Ryanair і Wizz Air, розумні стикування маршрутів і сповіщення про падіння цін.",
       obshak: "Спільні витрати компанії без незручності: AI-сканер чеків, «хто кому скільки» і розрахунок в один тап.",
     },
-    footAbout: "Kwadrat PL — пошук оренди житла в Польщі 5 мовами: українська, російська, білоруська, польська, англійська. OLX, Otodom, Morizon в одному боті.",
+    footAbout: `Kwadrat PL — пошук оренди житла в Польщі 5 мовами: українська, російська, білоруська, польська, англійська. ${CLAIMS.ua.src} в одному боті.`,
     footLang: "Мова",
     footRights: "Не є агентством нерухомості. Усі оголошення належать їхнім джерелам.",
   },
   pl: {
-    title: "Wynajem mieszkań w Polsce bez pośredników — bot Kwadrat PL",
-    desc: "Mieszkania i pokoje na wynajem: OLX, Otodom i Morizon w jednym bocie. Mapa ogłoszeń i ocena lokalizacji w Warszawie, powiadomienia, analiza AI. Za darmo.",
+    title: `Wynajem mieszkań w Polsce: ${CLAIMS.pl.src} w jednym bocie — Kwadrat PL`,
+    desc: `Mieszkania i pokoje na wynajem: ${CLAIMS.pl.src} w jednym bocie. Mapa ogłoszeń i ocena lokalizacji w Warszawie, powiadomienia, analiza AI. Za darmo.`,
     eyebrow: "Bot Telegram do wynajmu w Polsce",
     h1: "Wynajem mieszkania w Polsce — niech dom znajdzie się sam",
-    lead: "Kwadrat PL zbiera świeże ogłoszenia z OLX, Otodom i Morizon w jednym bocie Telegram. Zasubskrybuj wyszukiwanie — nowe mieszkania i pokoje trafią prosto na czat, szybciej niż do innych.",
+    lead: `Kwadrat PL zbiera świeże ogłoszenia z ${CLAIMS.pl.src} w jednym bocie Telegram. Zasubskrybuj wyszukiwanie — nowe mieszkania i pokoje trafią prosto na czat.`,
     ctaPrimary: "Otwórz bota w Telegramie",
     ctaNote: "Bez rejestracji · 5 języków · w Telegramie",
     donateText: "Kwadrat PL jest darmowy i bez reklam. Wpłaty pokrywają koszty domeny, serwera, analizy AI i Google API.",
     donateCta: "Wesprzyj projekt ☕",
-    trust: ["Za darmo", "Ogłoszenia wprost, bez agencji", "Odświeżanie ~5 minut", "Analiza AI + anti-scam"],
+    trust: ["Za darmo", CLAIMS.pl.owner, `Świeże ogłoszenia ${CLAIMS.pl.fresh}`, "Analiza AI + anti-scam"],
     featuresTitle: "Dlaczego Kwadrat PL",
     features: [
-      { t: "Wyszukiwanie na 3 portalach naraz", d: "Mieszkania, pokoje i noclegi z OLX, Otodom i Morizon. Te same ogłoszenia z różnych serwisów są łączone — bez duplikatów na liście." },
-      { t: "Natychmiastowe powiadomienia", d: "Zasubskrybuj swoje wyszukiwanie — nowe pasujące lokum trafia na czat w kilka minut. Cisza nocna i pauza komendą /off." },
+      { t: "Dwa portale w jednym wyszukiwaniu", d: `Mieszkania na dłużej i pokoje z ${CLAIMS.pl.src}. Te same ogłoszenia z różnych serwisów są łączone — bez duplikatów na liście.` },
+      { t: "Powiadomienia o nowościach", d: `Zasubskrybuj swoje wyszukiwanie — nowe pasujące lokum trafi na czat, gdy tylko pojawi się w bazie (odświeżamy ${CLAIMS.pl.fresh}). Cisza nocna i pauza komendą /off.` },
       { t: "Uczciwa cena i anti-scam", d: "Znacznik „poniżej/powyżej rynku dzielnicy” z naszych danych i ostrzeżenie o podejrzanie tanich ogłoszeniach — typowej przynęcie oszustów." },
       { t: "Analiza AI ogłoszenia", d: "Jeden przycisk: tłumaczenie ogłoszenia na Twój język, streszczenie najważniejszego i ocena ryzyka oszustwa na podstawie treści." },
       { t: "Kalkulator wprowadzki", d: "Ile pieniędzy potrzeba na start: najem, czynsz, media, kaucja i prowizja — liczymy wszystko naraz, bez niespodzianek." },
@@ -339,7 +356,7 @@ const C = {
     steps: [
       { t: "Otwórz bota", d: "Kliknij przycisk i uruchom Kwadrat PL w Telegramie — aplikacja otworzy się prosto na czacie." },
       { t: "Ustaw wyszukiwanie", d: "Wybierz miasto, typ najmu, cenę i filtry. Wynik odświeża się natychmiast." },
-      { t: "Miej nowe jako pierwszy", d: "Zasubskrybuj — świeże ogłoszenia będą trafiać na czat, zanim inni je rozchwytają." },
+      { t: "Dostawaj nowe na czat", d: "Zasubskrybuj — świeże ogłoszenia z Twojego wyszukiwania same będą trafiać na czat." },
     ],
     shotsTitle: "Jak to wygląda",
     shotsLead: "Wyszukiwanie, uczciwa cena i pełny koszt wejścia — wszystko w Telegramie.",
@@ -365,14 +382,14 @@ const C = {
     widgetUse: [
       "Dotknięcie widżetu otwiera aplikację.",
       "Widżet odświeża się według harmonogramu iOS (mniej więcej co 15–30 minut) — to ograniczenie wszystkich widżetów, nie tylko naszego.",
-      "Świeże mieszkania i tak przychodzą natychmiast zwykłym powiadomieniem bota.",
+      "Świeże mieszkania i tak przychodzą zwykłym powiadomieniem bota.",
     ],
     citiesTitle: "Miasta w Polsce",
     citiesLead: "Wynajem mieszkań i pokoi w 8 miastach w Polsce:",
     faqTitle: "Najczęstsze pytania",
     faq: [
       { q: "Czy to jest za darmo?", a: "Tak, w pełni. Wyszukiwanie, powiadomienia, poradniki i kalkulator — bez opłat i bez rejestracji." },
-      { q: "Skąd pochodzą ogłoszenia?", a: "Zbieramy publiczne ogłoszenia z OLX, Otodom i Morizon i odświeżamy je co kilka minut. Te same oferty z różnych serwisów są łączone." },
+      { q: "Skąd pochodzą ogłoszenia?", a: `Zbieramy publiczne ogłoszenia z ${CLAIMS.pl.src} i odświeżamy bazę ${CLAIMS.pl.fresh}. Te same oferty z różnych serwisów są łączone.` },
       { q: "Czym jest analiza AI?", a: "Przycisk w ogłoszeniu: tłumaczy treść na Twój język, tworzy krótkie streszczenie i ocenia ryzyko oszustwa na podstawie opisu." },
       { q: "W jakich językach działa?", a: "Polski, ukraiński, rosyjski, białoruski i angielski. Język przełączysz bezpośrednio w aplikacji." },
       { q: "Jak poznać, że cena jest uczciwa?", a: "Bot liczy medianę ceny za m² według dzielnicy i typu lokum z własnych danych i pokazuje, o ile ogłoszenie jest tańsze lub droższe od rynku. Mediana liczona jest z próby co najmniej 6 ogłoszeń; gdy danych dla dzielnicy jest mało, używana jest mediana dla miasta. Dane odświeżają się z każdą aktualizacją bazy." },
@@ -388,25 +405,25 @@ const C = {
       flygo: "Tanie loty z Polski: Ryanair i Wizz Air, sprytne łączenie tras i powiadomienia o spadkach cen.",
       obshak: "Wspólne wydatki ekipy bez skrępowania: skaner paragonów AI, „kto komu ile” i rozliczenie jednym tapnięciem.",
     },
-    footAbout: "Kwadrat PL — wyszukiwanie mieszkań na wynajem w Polsce, 5 języków interfejsu. OLX, Otodom i Morizon w jednym bocie Telegram.",
+    footAbout: `Kwadrat PL — wyszukiwanie mieszkań na wynajem w Polsce, 5 języków interfejsu. ${CLAIMS.pl.src} w jednym bocie Telegram.`,
     footLang: "Język",
     footRights: "To nie jest agencja nieruchomości. Wszystkie ogłoszenia należą do ich źródeł.",
   },
   en: {
-    title: "Rent a home in Poland without agents — Kwadrat PL bot",
-    desc: "Flats and rooms for rent in Poland: OLX, Otodom and Morizon in one bot. Warsaw listings map and location score, instant alerts, AI breakdown. Free.",
+    title: `Rent a home in Poland: ${CLAIMS.en.src} in one bot — Kwadrat PL`,
+    desc: `Flats and rooms for rent in Poland: ${CLAIMS.en.src} in one bot. Warsaw listings map and location score, alerts, AI breakdown. Free.`,
     eyebrow: "Telegram bot for renting in Poland",
     h1: "Rent an apartment in Poland — let your home find you",
-    lead: "Kwadrat PL gathers fresh listings from OLX, Otodom and Morizon into one Telegram bot. Subscribe to a search and new flats and rooms land right in your chat, before everyone else.",
+    lead: `Kwadrat PL gathers fresh listings from ${CLAIMS.en.src} into one Telegram bot. Subscribe to a search and new flats and rooms land right in your chat.`,
     ctaPrimary: "Open the bot in Telegram",
     ctaNote: "No sign-up · 5 languages · inside Telegram",
     donateText: "Kwadrat PL is free and ad-free. Donations cover the domain, server, AI analysis and Google API costs.",
     donateCta: "Support the project ☕",
-    trust: ["Free", "Listings direct, no agencies", "Refreshed ~5 min", "AI breakdown + anti-scam"],
+    trust: ["Free", CLAIMS.en.owner, `Fresh listings ${CLAIMS.en.fresh}`, "AI breakdown + anti-scam"],
     featuresTitle: "Why Kwadrat PL",
     features: [
-      { t: "Search 3 portals at once", d: "Flats, rooms and short stays from OLX, Otodom and Morizon. The same listing across sites is merged — no duplicates in your feed." },
-      { t: "Instant alerts", d: "Subscribe to your search and matching homes reach your chat within minutes. Quiet hours at night and pause with /off." },
+      { t: "Two portals in one search", d: `Long-term flats and rooms from ${CLAIMS.en.src}. The same listing across sites is merged — no duplicates in your feed.` },
+      { t: "New-listing alerts", d: `Subscribe to your search and matching homes reach your chat as soon as they hit our database (refreshed ${CLAIMS.en.fresh}). Quiet hours at night and pause with /off.` },
       { t: "Fair price & anti-scam", d: "A below/above district-market badge from our own data, plus a warning on suspiciously cheap listings — a classic scam bait." },
       { t: "AI listing breakdown", d: "One button: translate the listing into your language, summarise the essentials and score the scam risk from the text." },
       { t: "Move-in calculator", d: "How much cash you need upfront: rent, czynsz, utilities, deposit and agent fee — all counted at once, no surprises." },
@@ -416,7 +433,7 @@ const C = {
     steps: [
       { t: "Open the bot", d: "Tap the button and launch Kwadrat PL in Telegram — the app opens right inside your chat." },
       { t: "Set up a search", d: "Pick a city, rental type, price and filters. Results update instantly." },
-      { t: "Get new ones first", d: "Subscribe and fresh listings arrive in your chat before others snap them up." },
+      { t: "Get new ones in your chat", d: "Subscribe and fresh listings for your search arrive in your chat on their own." },
     ],
     shotsTitle: "How it looks",
     shotsLead: "Search, fair-price check and the full move-in cost — all inside Telegram.",
@@ -442,14 +459,14 @@ const C = {
     widgetUse: [
       "Tapping the widget opens the app.",
       "The widget refreshes on iOS's schedule (roughly every 15–30 minutes) — a limit of all widgets, not just ours.",
-      "Fresh flats still arrive instantly as a normal bot notification.",
+      "Fresh flats still arrive as a normal bot notification.",
     ],
     citiesTitle: "Cities in Poland",
     citiesLead: "Flats and rooms for rent in 8 cities across Poland:",
     faqTitle: "FAQ",
     faq: [
       { q: "Is it free?", a: "Yes, fully. Search, alerts, guides and the calculator — no fees and no sign-up." },
-      { q: "Where do listings come from?", a: "We gather public listings from OLX, Otodom and Morizon and refresh them every few minutes. The same offer across sites is merged." },
+      { q: "Where do listings come from?", a: `We gather public listings from ${CLAIMS.en.src} and refresh the database ${CLAIMS.en.fresh}. The same offer across sites is merged.` },
       { q: "What is the AI breakdown?", a: "A button on each listing: it translates the text into your language, writes a short summary and scores the scam risk from the description." },
       { q: "Which languages are supported?", a: "English, Polish, Ukrainian, Belarusian and Russian. You switch the language right inside the app." },
       { q: "How do I know the price is fair?", a: "The bot computes the median price per m² by district and home type from its own data and shows how far a listing sits below or above the market. The median needs a sample of at least 6 listings; when a district has too little data, the city-wide median is used. Figures refresh with every database update." },
@@ -465,25 +482,25 @@ const C = {
       flygo: "Cheap flights from Poland: Ryanair and Wizz Air, smart route combos and price-drop alerts.",
       obshak: "Group expenses without the awkwardness: an AI receipt scanner, who-owes-whom and one-tap settling.",
     },
-    footAbout: "Kwadrat PL — finding rental homes in Poland, with a 5-language interface. OLX, Otodom and Morizon in one Telegram bot.",
+    footAbout: `Kwadrat PL — finding rental homes in Poland, with a 5-language interface. ${CLAIMS.en.src} in one Telegram bot.`,
     footLang: "Language",
     footRights: "Not a real-estate agency. All listings belong to their sources.",
   },
   by: {
-    title: "Арэнда жылля ў Польшчы без пасярэднікаў — бот Kwadrat PL",
-    desc: "Арэнда кватэр і пакояў у Польшчы: OLX, Otodom і Morizon у адным боце. Мапа аб'яў і ацэнка лакацыі Варшавы, апавяшчэнні, AI-разбор. Бясплатна.",
+    title: `Арэнда жылля ў Польшчы: ${CLAIMS.by.src} у адным боце — Kwadrat PL`,
+    desc: `Арэнда кватэр і пакояў у Польшчы: ${CLAIMS.by.src} у адным боце. Мапа аб'яў і ацэнка лакацыі Варшавы, апавяшчэнні, AI-разбор. Бясплатна.`,
     eyebrow: "Telegram-бот для арэнды ў Польшчы",
     h1: "Арэнда жылля ў Польшчы: хай дом знойдзецца сам",
-    lead: "Kwadrat PL збірае свежыя аб'явы з OLX, Otodom і Morizon у адзін Telegram-бот. Падпішыцеся на пошук — новыя кватэры і пакоі прыйдуць проста ў чат, раней за іншых.",
+    lead: `Kwadrat PL збірае свежыя аб'явы з ${CLAIMS.by.src} у адзін Telegram-бот. Падпішыцеся на пошук — новыя кватэры і пакоі прыйдуць проста ў чат.`,
     ctaPrimary: "Адкрыць бота ў Telegram",
     ctaNote: "Без рэгістрацыі · 5 моў · унутры Telegram",
     donateText: "Kwadrat PL бясплатны і без рэкламы. Донаты ідуць на аплату дамена, сервера, AI-разбору і Google API.",
     donateCta: "Падтрымаць праект ☕",
-    trust: ["Бясплатна", "Прамыя аб'явы, без агенцтваў", "Абнаўленне ~5 хвілін", "AI-разбор + анты-скам"],
+    trust: ["Бясплатна", CLAIMS.by.owner, `Свежыя аб'явы ${CLAIMS.by.fresh}`, "AI-разбор + анты-скам"],
     featuresTitle: "Чаму Kwadrat PL",
     features: [
-      { t: "Пошук па 3 пляцоўках адразу", d: "Кватэры, пакоі і пасутачна з OLX, Otodom і Morizon. Аднолькавыя аб'явы з розных сайтаў аб'ядноўваюцца — без дублікатаў у стужцы." },
-      { t: "Імгненныя апавяшчэнні", d: "Падпішыцеся на свой пошук — новае прыдатнае жыллё прыходзіць у чат за хвіліны. Ціхія гадзіны ноччу і паўза камандай /off." },
+      { t: "Дзве пляцоўкі ў адным пошуку", d: `Кватэры на доўгі тэрмін і пакоі з ${CLAIMS.by.src}. Аднолькавыя аб'явы з розных сайтаў аб'ядноўваюцца — без дублёў у стужцы.` },
+      { t: "Апавяшчэнні пра новае", d: `Падпішыцеся на свой пошук — новае прыдатнае жыллё прыйдзе ў чат, як толькі трапіць у базу (абнаўляем ${CLAIMS.by.fresh}). Ціхія гадзіны ўначы і паўза камандай /off.` },
       { t: "Справядлівая цана і анты-скам", d: "Бэйдж «ніжэй/вышэй рынку раёна» па нашых даных і папярэджанне пра падазрона танныя аб'явы — тыповая прынада шахраяў." },
       { t: "AI-разбор аб'явы", d: "Адна кнопка: пераклад аб'явы на вашу мову, выжымка галоўнага і ацэнка рызыкі шахрайства па тэксце." },
       { t: "Калькулятар пераезду", d: "Колькі грошай трэба на старце: арэнда, czynsz, media, кауцыя і камісія — лічым усё адразу, без сюрпрызаў." },
@@ -493,7 +510,7 @@ const C = {
     steps: [
       { t: "Адкрыйце бота", d: "Націсніце кнопку і запусціце Kwadrat PL у Telegram — праграма адкрыецца проста ў чаце." },
       { t: "Наладзьце пошук", d: "Абярыце горад, тып арэнды, цану і фільтры. Вынік абнаўляецца імгненна." },
-      { t: "Атрымлівайце новае першымі", d: "Падпішыцеся — і свежыя аб'явы будуць прыходзіць у чат раней, чым іх разбяруць." },
+      { t: "Атрымлівайце новае ў чат", d: "Падпішыцеся — і свежыя аб'явы па вашым пошуку будуць прыходзіць у чат самі." },
     ],
     shotsTitle: "Як гэта выглядае",
     shotsLead: "Пошук, справядлівая цана і поўны кошт уваходу — усё ўнутры Telegram.",
@@ -519,14 +536,14 @@ const C = {
     widgetUse: [
       "Тап па віджэце адкрывае дадатак.",
       "Віджэт абнаўляецца па раскладзе iOS (прыблізна раз у 15–30 хвілін) — гэта абмежаванне ўсіх віджэтаў, не толькі нашага.",
-      "Свежыя кватэры ўсё роўна прыходзяць імгненна звычайным апавяшчэннем бота.",
+      "Свежыя кватэры ўсё роўна прыходзяць звычайным апавяшчэннем бота.",
     ],
     citiesTitle: "Гарады Польшчы",
     citiesLead: "Арэнда кватэр і пакояў у 8 гарадах Польшчы:",
     faqTitle: "Частыя пытанні",
     faq: [
       { q: "Гэта бясплатна?", a: "Так, цалкам. Пошук, апавяшчэнні, гайды і калькулятар — без платы і без рэгістрацыі." },
-      { q: "Адкуль аб'явы?", a: "Мы збіраем публічныя аб'явы з OLX, Otodom і Morizon і абнаўляем іх кожныя некалькі хвілін. Аднолькавыя лоты з розных сайтаў аб'ядноўваюцца." },
+      { q: "Адкуль аб'явы?", a: `Мы збіраем публічныя аб'явы з ${CLAIMS.by.src} і абнаўляем базу ${CLAIMS.by.fresh}. Аднолькавыя лоты з розных сайтаў аб'ядноўваюцца.` },
       { q: "Што такое AI-разбор?", a: "Кнопка ў картцы аб'явы: перакладае тэкст на вашу мову, робіць кароткую выжымку і ацэньвае рызыку шахрайства па апісанні." },
       { q: "На якіх мовах працуе?", a: "Руская, украінская, беларуская, польская і англійская. Мова пераключаецца проста ў дадатку." },
       { q: "Як зразумець, што цана справядлівая?", a: "Бот лічыць медыянную цану за м² па раёне і тыпе жылля з уласных даных і паказвае, наколькі аб'ява танней ці даражэй за рынак. Медыяна бярэцца з выбаркі мінімум з 6 аб'яў; калі па раёне даных мала, выкарыстоўваецца медыяна па горадзе. Даныя абнаўляюцца з кожным абнаўленнем базы." },
@@ -542,7 +559,7 @@ const C = {
       flygo: "Танныя пералёты з Польшчы: Ryanair і Wizz Air, разумныя стыкоўкі маршрутаў і апавяшчэнні пра падзенне цэн.",
       obshak: "Супольныя выдаткі кампаніі без няёмкасці: AI-сканер чэкаў, «хто каму колькі» і разлік у адзін тап.",
     },
-    footAbout: "Kwadrat PL — пошук арэнды жылля ў Польшчы на 5 мовах: руская, украінская, беларуская, польская, англійская. OLX, Otodom, Morizon у адным боце.",
+    footAbout: `Kwadrat PL — пошук арэнды жылля ў Польшчы на 5 мовах: руская, украінская, беларуская, польская, англійская. ${CLAIMS.by.src} у адным боце.`,
     footLang: "Мова",
     footRights: "Не з'яўляецца агенцтвам нерухомасці. Усе аб'явы належаць іх крыніцам.",
   },
@@ -1416,19 +1433,19 @@ const CITY_LEAD = {
 
 const CITY_SEO = {
   ru: { title: (inCity) => `Аренда квартир и комнат ${inCity} — Kwadrat PL`,
-    desc: (inCity) => `Ищите квартиру или комнату ${inCity}: OLX, Otodom и Morizon в одном Telegram-боте. Мгновенные уведомления о новых объявлениях, справедливая цена, бесплатно.`,
+    desc: (inCity) => `Ищите квартиру или комнату ${inCity}: ${CLAIMS.ru.src} в одном Telegram-боте. Уведомления о новых объявлениях, справедливая цена, бесплатно.`,
     h1: (inCity) => `Аренда жилья ${inCity}`, districts: "Районы", faqTitle: "Частые вопросы" },
   pl: { title: (inCity) => `Wynajem mieszkań i pokoi ${inCity} — Kwadrat PL`,
-    desc: (inCity) => `Szukaj mieszkania lub pokoju ${inCity}: OLX, Otodom i Morizon w jednym bocie Telegram. Natychmiastowe powiadomienia o nowych ogłoszeniach, uczciwa cena, za darmo.`,
+    desc: (inCity) => `Szukaj mieszkania lub pokoju ${inCity}: ${CLAIMS.pl.src} w jednym bocie Telegram. Powiadomienia o nowych ogłoszeniach, uczciwa cena, za darmo.`,
     h1: (inCity) => `Wynajem mieszkań ${inCity}`, districts: "Dzielnice", faqTitle: "Najczęstsze pytania" },
   ua: { title: (inCity) => `Оренда квартир і кімнат ${inCity} — Kwadrat PL`,
-    desc: (inCity) => `Шукайте квартиру чи кімнату ${inCity}: OLX, Otodom і Morizon в одному Telegram-боті. Миттєві сповіщення про нові оголошення, справедлива ціна, безкоштовно.`,
+    desc: (inCity) => `Шукайте квартиру чи кімнату ${inCity}: ${CLAIMS.ua.src} в одному Telegram-боті. Сповіщення про нові оголошення, справедлива ціна, безкоштовно.`,
     h1: (inCity) => `Оренда житла ${inCity}`, districts: "Райони", faqTitle: "Часті запитання" },
   en: { title: (inCity) => `Flats and rooms for rent ${inCity} — Kwadrat PL`,
-    desc: (inCity) => `Find a flat or room ${inCity}: OLX, Otodom and Morizon in one Telegram bot. Instant alerts on new listings, fair-price check, free to use.`,
+    desc: (inCity) => `Find a flat or room ${inCity}: ${CLAIMS.en.src} in one Telegram bot. Alerts on new listings, fair-price check, free to use.`,
     h1: (inCity) => `Renting a home ${inCity}`, districts: "Districts", faqTitle: "FAQ" },
   by: { title: (inCity) => `Арэнда кватэр і пакояў ${inCity} — Kwadrat PL`,
-    desc: (inCity) => `Шукайце кватэру ці пакой ${inCity}: OLX, Otodom і Morizon у адным Telegram-боце. Імгненныя апавяшчэнні пра новыя аб'явы, справядлівая цана, бясплатна.`,
+    desc: (inCity) => `Шукайце кватэру ці пакой ${inCity}: ${CLAIMS.by.src} у адным Telegram-боце. Апавяшчэнні пра новыя аб'явы, справядлівая цана, бясплатна.`,
     h1: (inCity) => `Арэнда жылля ${inCity}`, districts: "Раёны", faqTitle: "Частыя пытанні" },
 };
 
@@ -1436,28 +1453,28 @@ function cityFaq(lang, inCity) {
   const T = {
     ru: [
       ["Сколько стоит аренда квартиры {c}?", "Цены зависят от района, площади и типа жилья — комната стоит меньше квартиры, а центр дороже окраин. Бот показывает у каждого объявления бейдж «ниже/выше рынка района» на основе собранных данных, так что справедливую цену видно сразу, без ручного сравнения."],
-      ["Как быстро появляются новые объявления {c}?", "Данные с OLX, Otodom и Morizon обновляются каждые несколько минут. Подпишитесь на свой поиск в боте — и новые квартиры и комнаты придут в чат раньше, чем их разберут."],
-      ["Можно ли снять комнату {c}, а не всю квартиру?", "Да, бот собирает отдельно квартиры, комнаты и посуточную аренду по всем 8 городам. В настройках поиска можно выбрать нужный тип жилья."],
+      ["Как быстро появляются новые объявления {c}?", `Объявления с ${CLAIMS.ru.src} обновляются ${CLAIMS.ru.fresh}. Подпишитесь на свой поиск в боте — и новые квартиры и комнаты будут приходить в чат сами.`],
+      ["Можно ли снять комнату {c}, а не всю квартиру?", "Да, бот собирает отдельно квартиры на долгий срок и комнаты по всем 8 городам. В настройках поиска можно выбрать нужный тип жилья."],
     ],
     pl: [
       ["Ile kosztuje wynajem mieszkania {c}?", "Ceny zależą od dzielnicy, metrażu i typu lokum — pokój kosztuje mniej niż mieszkanie, a centrum drożej niż peryferie. Bot pokazuje przy każdym ogłoszeniu znacznik „poniżej/powyżej rynku dzielnicy” na podstawie zebranych danych, więc uczciwą cenę widać od razu, bez ręcznego porównywania."],
-      ["Jak szybko pojawiają się nowe ogłoszenia {c}?", "Dane z OLX, Otodom i Morizon odświeżają się co kilka minut. Zasubskrybuj swoje wyszukiwanie w bocie — nowe mieszkania i pokoje trafią na czat, zanim inni je rozchwytają."],
-      ["Czy można wynająć pokój {c}, a nie całe mieszkanie?", "Tak, bot zbiera osobno mieszkania, pokoje i noclegi krótkoterminowe we wszystkich 8 miastach. W ustawieniach wyszukiwania wybierzesz odpowiedni typ lokum."],
+      ["Jak szybko pojawiają się nowe ogłoszenia {c}?", `Ogłoszenia z ${CLAIMS.pl.src} odświeżamy ${CLAIMS.pl.fresh}. Zasubskrybuj swoje wyszukiwanie w bocie — nowe mieszkania i pokoje same trafią na czat.`],
+      ["Czy można wynająć pokój {c}, a nie całe mieszkanie?", "Tak, bot zbiera osobno mieszkania na dłużej i pokoje we wszystkich 8 miastach. W ustawieniach wyszukiwania wybierzesz odpowiedni typ lokum."],
     ],
     ua: [
       ["Скільки коштує оренда квартири {c}?", "Ціни залежать від району, площі й типу житла — кімната коштує менше за квартиру, а центр дорожче за околиці. Бот показує біля кожного оголошення бейдж «нижче/вище ринку району» на основі зібраних даних, тож справедливу ціну видно одразу, без ручного порівняння."],
-      ["Як швидко з'являються нові оголошення {c}?", "Дані з OLX, Otodom і Morizon оновлюються кожні кілька хвилин. Підпишіться на свій пошук у боті — і нові квартири та кімнати прийдуть у чат раніше, ніж їх розберуть."],
-      ["Чи можна орендувати кімнату {c}, а не всю квартиру?", "Так, бот збирає окремо квартири, кімнати й подобову оренду в усіх 8 містах. У налаштуваннях пошуку можна вибрати потрібний тип житла."],
+      ["Як швидко з'являються нові оголошення {c}?", `Оголошення з ${CLAIMS.ua.src} оновлюються ${CLAIMS.ua.fresh}. Підпишіться на свій пошук у боті — і нові квартири та кімнати надходитимуть у чат самі.`],
+      ["Чи можна орендувати кімнату {c}, а не всю квартиру?", "Так, бот збирає окремо квартири на тривалий строк і кімнати в усіх 8 містах. У налаштуваннях пошуку можна вибрати потрібний тип житла."],
     ],
     en: [
       ["How much does renting a flat cost {c}?", "Prices depend on the district, size and type of home — a room costs less than a flat, and the centre costs more than the outskirts. The bot shows a below/above district-market badge on every listing based on its own data, so you can spot a fair price instantly."],
-      ["How fast do new listings appear {c}?", "Data from OLX, Otodom and Morizon refreshes every few minutes. Subscribe to your search in the bot and new flats and rooms will reach your chat before anyone else snaps them up."],
-      ["Can I rent a room {c} instead of a whole flat?", "Yes — the bot tracks flats, rooms and short stays separately across all 8 cities. Pick the type you want in the search filters."],
+      ["How fast do new listings appear {c}?", `Listings from ${CLAIMS.en.src} are refreshed ${CLAIMS.en.fresh}. Subscribe to your search in the bot and new flats and rooms will reach your chat on their own.`],
+      ["Can I rent a room {c} instead of a whole flat?", "Yes — the bot tracks long-term flats and rooms separately across all 8 cities. Pick the type you want in the search filters."],
     ],
     by: [
       ["Колькі каштуе арэнда кватэры {c}?", "Цэны залежаць ад раёна, плошчы і тыпу жылля — пакой каштуе менш за кватэру, а цэнтр даражэй за ўскраіны. Бот паказвае каля кожнай аб'явы бэйдж «ніжэй/вышэй рынку раёна» на аснове сабраных даных, так што справядлівую цану відаць адразу, без ручнога параўнання."],
-      ["Як хутка з'яўляюцца новыя аб'явы {c}?", "Даныя з OLX, Otodom і Morizon абнаўляюцца кожныя некалькі хвілін. Падпішыцеся на свой пошук у боце — і новыя кватэры і пакоі прыйдуць у чат раней, чым іх разбяруць."],
-      ["Ці можна зняць пакой {c}, а не ўсю кватэру?", "Так, бот збірае асобна кватэры, пакоі і пасутачную арэнду па ўсіх 8 гарадах. У наладах пошуку можна выбраць патрэбны тып жылля."],
+      ["Як хутка з'яўляюцца новыя аб'явы {c}?", `Аб'явы з ${CLAIMS.by.src} абнаўляюцца ${CLAIMS.by.fresh}. Падпішыцеся на свой пошук у боце — і новыя кватэры і пакоі будуць прыходзіць у чат самі.`],
+      ["Ці можна зняць пакой {c}, а не ўсю кватэру?", "Так, бот збірае асобна кватэры на доўгі тэрмін і пакоі па ўсіх 8 гарадах. У наладах пошуку можна выбраць патрэбны тып жылля."],
     ],
   };
   return (T[lang] || T.ru).map(([q, a]) => ({ q: q.replace("{c}", inCity), a: a.replace("{c}", inCity) }));
@@ -1996,7 +2013,7 @@ const TOOL = {
     desc: "Введи адрес в Варшаве и получи балл 0–100 за транспорт, магазины, школы и зелёные зоны. Ближайшие объекты с расстояниями. Бесплатно и без регистрации.",
     h1: "Оценка локации в Варшаве",
     lead: "Введи адрес или тапни точку на карте — покажем, насколько удобно там жить: общий балл 0–100 и разбор по транспорту, инфраструктуре, школам и зелени, с ближайшими объектами и расстояниями.",
-    cta: "Ищешь квартиру или комнату в Варшаве? Бот покажет свежие объявления OLX, Otodom и Morizon — с оценкой цены, анти-скам-фильтром и уведомлениями.",
+    cta: `Ищешь квартиру или комнату в Варшаве? Бот покажет свежие объявления с ${CLAIMS.ru.src} — с оценкой цены, анти-скам-фильтром и уведомлениями.`,
     faq: [
       { q: "Как считается оценка?", a: "Мы смотрим реальные объекты вокруг адреса: станции метро и SKM, остановки, магазины, аптеки, школы, детские сады и парки. Балл каждой категории складывается из близости и количества объектов, итог — взвешенная сумма, в которой провал одной категории заметно снижает результат. Данные: OpenStreetMap и Google." },
       { q: "В каких городах работает оценка?", a: "В Варшаве и Кракове. Другие города Польши добавим позже — а бот Kwadrat PL уже ищет жильё в 8 городах." },
@@ -2009,7 +2026,7 @@ const TOOL = {
     desc: "Введи адресу у Варшаві та отримай бал 0–100 за транспорт, магазини, школи й зелені зони. Найближчі об'єкти з відстанями. Безкоштовно й без реєстрації.",
     h1: "Оцінка локації у Варшаві",
     lead: "Введи адресу або тапни точку на карті — покажемо, наскільки зручно там жити: загальний бал 0–100 і розбір за транспортом, інфраструктурою, школами та зеленню, з найближчими об'єктами й відстанями.",
-    cta: "Шукаєш квартиру чи кімнату у Варшаві? Бот покаже свіжі оголошення OLX, Otodom і Morizon — з оцінкою ціни, анти-скам-фільтром і сповіщеннями.",
+    cta: `Шукаєш квартиру чи кімнату у Варшаві? Бот покаже свіжі оголошення з ${CLAIMS.ua.src} — з оцінкою ціни, анти-скам-фільтром і сповіщеннями.`,
     faq: [
       { q: "Як рахується оцінка?", a: "Ми дивимося реальні об'єкти навколо адреси: станції метро та SKM, зупинки, магазини, аптеки, школи, садки й парки. Бал кожної категорії складається з близькості та кількості об'єктів, підсумок — зважена сума, де провал однієї категорії помітно знижує результат. Дані: OpenStreetMap і Google." },
       { q: "У яких містах працює оцінка?", a: "У Варшаві та Кракові. Інші міста Польщі додамо пізніше — а бот Kwadrat PL уже шукає житло у 8 містах." },
@@ -2022,7 +2039,7 @@ const TOOL = {
     desc: "Увядзі адрас у Варшаве і атрымай бал 0–100 за транспарт, крамы, школы і зялёныя зоны. Найбліжэйшыя аб'екты з адлегласцямі. Бясплатна і без рэгістрацыі.",
     h1: "Ацэнка лакацыі ў Варшаве",
     lead: "Увядзі адрас або тапні кропку на карце — пакажам, наколькі зручна там жыць: агульны бал 0–100 і разбор па транспарце, інфраструктуры, школах і зеляніне, з найбліжэйшымі аб'ектамі і адлегласцямі.",
-    cta: "Шукаеш кватэру ці пакой у Варшаве? Бот пакажа свежыя аб'явы OLX, Otodom і Morizon — з ацэнкай цаны, анты-скам-фільтрам і апавяшчэннямі.",
+    cta: `Шукаеш кватэру ці пакой у Варшаве? Бот пакажа свежыя аб'явы з ${CLAIMS.by.src} — з ацэнкай цаны, анты-скам-фільтрам і апавяшчэннямі.`,
     faq: [
       { q: "Як лічыцца ацэнка?", a: "Мы глядзім рэальныя аб'екты вакол адраса: станцыі метро і SKM, прыпынкі, крамы, аптэкі, школы, садкі і паркі. Бал кожнай катэгорыі складаецца з блізкасці і колькасці аб'ектаў, вынік — узважаная сума, дзе правал адной катэгорыі прыкметна зніжае вынік. Даныя: OpenStreetMap і Google." },
       { q: "У якіх гарадах працуе ацэнка?", a: "У Варшаве і Кракаве. Іншыя гарады Польшчы дадамо пазней — а бот Kwadrat PL ужо шукае жыллё ў 8 гарадах." },
@@ -2035,7 +2052,7 @@ const TOOL = {
     desc: "Wpisz adres w Warszawie i zobacz wynik 0–100 za transport, sklepy, szkoły i tereny zielone. Najbliższe obiekty z odległościami. Za darmo i bez rejestracji.",
     h1: "Ocena lokalizacji w Warszawie",
     lead: "Wpisz adres albo stuknij punkt na mapie — pokażemy, jak wygodnie się tam mieszka: łączny wynik 0–100 i rozbicie na transport, infrastrukturę, szkoły i zieleń, z najbliższymi obiektami i odległościami.",
-    cta: "Szukasz mieszkania lub pokoju w Warszawie? Bot pokaże świeże ogłoszenia z OLX, Otodom i Morizon — z oceną ceny, filtrem anty-scam i powiadomieniami.",
+    cta: `Szukasz mieszkania lub pokoju w Warszawie? Bot pokaże świeże ogłoszenia z ${CLAIMS.pl.src} — z oceną ceny, filtrem anty-scam i powiadomieniami.`,
     faq: [
       { q: "Jak liczony jest wynik?", a: "Patrzymy na realne obiekty wokół adresu: stacje metra i SKM, przystanki, sklepy, apteki, szkoły, przedszkola i parki. Wynik każdej kategorii wynika z bliskości i liczby obiektów, a łączna ocena to suma ważona, w której słaba kategoria wyraźnie obniża rezultat. Dane: OpenStreetMap i Google." },
       { q: "Jakie miasta są obsługiwane?", a: "Warszawa i Kraków. Kolejne miasta dodamy później — a bot Kwadrat PL już teraz szuka mieszkań w 8 miastach." },
@@ -2048,7 +2065,7 @@ const TOOL = {
     desc: "Enter a Warsaw address and get a 0–100 score for transit, shops, schools and green areas. Nearest places with distances. Free, no sign-up.",
     h1: "Warsaw location score",
     lead: "Enter an address or tap a point on the map — we'll show how liveable it is: an overall 0–100 score with a breakdown for transit, infrastructure, schools and greenery, plus the nearest places and distances.",
-    cta: "Looking for a flat or room in Warsaw? The bot shows fresh OLX, Otodom and Morizon listings — with price insights, an anti-scam filter and alerts.",
+    cta: `Looking for a flat or room in Warsaw? The bot shows fresh listings from ${CLAIMS.en.src} — with price insights, an anti-scam filter and alerts.`,
     faq: [
       { q: "How is the score calculated?", a: "We look at real places around the address: metro and SKM stations, stops, shops, pharmacies, schools, kindergartens and parks. Each category score combines proximity and density, and the total is a weighted sum where one weak category clearly drags the result down. Data: OpenStreetMap and Google." },
       { q: "Which cities are supported?", a: "Warsaw and Kraków. More Polish cities will follow — and the Kwadrat PL bot already searches homes in 8 cities." },
@@ -2064,7 +2081,7 @@ const TOOL_KRK = {
     desc: "Введи адрес в Кракове и получи балл 0–100 за транспорт, магазины, школы и зелёные зоны. Ближайшие объекты с расстояниями. Бесплатно и без регистрации.",
     h1: "Оценка локации в Кракове",
     lead: "Введи адрес или тапни точку на карте — покажем, насколько удобно там жить: общий балл 0–100 и разбор по транспорту, инфраструктуре, школам и зелени, с ближайшими объектами и расстояниями.",
-    cta: "Ищешь квартиру или комнату в Кракове? Бот покажет свежие объявления OLX, Otodom и Morizon — с оценкой цены, анти-скам-фильтром и уведомлениями.",
+    cta: `Ищешь квартиру или комнату в Кракове? Бот покажет свежие объявления с ${CLAIMS.ru.src} — с оценкой цены, анти-скам-фильтром и уведомлениями.`,
     faq: [
       { q: "Как считается оценка?", a: "Мы смотрим реальные объекты вокруг адреса: трамвайные остановки, железнодорожные станции (SKA), автобусы, магазины, аптеки, школы, детские сады и парки. Метро в Кракове нет, поэтому каркас транспорта — трамваи и электрички: без них высокий балл не набрать. Итог — взвешенная сумма, в которой провал одной категории заметно снижает результат. Данные: OpenStreetMap и Google." },
       { q: "Учитывается ли смог?", a: "Да. Текущий индекс качества воздуха ближайшей станции GIOŚ даёт штраф к общему баллу — для Кракова с его зимним смогом это особенно важно. Штраф показан отдельной строкой, а не спрятан в среднем." },
@@ -2078,7 +2095,7 @@ const TOOL_KRK = {
     desc: "Введи адресу у Кракові та отримай бал 0–100 за транспорт, магазини, школи й зелені зони. Найближчі об'єкти з відстанями. Безкоштовно й без реєстрації.",
     h1: "Оцінка локації у Кракові",
     lead: "Введи адресу або тапни точку на карті — покажемо, наскільки зручно там жити: загальний бал 0–100 і розбір за транспортом, інфраструктурою, школами та зеленню, з найближчими об'єктами й відстанями.",
-    cta: "Шукаєш квартиру чи кімнату у Кракові? Бот покаже свіжі оголошення OLX, Otodom і Morizon — з оцінкою ціни, анти-скам-фільтром і сповіщеннями.",
+    cta: `Шукаєш квартиру чи кімнату у Кракові? Бот покаже свіжі оголошення з ${CLAIMS.ua.src} — з оцінкою ціни, анти-скам-фільтром і сповіщеннями.`,
     faq: [
       { q: "Як рахується оцінка?", a: "Ми дивимося реальні об'єкти навколо адреси: трамвайні зупинки, залізничні станції (SKA), автобуси, магазини, аптеки, школи, садки й парки. Метро у Кракові немає, тому каркас транспорту — трамваї та електрички: без них високий бал не набрати. Підсумок — зважена сума, де провал однієї категорії помітно знижує результат. Дані: OpenStreetMap і Google." },
       { q: "Чи враховується смог?", a: "Так. Поточний індекс якості повітря найближчої станції GIOŚ дає штраф до загального балу — для Кракова з його зимовим смогом це особливо важливо. Штраф показано окремим рядком, а не сховано в середньому." },
@@ -2092,7 +2109,7 @@ const TOOL_KRK = {
     desc: "Увядзі адрас у Кракаве і атрымай бал 0–100 за транспарт, крамы, школы і зялёныя зоны. Найбліжэйшыя аб'екты з адлегласцямі. Бясплатна і без рэгістрацыі.",
     h1: "Ацэнка лакацыі ў Кракаве",
     lead: "Увядзі адрас або тапні кропку на карце — пакажам, наколькі зручна там жыць: агульны бал 0–100 і разбор па транспарце, інфраструктуры, школах і зеляніне, з найбліжэйшымі аб'ектамі і адлегласцямі.",
-    cta: "Шукаеш кватэру ці пакой у Кракаве? Бот пакажа свежыя аб'явы OLX, Otodom і Morizon — з ацэнкай цаны, анты-скам-фільтрам і апавяшчэннямі.",
+    cta: `Шукаеш кватэру ці пакой у Кракаве? Бот пакажа свежыя аб'явы з ${CLAIMS.by.src} — з ацэнкай цаны, анты-скам-фільтрам і апавяшчэннямі.`,
     faq: [
       { q: "Як лічыцца ацэнка?", a: "Мы глядзім рэальныя аб'екты вакол адраса: трамвайныя прыпынкі, чыгуначныя станцыі (SKA), аўтобусы, крамы, аптэкі, школы, садкі і паркі. Метро ў Кракаве няма, таму каркас транспарту — трамваі і электрычкі: без іх высокі бал не набраць. Вынік — узважаная сума, дзе правал адной катэгорыі прыкметна зніжае вынік. Даныя: OpenStreetMap і Google." },
       { q: "Ці ўлічваецца смог?", a: "Так. Бягучы індэкс якасці паветра найбліжэйшай станцыі GIOŚ дае штраф да агульнага бала — для Кракава з яго зімовым смогам гэта асабліва важна. Штраф паказаны асобным радком, а не схаваны ў сярэднім." },
@@ -2106,7 +2123,7 @@ const TOOL_KRK = {
     desc: "Wpisz adres w Krakowie i zobacz wynik 0–100 za transport, sklepy, szkoły i tereny zielone. Najbliższe obiekty z odległościami. Za darmo i bez rejestracji.",
     h1: "Ocena lokalizacji w Krakowie",
     lead: "Wpisz adres albo stuknij punkt na mapie — pokażemy, jak wygodnie się tam mieszka: łączny wynik 0–100 i rozbicie na transport, infrastrukturę, szkoły i zieleń, z najbliższymi obiektami i odległościami.",
-    cta: "Szukasz mieszkania lub pokoju w Krakowie? Bot pokaże świeże ogłoszenia z OLX, Otodom i Morizon — z oceną ceny, filtrem anty-scam i powiadomieniami.",
+    cta: `Szukasz mieszkania lub pokoju w Krakowie? Bot pokaże świeże ogłoszenia z ${CLAIMS.pl.src} — z oceną ceny, filtrem anty-scam i powiadomieniami.`,
     faq: [
       { q: "Jak liczony jest wynik?", a: "Patrzymy na realne obiekty wokół adresu: przystanki tramwajowe, stacje kolejowe (SKA), autobusy, sklepy, apteki, szkoły, przedszkola i parki. W Krakowie nie ma metra, więc kręgosłupem transportu są tramwaje i kolej — bez nich trudno o wysoki wynik. Łączna ocena to suma ważona, w której słaba kategoria wyraźnie obniża rezultat. Dane: OpenStreetMap i Google." },
       { q: "Czy smog jest uwzględniany?", a: "Tak. Bieżący indeks jakości powietrza z najbliższej stacji GIOŚ obniża łączny wynik — w Krakowie, z jego zimowym smogiem, to szczególnie istotne. Kara pokazywana jest w osobnej linii, nie znika w średniej." },
@@ -2120,7 +2137,7 @@ const TOOL_KRK = {
     desc: "Enter a Kraków address and get a 0–100 score for transit, shops, schools and green areas. Nearest places with distances. Free, no sign-up.",
     h1: "Kraków location score",
     lead: "Enter an address or tap a point on the map — we'll show how liveable it is: an overall 0–100 score with a breakdown for transit, infrastructure, schools and greenery, plus the nearest places and distances.",
-    cta: "Looking for a flat or room in Kraków? The bot shows fresh OLX, Otodom and Morizon listings — with price insights, an anti-scam filter and alerts.",
+    cta: `Looking for a flat or room in Kraków? The bot shows fresh listings from ${CLAIMS.en.src} — with price insights, an anti-scam filter and alerts.`,
     faq: [
       { q: "How is the score calculated?", a: "We look at real places around the address: tram stops, railway stations (SKA), buses, shops, pharmacies, schools, kindergartens and parks. Kraków has no metro, so trams and trains form the transit backbone — without them a high score is out of reach. The total is a weighted sum where one weak category clearly drags the result down. Data: OpenStreetMap and Google." },
       { q: "Is smog taken into account?", a: "Yes. The current air quality index from the nearest GIOŚ station lowers the overall score — especially relevant in Kraków with its winter smog. The penalty is shown as a separate line, not hidden in the average." },
@@ -2457,9 +2474,10 @@ ${en.features.map((f) => `- ${f.t}: ${f.d}`).join("\n")}
 ## Key facts
 - Price: completely free, no sign-up, no app to install — runs inside Telegram.
 - Cities covered: ${SITE.cities.map((s) => CITY[s].en).join(", ")}.
-- Listing sources: OLX, Otodom, Morizon (public listings only).
+- Listing sources: ${CLAIMS.en.src} (public listings only).
+- Listing types: long-term flats and rooms.
 - Interface languages: Russian, Ukrainian, Belarusian, Polish, English.
-- Update frequency: new listings pulled and pushed within minutes.
+- Update frequency: listings refreshed ${CLAIMS.en.fresh}; new matches are pushed to subscribers after each refresh.
 - Not a real-estate agency; listings remain the property of their original source sites.
 
 ## Renter guides

@@ -52,6 +52,23 @@ def init_db():
             c.execute("ALTER TABLE seen ADD COLUMN price INTEGER")
         except sqlite3.OperationalError:
             pass
+        # миграция: когда МЫ впервые увидели объявление (seen.ts обновляется
+        # каждым инжестом). Нужна источникам без даты публикации (Morizon):
+        # иначе их ts = время фетча, и все лоты вечно «NEW» в выдаче
+        try:
+            c.execute("ALTER TABLE seen ADD COLUMN first_ts INTEGER")
+            c.execute("UPDATE seen SET first_ts = ts WHERE first_ts IS NULL")
+        except sqlite3.OperationalError:
+            pass
+        # здоровье источников фетчера (последний инжест): {source: {ok, errors}}
+        c.execute("""CREATE TABLE IF NOT EXISTS source_health(
+            source TEXT PRIMARY KEY,
+            ok INTEGER,
+            errors INTEGER,
+            ts INTEGER,
+            last_ok_ts INTEGER,
+            alerted_day TEXT
+        )""")
         # буфер уведомлений, накопленных за тихие часы (утром уйдёт сводкой)
         c.execute("""CREATE TABLE IF NOT EXISTS pending(
             user_id INTEGER NOT NULL,
@@ -133,3 +150,12 @@ def init_db():
             c.execute("ALTER TABLE geo_listings ADD COLUMN cats TEXT")
         except sqlite3.OperationalError:
             pass
+        # миграция: «подпись» входных данных (улица/координаты), с которыми уже
+        # пытались апгрейдить точность — без неё негеокодируемая улица
+        # перепробовалась каждый цикл и съедала весь бюджет энрайчера
+        try:
+            c.execute("ALTER TABLE geo_listings ADD COLUMN src TEXT")
+        except sqlite3.OperationalError:
+            pass
+        # быстрый evict по возрасту (раньше DELETE WHERE ts<? шёл по всей таблице)
+        c.execute("CREATE INDEX IF NOT EXISTS geo_cache_ts ON geo_cache(ts)")

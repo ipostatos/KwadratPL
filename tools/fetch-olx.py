@@ -14,6 +14,11 @@
 #   source "OLX"|"Otodom", agency (true=агентство), ts (epoch ms)
 #   ownerId|ownerName|ownerSince — только OLX (landlord trust pack, см. webapp/js/price.js
 #   landlordBadge); Otodom/Morizon на выдаче поиска личность продавца не отдают
+#   tsApprox: true — у объявления нет реальной даты публикации, ts = время
+#   прогона (бэкенд подставит first-seen)
+# Верхний уровень: generated_at, source, count, listings, sources —
+#   sources = {"olx"|"otodom"|"morizon": {"ok": строк до дедупа, "errors": упавших запросов}}
+# Env: FETCH_CITIES=krakow,lodz — ограничить прогон городами (по умолчанию все)
 # ===========================================================================
 import json
 import os
@@ -22,7 +27,13 @@ import sys
 import time
 import unicodedata
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+
+try:
+    from zoneinfo import ZoneInfo
+    WARSAW = ZoneInfo("Europe/Warsaw")
+except Exception:   # Windows без пакета tzdata — считаем CET/CEST сами
+    WARSAW = None
 
 API = "https://www.olx.pl/api/v1/offers/"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -59,6 +70,43 @@ def fetch(url, retries=2):
             if attempt == retries:
                 raise
             time.sleep(2 * (attempt + 1))
+
+
+def _last_sunday(year, month):
+    d = datetime(year, month + 1, 1) - timedelta(days=1)   # month < 12 здесь
+    return d - timedelta(days=(d.weekday() + 1) % 7)
+
+
+def _attach_warsaw(dt):
+    """Наивное польское локальное время -> aware. Без tzdata — правило ЕС:
+    CEST (+2) с последнего воскресенья марта 02:00 до последнего воскресенья
+    октября 03:00, иначе CET (+1)."""
+    if WARSAW is not None:
+        return dt.replace(tzinfo=WARSAW)
+    start = _last_sunday(dt.year, 3).replace(hour=2)
+    end = _last_sunday(dt.year, 10).replace(hour=3)
+    off = 2 if start <= dt < end else 1
+    return dt.replace(tzinfo=timezone(timedelta(hours=off)))
+
+
+def parse_ts(value, now_ms=None):
+    """ISO-дата/время -> epoch ms (None, если не разобрать). Строка со своим
+    смещением (Z, +02:00) берётся как есть; наивная — польское локальное время
+    (Europe/Warsaw), а не UTC. Результат не позже now: даты «из будущего» на
+    витрине ломают сортировку «сначала новые»."""
+    now_ms = int(time.time() * 1000) if now_ms is None else now_ms
+    if not value:
+        return None
+    s = str(value).strip()
+    if s.endswith(("Z", "z")):
+        s = s[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(s)
+    except (TypeError, ValueError):
+        return None
+    if dt.tzinfo is None:
+        dt = _attach_warsaw(dt)
+    return min(int(dt.timestamp() * 1000), now_ms)
 
 
 def param(offer, key):
@@ -147,10 +195,7 @@ def normalize(offer, city_slug, rent_type):
     if photos and photos[0].get("link"):
         photo = photos[0]["link"].replace("{width}x{height}", "640x480")
     created = offer.get("created_time") or offer.get("last_refresh_time")
-    try:
-        ts = int(datetime.fromisoformat(created).timestamp() * 1000)
-    except (TypeError, ValueError):
-        ts = int(time.time() * 1000)
+    ts = parse_ts(created) or int(time.time() * 1000)
     # авторы объявлений — посторонние люди: срезаем HTML и из заголовка тоже
     title = WS_RE.sub(" ", TAG_RE.sub(" ", offer.get("title") or "")).strip()
     descr = clean_text(offer.get("description"))
@@ -205,6 +250,12 @@ OTODOM_CITY = {
 OTODOM_CAT = {"long": "mieszkanie", "room": "pokoj"}   # посуточного у Otodom нет
 OTODOM_ROOMS = {"ONE": 1, "TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 4,
                 "SIX": 4, "SEVEN": 4, "EIGHT": 4, "NINE": 4, "TEN": 4, "MORE": 4}
+# tags[] выдачи Otodom (подсветка карточки: BALCONY, PARKING_SPOT, TERRACE,
+# GARDEN, BASEMENT...). Это НЕ полный список удобств: отсутствие тега != «нет»,
+# поэтому из тегов ставим только True, иначе None. Про животных тега нет.
+OTODOM_PARKING_TAGS = {"PARKING_SPOT", "GARAGE"}
+OTODOM_MIN_TS = 946684800000   # 2000-01-01 UTC: всё раньше — заглушка, не дата
+OTODOM_BALCONY_TAGS = {"BALCONY", "TERRACE", "LOGGIA"}
 NEXT_RE = re.compile(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.S)
 
 
@@ -228,6 +279,26 @@ def otodom_district(item):
     return None
 
 
+def otodom_rooms(item):
+    """Число комнат: сейчас Otodom отдаёт roomsNumber: "TWO" (10.2026), раньше
+    было rooms: "TWO"; на всякий случай понимаем и число / "3". 5+ -> 4
+    (в приложении «4+»). У объявлений-комнат (pokoj) бывает пусто — None."""
+    v = item.get("roomsNumber")
+    if v is None:
+        v = item.get("rooms")
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)) or str(v).strip().isdigit():
+        n = int(v)
+        return min(n, 4) if n > 0 else None
+    return OTODOM_ROOMS.get(str(v).strip().upper())
+
+
+def otodom_tags(item):
+    return {str(t.get("value") or "").upper() for t in item.get("tags") or []
+            if isinstance(t, dict)}
+
+
 def normalize_otodom(item, city_slug, rent_type):
     if not item.get("id"):
         return None
@@ -235,23 +306,33 @@ def normalize_otodom(item, city_slug, rent_type):
     price = to_int(price)
     if not price or price <= 0:
         return None
-    href = item.get("href") or ""
+    # Промо-плитки выдачи («hpr»): href "hpr/[lang]/ad/...", id вида
+    # 9<id>00067 и dateCreated-заглушка "1999-02-29 00:00:01". Ссылку чиним
+    # до канонической, дату считаем неизвестной (см. otodom_ordered в main).
+    href = (item.get("href") or "").lstrip("/")
+    if href.startswith("hpr/"):
+        href = href[4:]
     url = "https://www.otodom.pl/" + href.replace("[lang]", "pl").lstrip("/")
     imgs = item.get("images") or []
     photo = imgs[0].get("large") or imgs[0].get("medium") if imgs else None
+    # dateCreated сейчас "2026-10-02T17:18:19Z" (UTC с явным Z), раньше бывал
+    # наивным локальным временем — parse_ts различает оба и режет будущее
     created = item.get("dateCreated") or item.get("createdAtFirst")
-    try:
-        ts = int(datetime.fromisoformat(created).timestamp() * 1000)
-    except (TypeError, ValueError):
+    ts = parse_ts(created)
+    if ts is not None and ts < OTODOM_MIN_TS:   # заглушки вида 1999-...
+        ts = None
+    ts_approx = ts is None
+    if ts_approx:
         ts = int(time.time() * 1000)
     title = WS_RE.sub(" ", TAG_RE.sub(" ", item.get("title") or "")).strip()
+    tags = otodom_tags(item)
     # Otodom отдаёт улицу прямо в выдаче (location.address.street) — бэкенд
     # геокодит её в координаты с точностью street/address (geo_enrich.py)
     street = ((item.get("location") or {}).get("address") or {}).get("street") or {}
     street_name = (street.get("name") or "").strip() or None
     if street_name and (street.get("number") or "").strip():
         street_name += " " + street["number"].strip()
-    return {
+    row = {
         "id": "otodom-%s" % item["id"],
         "street": street_name,
         "url": url,
@@ -260,19 +341,30 @@ def normalize_otodom(item, city_slug, rent_type):
         "city": city_slug,
         "district": otodom_district(item),
         "type": rent_type,
-        "rooms": OTODOM_ROOMS.get(str(item.get("rooms") or "")),
+        "rooms": otodom_rooms(item),
         "area": to_int(item.get("areaInSquareMeters")),
         "price": price,
         "oldPrice": None,
         "floor": None,
         "pets": None,
-        "parking": None,
-        "balcony": parse_balcony(title + " " + (item.get("shortDescription") or "")),
+        "parking": True if tags & OTODOM_PARKING_TAGS else None,
+        "balcony": (True if tags & OTODOM_BALCONY_TAGS else
+                    parse_balcony(title + " " + (item.get("shortDescription") or ""))),
         "photo": photo,
         "source": "Otodom",
         "agency": item.get("isPrivateOwner") is False,
         "ts": ts,
     }
+    if ts_approx:
+        row["tsApprox"] = True
+    return row
+
+
+def otodom_ordered(items):
+    """Обычные карточки раньше промо-плиток hpr: промо часто дублирует
+    объявление той же выдачи, и при дедупе по url побеждает карточка с
+    настоящими id и датой."""
+    return sorted(items, key=lambda i: str(i.get("href") or "").lstrip("/").startswith("hpr/"))
 
 
 def fetch_otodom(city_slug, rent_type):
@@ -294,6 +386,58 @@ MORIZON = "https://www.morizon.pl/do-wynajecia/%s/%s/"
 MORIZON_CAT = {"long": "mieszkania", "room": "pokoje"}   # посуточного нет
 MZN_ID_RE = re.compile(r"mzn(\d+)")
 MZN_AREA_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*m²")
+NUXT_RE = re.compile(r'<script[^>]*id="__NUXT_DATA__"[^>]*>(.*?)</script>', re.S)
+DATE_ONLY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def morizon_dates(html):
+    """{mzn-id: (addedAt, refreshedAt)} из __NUXT_DATA__ страницы выдачи.
+    В ld+json дат нет; Nuxt-payload (формат devalue: плоский массив, поля
+    объектов — индексы в нём) несёт по каждому объявлению addedAt
+    ("2026-09-23", только день) и refreshedAt ("2026-10-02 15:38:26")."""
+    m = NUXT_RE.search(html or "")
+    if not m:
+        return {}
+    try:
+        arr = json.loads(m.group(1))
+    except ValueError:
+        return {}
+    if not isinstance(arr, list):
+        return {}
+
+    def deref(ref):
+        if isinstance(ref, int) and not isinstance(ref, bool) and 0 <= ref < len(arr):
+            v = arr[ref]
+            return v if isinstance(v, str) else None
+        return None
+
+    out = {}
+    for node in arr:
+        if not (isinstance(node, dict) and "addedAt" in node and "url" in node):
+            continue
+        url = deref(node.get("url"))
+        mid = MZN_ID_RE.search(url) if url else None
+        if mid:
+            out[mid.group(1)] = (deref(node.get("addedAt")), deref(node.get("refreshedAt")))
+    return out
+
+
+def morizon_ts(added, refreshed, now_ms=None):
+    """(ts, approx). addedAt — реальная дата публикации, но только день.
+    Если обновление было в тот же день, берём его время (оно >= времени
+    публикации и ближе к правде, чем полночь); иначе полночь дня по Варшаве.
+    Нет даты — (now, True): бэкенд подставит first-seen."""
+    now_ms = int(time.time() * 1000) if now_ms is None else now_ms
+    added = (added or "").strip()
+    refreshed = (refreshed or "").strip()
+    if added and DATE_ONLY_RE.match(added) and refreshed.startswith(added):
+        ts = parse_ts(refreshed, now_ms)
+        if ts:
+            return ts, False
+    ts = parse_ts(added, now_ms) if added else None
+    if ts:
+        return ts, False
+    return now_ms, True
 
 
 def normalize_morizon(offer, city_slug, rent_type):
@@ -311,9 +455,19 @@ def normalize_morizon(offer, city_slug, rent_type):
         tail = name[am.end():].strip(" ,")
         if tail:
             district = tail.split(",")[0].strip() or None
-    rooms = 1 if name.lower().startswith("kawalerka") else None
+    # ld+json itemOffered.numberOfRooms (Accommodation) — есть у квартир;
+    # 5+ -> 4, как у остальных источников
+    acc = offer.get("itemOffered") if isinstance(offer.get("itemOffered"), dict) else {}
+    n_rooms = to_int(acc.get("numberOfRooms"))
+    # у комнат (pokoje) это комнатность всей квартиры — не путаем с типом
+    # «комната», как и у Otodom (там у pokoj число комнат пусто)
+    if rent_type != "room" and n_rooms and n_rooms > 0:
+        rooms = min(n_rooms, 4)
+    else:
+        rooms = 1 if name.lower().startswith("kawalerka") else None
     photo = offer.get("image") if str(offer.get("image", "")).startswith("https") else None
-    return {
+    ts, ts_approx = morizon_ts(offer.get("_addedAt"), offer.get("_refreshedAt"))
+    row = {
         "id": "morizon-%s" % mid.group(1),
         "url": url,
         "title": name,
@@ -332,8 +486,11 @@ def normalize_morizon(offer, city_slug, rent_type):
         "photo": photo,
         "source": "Morizon",
         "agency": None,            # на выдаче Morizon тип продавца не размечен
-        "ts": int(time.time() * 1000),
+        "ts": ts,
     }
+    if ts_approx:
+        row["tsApprox"] = True
+    return row
 
 
 def fetch_morizon(city_slug, rent_type):
@@ -349,7 +506,13 @@ def fetch_morizon(city_slug, rent_type):
             o = b.get("offers") or {}
             offers = o.get("offers") if isinstance(o, dict) else []
             break
-    return offers or []
+    offers = [o for o in offers or [] if isinstance(o, dict)]
+    dates = morizon_dates(html)
+    for o in offers:
+        mid = MZN_ID_RE.search(o.get("url") or "")
+        if mid and mid.group(1) in dates:
+            o["_addedAt"], o["_refreshedAt"] = dates[mid.group(1)]
+    return offers
 
 
 # ── дедупликация между площадками: одна квартира на нескольких порталах ─────
@@ -472,13 +635,48 @@ def dedup(listings):
     return out
 
 
+def selected_cities(env=None):
+    """FETCH_CITIES=krakow,lodz -> только эти города; пусто -> все."""
+    raw = (os.environ.get("FETCH_CITIES", "") if env is None else env).strip()
+    if not raw:
+        return list(CITIES)
+    want = [c.strip().lower() for c in raw.split(",") if c.strip()]
+    unknown = [c for c in want if c not in CITIES]
+    if unknown:
+        print("WARN FETCH_CITIES: unknown %s (known: %s)" % (",".join(unknown), ",".join(CITIES)))
+    return [c for c in want if c in CITIES]
+
+
+def new_source_stats():
+    return {"olx": {"ok": 0, "errors": 0},
+            "otodom": {"ok": 0, "errors": 0},
+            "morizon": {"ok": 0, "errors": 0}}
+
+
+def source_summary_lines(stats):
+    """По строке на источник. ok = объявлений до дедупа, errors = упавших
+    запросов. ok=0 при errors>0 — источник лёг; ok=0 без ошибок — разметка
+    поменялась (парсер тихо ничего не нашёл)."""
+    lines = []
+    for name, st in stats.items():
+        if st["ok"] > 0:
+            state = "OK" if not st["errors"] else "PARTIAL"
+        else:
+            state = "DOWN" if st["errors"] else "EMPTY"
+        lines.append("SOURCE %-8s %-7s ok=%d errors=%d" % (name, state, st["ok"], st["errors"]))
+    return lines
+
+
 def main():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     out_path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "webapp", "data", "listings.json")
 
-    listings, seen, errors = [], set(), 0
+    listings, seen = [], set()
+    stats = new_source_stats()
+    cities = selected_cities()
     # ── OLX ──
-    for city_slug, city_id in CITIES.items():
+    for city_slug in cities:
+        city_id = CITIES[city_slug]
         for cat_id, rent_type in CATEGORIES.items():
             url = "%s?category_id=%d&city_id=%d&limit=%d&sort_by=created_at:desc" % (
                 API, cat_id, city_id, LIMIT[rent_type])
@@ -486,7 +684,7 @@ def main():
                 data = fetch(url)
             except Exception as e:
                 print("WARN olx %s/%s: %s" % (city_slug, rent_type, e))
-                errors += 1
+                stats["olx"]["errors"] += 1
                 continue
             got = 0
             for offer in data.get("data") or []:
@@ -497,36 +695,40 @@ def main():
                 if row:
                     listings.append(row)
                     got += 1
+            stats["olx"]["ok"] += got
             print("olx %s %s: %d" % (city_slug, rent_type, got))
             time.sleep(float(os.environ.get("OLX_PAUSE", "0.7")))
 
     # ── Otodom (квартиры и комнаты) ──
-    for city_slug in CITIES:
+    for city_slug in cities:
         for rent_type in OTODOM_CAT:
             try:
                 items = fetch_otodom(city_slug, rent_type)
             except Exception as e:
                 print("WARN otodom %s/%s: %s" % (city_slug, rent_type, e))
-                errors += 1
+                stats["otodom"]["errors"] += 1
                 continue
             got = 0
-            for item in items:
+            for item in otodom_ordered(items):
                 row = normalize_otodom(item, city_slug, rent_type)
-                if row and row["id"] not in seen:
+                # промо-плитка hpr = то же объявление под другим id: ловим по url
+                if row and row["id"] not in seen and row["url"] not in seen:
                     seen.add(row["id"])
+                    seen.add(row["url"])
                     listings.append(row)
                     got += 1
+            stats["otodom"]["ok"] += got
             print("otodom %s %s: %d" % (city_slug, rent_type, got))
             time.sleep(float(os.environ.get("OTODOM_PAUSE", "0.5")))
 
     # ── Morizon (квартиры и комнаты) ──
-    for city_slug in CITIES:
+    for city_slug in cities:
         for rent_type in MORIZON_CAT:
             try:
                 offers = fetch_morizon(city_slug, rent_type)
             except Exception as e:
                 print("WARN morizon %s/%s: %s" % (city_slug, rent_type, e))
-                errors += 1
+                stats["morizon"]["errors"] += 1
                 continue
             got = 0
             for offer in offers:
@@ -535,10 +737,13 @@ def main():
                     seen.add(row["id"])
                     listings.append(row)
                     got += 1
+            stats["morizon"]["ok"] += got
             print("morizon %s %s: %d" % (city_slug, rent_type, got))
             time.sleep(float(os.environ.get("MORIZON_PAUSE", "0.5")))
 
     if not listings:
+        for line in source_summary_lines(stats):
+            print(line)
         print("FATAL: 0 listings, keeping previous file")
         sys.exit(1)
 
@@ -562,6 +767,7 @@ def main():
         "source": "OLX + Otodom + Morizon",
         "count": len(listings),
         "listings": listings,
+        "sources": stats,
     }
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     tmp = out_path + ".tmp"
@@ -572,6 +778,10 @@ def main():
     for l in listings:
         src[l.get("source")] = src.get(l.get("source"), 0) + 1
     print("OK: %d listings %s -> %s" % (len(listings), src, out_path))
+    # один упавший источник не роняет прогон (exit 0), но виден здесь и в
+    # payload["sources"] — бэкенд алертит на ok=0
+    for line in source_summary_lines(stats):
+        print(line)
 
 
 if __name__ == "__main__":

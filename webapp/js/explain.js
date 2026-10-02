@@ -109,7 +109,8 @@
 
     if (App.dataQuality(l) === "thin") r.push(t("exThin"));
 
-    var ageDays = l.ts ? Math.floor((Date.now() - l.ts) / 86400000) : null;
+    // ts из будущего (часовые пояса источника) прижимаем к «сейчас» — App.tsOf
+    var ageDays = l.ts ? Math.floor((Date.now() - App.tsOf(l)) / 86400000) : null;
     if (ageDays != null && ageDays <= 1) s.push(t("exFresh"));
     else if (ageDays != null && ageDays >= 14) r.push(t("exOld", { n: ageDays }));
 

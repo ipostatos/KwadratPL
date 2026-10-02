@@ -27,6 +27,9 @@ ANALYZE_PRICE_IN = float(os.environ.get("ANALYZE_PRICE_IN", "1.0"))
 ANALYZE_PRICE_OUT = float(os.environ.get("ANALYZE_PRICE_OUT", "5.0"))
 # сколько пополнено кредитов ($). Точного остатка у Anthropic нет в API — считаем
 # «остаток ≈ бюджет − потрачено». 0 = не задан, тогда остаток не показываем.
+# глобальный суточный потолок вызовов AI на всех пользователей (защита бюджета
+# от фермы аккаунтов: per-user лимит его не ограничивает)
+AI_GLOBAL_DAILY_LIMIT = int(os.environ.get("AI_GLOBAL_DAILY_LIMIT", "300"))
 AI_BUDGET_USD = float(os.environ.get("AI_BUDGET_USD", "0"))
 # кому доступна команда /stats (Telegram id через запятую)
 ADMIN_IDS = {int(x) for x in os.environ.get("ADMIN_IDS", "").replace(" ", "").split(",") if x.isdigit()}
