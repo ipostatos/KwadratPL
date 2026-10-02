@@ -1218,7 +1218,8 @@ ${sections}
 // Извлекаем инлайн-<script> каждой страницы «Полезное» и выполняем в песочнице
 // vm — так тексты живут только в webapp/, а сайт их просто зеркалит (как P выше).
 function runPageScript(file) {
-  const html = readFileSync(join(__dirname, "..", "..", "webapp", file), "utf8");
+  // CRLF → LF: на Windows-чекауте (core.autocrlf) регекс иначе не находил скрипт
+  const html = readFileSync(join(__dirname, "..", "..", "webapp", file), "utf8").replace(/\r\n/g, "\n");
   const m = html.match(/<script>\n"use strict";\n([\s\S]*?)\n<\/script>/);
   if (!m) throw new Error(`guide: не нашёл инлайн <script> в webapp/${file}`);
   const sandbox = {
